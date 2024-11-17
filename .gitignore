@@ -1,6 +1,17 @@
+# Ignore Node.js dependencies
 node_modules/
+npm-debug.log*
+
+# Ignore environment variables
 .env
-uploads/
-node_modules/
-.env
-uploads/
+
+# Ignore macOS system files
+.DS_Store
+
+# Ignore logs and temp files
+*.log
+*.tmp
+
+# Ignore build output
+dist/
+build/

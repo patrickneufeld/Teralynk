@@ -1,0 +1,83 @@
+{
+  "providers": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-teralynk-dev-ea5fd-authRole",
+      "UnauthRoleArn": "arn:aws:iam::560589120598:role/amplify-teralynk-dev-ea5fd-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::560589120598:role/amplify-teralynk-dev-ea5fd-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-teralynk-dev-ea5fd-deployment",
+      "UnauthRoleName": "amplify-teralynk-dev-ea5fd-unauthRole",
+      "StackName": "amplify-teralynk-dev-ea5fd",
+      "StackId": "arn:aws:cloudformation:us-east-1:560589120598:stack/amplify-teralynk-dev-ea5fd/f9da8c00-85e1-11ef-be4d-0affe64476ad",
+      "AmplifyAppId": "d4avjry29uhk0"
+    }
+  },
+  "auth": {
+    "teralynkd848a299": {
+      "customAuth": false,
+      "dependsOn": [],
+      "frontendAuthConfig": {
+        "mfaConfiguration": "OFF",
+        "mfaTypes": [
+          "SMS"
+        ],
+        "passwordProtectionSettings": {
+          "passwordPolicyMinLength": 8,
+          "passwordPolicyCharacters": []
+        },
+        "signupAttributes": [
+          "EMAIL"
+        ],
+        "socialProviders": [],
+        "usernameAttributes": [],
+        "verificationMechanisms": [
+          "EMAIL"
+        ]
+      },
+      "providerPlugin": "awscloudformation",
+      "service": "Cognito",
+      "output": {
+        "UserPoolId": "us-east-1_nwlAd9ty1",
+        "AppClientIDWeb": "e41n6rqjqluhpuhshopmfaknc",
+        "AppClientID": "6bpbd754bto2jmtt7dddfd3dv1",
+        "IdentityPoolId": "us-east-1:1a4709b5-baca-4640-9698-cb8b87fe6466",
+        "UserPoolArn": "arn:aws:cognito-idp:us-east-1:560589120598:userpool/us-east-1_nwlAd9ty1",
+        "IdentityPoolName": "teralynkd848a299_identitypool_d848a299__dev",
+        "UserPoolName": "teralynkd848a299_userpool_d848a299",
+        "HostedUIDomain": "teralynkde824d04-de824d04-dev",
+        "OAuthMetadata": "{\"AllowedOAuthFlows\":[\"code\"],\"AllowedOAuthScopes\":[\"phone\",\"email\",\"openid\",\"profile\",\"aws.cognito.signin.user.admin\"],\"CallbackURLs\":[\"http://localhost:3000/\"],\"LogoutURLs\":[\"http://localhost:3000/\"]}"
+      },
+      "lastPushTimeStamp": "2024-10-13T20:16:10.176Z",
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-teralynk-dev-ea5fd-deployment/amplify-cfn-templates/auth/teralynkd848a299-cloudformation-template.json",
+        "logicalId": "authteralynkd848a299"
+      },
+      "lastPushDirHash": "TJto2apYeL1m9Ovf013fSsADB8U="
+    },
+    "userPoolGroups": {
+      "service": "Cognito-UserPool-Groups",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [
+        {
+          "category": "auth",
+          "resourceName": "teralynkd848a299",
+          "attributes": [
+            "UserPoolId",
+            "AppClientIDWeb",
+            "AppClientID",
+            "IdentityPoolId"
+          ]
+        }
+      ],
+      "lastPushTimeStamp": "2024-10-13T20:16:10.176Z",
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-teralynk-dev-ea5fd-deployment/amplify-cfn-templates/auth/userPoolGroups-cloudformation-template.json",
+        "logicalId": "authuserPoolGroups"
+      },
+      "output": {
+        "updateAuthGroupRole": "arn:aws:iam::560589120598:role/us-east-1_nwlAd9ty1-updateAuthGroupRole"
+      },
+      "lastPushDirHash": "B8fEaIEJwWH16h6Jcl78nGnEG2w="
+    }
+  }
+}

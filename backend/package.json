@@ -1,0 +1,24 @@
+{
+  "name": "teralynk-backend",
+  "version": "1.0.0",
+  "description": "Teralynk Backend API",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.32.0",
+    "@aws-sdk/s3-request-presigner": "^3.666.0",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "formidable": "^1.2.2",
+    "jsonwebtoken": "^9.0.2",
+    "natural": "^8.0.1",
+    "redis": "^3.1.2",
+    "shortid": "^2.2.16",
+    "winston": "^3.3.3"
+  },
+  "author": "",
+  "license": "ISC"
+}
