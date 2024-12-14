@@ -1,4 +1,4 @@
-// File: /Users/patrick/Projects/Teralynk/backend/services/fileSharingService.js
+// File: /backend/services/fileSharingService.js
 
 const fs = require('fs');
 const path = require('path');
@@ -16,6 +16,7 @@ const generateShareableLink = async (filePath, userId, permissions = 'view', exp
         throw new Error(`File does not exist: ${filePath}`);
     }
 
+    // Ensure the user has permission to share files
     if (!hasPermission(userId, 'share')) {
         throw new Error('You do not have permission to share files.');
     }
@@ -35,7 +36,7 @@ const generateShareableLink = async (filePath, userId, permissions = 'view', exp
 
     sharedFilesStore[shareId] = shareData;
 
-    // Log activity
+    // Log activity for generating a shareable link
     await recordActivity(userId, 'generateShareableLink', filePath, { shareId });
 
     console.log(`Shareable link created for file: ${filePath}`);
@@ -50,6 +51,7 @@ const getSharedFile = async (shareId, userId) => {
         throw new Error('Invalid or expired share ID.');
     }
 
+    // Check if the user has permission or is the owner of the shared file
     if (shareData.userId !== userId && !hasPermission(userId, 'admin')) {
         throw new Error('You do not have permission to access this shared file.');
     }
@@ -71,13 +73,14 @@ const deleteShareableLink = async (shareId, userId) => {
         throw new Error('Invalid share ID.');
     }
 
+    // Ensure the user has permission to delete the shareable link
     if (shareData.userId !== userId && !hasPermission(userId, 'admin')) {
         throw new Error('You do not have permission to delete this shared link.');
     }
 
     delete sharedFilesStore[shareId];
 
-    // Log activity
+    // Log activity for deleting the shareable link
     await recordActivity(userId, 'deleteShareableLink', shareData.filePath, { shareId });
 
     console.log(`Shareable link deleted: ${shareId}`);

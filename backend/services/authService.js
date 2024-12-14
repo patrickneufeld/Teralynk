@@ -2,20 +2,49 @@
 
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const { query } = require('./db'); // Import your database query function
 const { recordActivity } = require('./activityLogService');
 const { hasPermission } = require('./rbacService');
+const AWS = require('aws-sdk');
+const dotenv = require('dotenv');
 
-// Secret key for JWT (should be stored in .env for security)
-const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY || 'your-secret-key';
+// Load environment variables from .env file
+dotenv.config();
 
-// In-memory store for user data (replace with database in production)
-const users = [
-    { id: 1, email: 'user@example.com', password: '$2b$10$abcd...', role: 'Admin' }, // Sample user
-];
+// AWS Secrets Manager Configuration
+const secretsManager = new AWS.SecretsManager({
+    region: 'us-east-1'  // Use the correct region where your secret is stored
+});
+
+// Helper function to retrieve the JWT secret from AWS Secrets Manager
+const getSecretValue = async (secretName) => {
+    try {
+        const data = await secretsManager.getSecretValue({ SecretId: secretName }).promise();
+        
+        if (data.SecretString) {
+            return JSON.parse(data.SecretString); // Parse JSON if SecretString exists
+        } else {
+            const buff = Buffer.from(data.SecretBinary, 'base64');
+            return buff.toString('ascii');
+        }
+    } catch (err) {
+        console.log("Error retrieving the secret:", err);
+        throw err;
+    }
+};
+
+// Fetch the JWT Secret for signing and verifying tokens
+const getJWTSecret = async () => {
+    const secret = await getSecretValue('jwt_secret');
+    return secret.jwt_secret; // Assuming the secret is stored under "jwt_secret" key
+};
 
 // Login function to authenticate a user
 const loginUser = async (email, password) => {
-    const user = users.find((u) => u.email === email);
+    // Query the database for user
+    const result = await query('SELECT * FROM users WHERE email = $1', [email]);
+    const user = result.rows[0];
+
     if (!user) {
         throw new Error('User not found.');
     }
@@ -25,27 +54,35 @@ const loginUser = async (email, password) => {
         throw new Error('Invalid password.');
     }
 
+    // Get the JWT secret from Secrets Manager
+    const JWT_SECRET_KEY = await getJWTSecret(); // Fetch from AWS Secrets Manager
+
+    // Generate the token
     const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET_KEY, {
         expiresIn: '1h',
     });
 
-    // Log the activity
+    // Log the activity (e.g., user logging in)
     await recordActivity(user.id, 'login', null, { email });
 
     return { token, user };
 };
 
-// Register a new user (for testing purposes)
+// Register a new user
 const registerUser = async (email, password, role) => {
-    const userExists = users.find((u) => u.email === email);
+    // Check if the user already exists
+    const result = await query('SELECT * FROM users WHERE email = $1', [email]);
+    const userExists = result.rows.length > 0;
+
     if (userExists) {
         throw new Error('User already exists.');
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = { id: users.length + 1, email, password: hashedPassword, role };
+    const newUser = { email, password: hashedPassword, role };
 
-    users.push(newUser);
+    // Insert new user into the database
+    await query('INSERT INTO users (email, password, role) VALUES ($1, $2, $3)', [email, hashedPassword, role]);
 
     return newUser;
 };
@@ -61,15 +98,33 @@ const refreshToken = async (oldToken) => {
         );
         return { newToken };
     } catch (error) {
-        throw new Error('Invalid refresh token.');
+        throw new Error('Invalid or expired refresh token.');
     }
 };
 
-// Logout function (invalidate the token)
+// Logout function (invalidate the token, ideally in a production system)
 const logoutUser = async (userId) => {
-    // For simplicity, just log out by not doing anything on server-side,
-    // but ideally, you would invalidate the JWT token or store blacklisted tokens
+    // For simplicity, just log the activity but ideally you should blacklist tokens in production
+    await recordActivity(userId, 'logout', null, { message: 'User logged out' });
+
     return { message: 'User logged out successfully.' };
+};
+
+// Secure route access: middleware to verify user role and permission
+const secureRouteAccess = async (userId, requiredPermission) => {
+    const role = await getRole(userId);
+    if (!role || !role.permissions.includes(requiredPermission)) {
+        throw new Error(`You do not have permission for '${requiredPermission}' action.`);
+    }
+};
+
+// Get the role of a user
+const getRole = async (userId) => {
+    const result = await query('SELECT role FROM users WHERE id = $1', [userId]);
+    if (result.rows.length === 0) {
+        throw new Error('User not found.');
+    }
+    return result.rows[0];
 };
 
 module.exports = {
@@ -77,4 +132,5 @@ module.exports = {
     registerUser,
     refreshToken,
     logoutUser,
+    secureRouteAccess,
 };
