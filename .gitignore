@@ -1,3 +1,7 @@
+# Ignore Amplify local environment files
+amplify/.config/local-aws-info.json
+amplify/.config/local-env-info.json
+
 # Node.js dependencies
 node_modules/
 
