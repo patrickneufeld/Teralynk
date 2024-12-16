@@ -9,7 +9,7 @@ const {
 } = require('../services/searchService');
 const rbacMiddleware = require('../middleware/rbacMiddleware');
 
-// Middleware to validate request body
+// Middleware to validate request body for required fields
 const validateRequestBody = (requiredFields) => (req, res, next) => {
     const missingFields = requiredFields.filter(field => !req.body[field]);
     if (missingFields.length > 0) {
@@ -18,7 +18,7 @@ const validateRequestBody = (requiredFields) => (req, res, next) => {
     next();
 };
 
-// **1️⃣ Route to handle search requests**
+// Route 1️⃣: Handle search requests
 router.post('/search', rbacMiddleware('user'), validateRequestBody(['query', 'userId']), async (req, res) => {
     try {
         const {
@@ -67,7 +67,7 @@ router.post('/search', rbacMiddleware('user'), validateRequestBody(['query', 'us
     }
 });
 
-// **2️⃣ Get search history for a user**
+// Route 2️⃣: Get search history for a user
 router.get('/history', rbacMiddleware('user'), async (req, res) => {
     try {
         const { userId } = req.query;
@@ -84,7 +84,7 @@ router.get('/history', rbacMiddleware('user'), async (req, res) => {
     }
 });
 
-// **3️⃣ Clear search history for a user**
+// Route 3️⃣: Clear search history for a user
 router.delete('/history', rbacMiddleware('user'), validateRequestBody(['userId']), async (req, res) => {
     try {
         const { userId } = req.body;
