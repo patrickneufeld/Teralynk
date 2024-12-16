@@ -1,21 +1,20 @@
-// File: /Users/patrick/Projects/Teralynk/backend/services/versioningService.js
-
-const fs = require('fs');
+const fs = require('fs').promises; // Use async fs methods
 const path = require('path');
 const uuid = require('uuid');
 const { recordActivity } = require('./activityLogService');
 const { analyzeFileContent } = require('./aiInsightsService');
 const { hasPermission } = require('./rbacService');
-
-// In-memory store for file versions (replace with database for production)
-const fileVersions = {};
+const { query } = require('./db'); // Database integration
 
 // Validate file existence before proceeding
 const validateFileExists = async (filePath) => {
-    if (!fs.existsSync(filePath)) {
+    try {
+        await fs.stat(filePath); // Async file stat
+        console.log(`File validated: ${filePath}`);
+    } catch (error) {
+        console.error(`File not found: ${filePath}`);
         throw new Error(`File does not exist: ${filePath}`);
     }
-    console.log(`File validated: ${filePath}`);
 };
 
 // Save a new version of a file
@@ -26,16 +25,12 @@ const saveFileVersion = async (filePath, userId, changes, metadata = {}) => {
 
     await validateFileExists(filePath);
 
-    if (!hasPermission(userId, 'write')) {
+    if (!await hasPermission(userId, 'write')) {
         throw new Error('You do not have permission to save file versions.');
     }
 
     const fileId = path.basename(filePath);
     const versionId = uuid.v4();
-
-    if (!fileVersions[fileId]) {
-        fileVersions[fileId] = [];
-    }
 
     const aiSuggestions = await analyzeFileContent(filePath);
 
@@ -49,118 +44,164 @@ const saveFileVersion = async (filePath, userId, changes, metadata = {}) => {
         timestamp: new Date(),
     };
 
-    fileVersions[fileId].push(newVersion);
+    try {
+        // Store the version in the database
+        await query(
+            `INSERT INTO file_versions (file_id, version_id, user_id, changes, metadata, ai_suggestions, timestamp) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+            [fileId, versionId, userId, JSON.stringify(changes), JSON.stringify(metadata), JSON.stringify(aiSuggestions), new Date()]
+        );
 
-    // Log activity
-    await recordActivity(userId, 'saveVersion', filePath, { versionId });
+        // Log activity
+        await recordActivity(userId, 'saveVersion', filePath, { versionId });
 
-    console.log(`New version saved for file: ${fileId}, versionId: ${versionId}`);
-    return newVersion;
+        console.log(`New version saved for file: ${fileId}, versionId: ${versionId}`);
+        return newVersion;
+    } catch (error) {
+        console.error('Error saving file version:', error);
+        throw new Error('Failed to save file version.');
+    }
 };
 
 // Get version history for a file
 const getFileVersionHistory = async (filePath, userId) => {
     await validateFileExists(filePath);
 
-    if (!hasPermission(userId, 'read')) {
+    if (!await hasPermission(userId, 'read')) {
         throw new Error('You do not have permission to view version history.');
     }
 
     const fileId = path.basename(filePath);
 
-    if (!fileVersions[fileId]) {
-        throw new Error('No versions found for this file.');
-    }
+    try {
+        const result = await query(
+            'SELECT * FROM file_versions WHERE file_id = $1 ORDER BY timestamp DESC',
+            [fileId]
+        );
 
-    return fileVersions[fileId];
+        if (result.rows.length === 0) {
+            throw new Error('No versions found for this file.');
+        }
+
+        return result.rows;
+    } catch (error) {
+        console.error('Error retrieving file version history:', error);
+        throw new Error('Failed to retrieve file version history.');
+    }
 };
 
 // Retrieve the latest version of a file
 const getLatestFileVersion = async (filePath, userId) => {
     await validateFileExists(filePath);
 
-    if (!hasPermission(userId, 'read')) {
+    if (!await hasPermission(userId, 'read')) {
         throw new Error('You do not have permission to view the latest version.');
     }
 
     const fileId = path.basename(filePath);
 
-    if (!fileVersions[fileId] || fileVersions[fileId].length === 0) {
-        throw new Error('No version history available for this file.');
-    }
+    try {
+        const result = await query(
+            'SELECT * FROM file_versions WHERE file_id = $1 ORDER BY timestamp DESC LIMIT 1',
+            [fileId]
+        );
 
-    return fileVersions[fileId][fileVersions[fileId].length - 1];
+        if (result.rows.length === 0) {
+            throw new Error('No version history available for this file.');
+        }
+
+        return result.rows[0];
+    } catch (error) {
+        console.error('Error retrieving the latest file version:', error);
+        throw new Error('Failed to retrieve latest file version.');
+    }
 };
 
 // Rollback to a specific version
 const rollbackFileVersion = async (filePath, userId, versionId) => {
     await validateFileExists(filePath);
 
-    if (!hasPermission(userId, 'write')) {
+    if (!await hasPermission(userId, 'write')) {
         throw new Error('You do not have permission to rollback file versions.');
     }
 
     const fileId = path.basename(filePath);
 
-    if (!fileVersions[fileId]) {
-        throw new Error('No versions found for this file.');
+    try {
+        const result = await query(
+            'SELECT * FROM file_versions WHERE file_id = $1 AND version_id = $2',
+            [fileId, versionId]
+        );
+
+        if (result.rows.length === 0) {
+            throw new Error('Version not found.');
+        }
+
+        const targetVersion = result.rows[0];
+
+        // Log activity
+        await recordActivity(userId, 'rollbackVersion', filePath, { versionId });
+
+        console.log(`File ${fileId} rolled back to version: ${versionId}`);
+        return targetVersion;
+    } catch (error) {
+        console.error('Error rolling back file version:', error);
+        throw new Error('Failed to rollback file version.');
     }
-
-    const targetVersion = fileVersions[fileId].find((version) => version.versionId === versionId);
-
-    if (!targetVersion) {
-        throw new Error('Version not found.');
-    }
-
-    // Log activity
-    await recordActivity(userId, 'rollbackVersion', filePath, { versionId });
-
-    console.log(`File ${fileId} rolled back to version: ${versionId}`);
-    return targetVersion;
 };
 
 // Detect and resolve conflicts
 const detectAndResolveConflicts = async (filePath, userId, userChanges) => {
     await validateFileExists(filePath);
 
-    if (!hasPermission(userId, 'write')) {
+    if (!await hasPermission(userId, 'write')) {
         throw new Error('You do not have permission to resolve conflicts.');
     }
 
     const fileId = path.basename(filePath);
 
-    if (!fileVersions[fileId] || fileVersions[fileId].length === 0) {
-        throw new Error('No version history available for conflict detection.');
+    try {
+        const result = await query(
+            'SELECT * FROM file_versions WHERE file_id = $1 ORDER BY timestamp DESC LIMIT 1',
+            [fileId]
+        );
+
+        if (result.rows.length === 0) {
+            throw new Error('No version history available for conflict detection.');
+        }
+
+        const latestVersion = result.rows[0];
+
+        // Check for conflicts
+        const hasConflict = latestVersion.changes.some((change) =>
+            userChanges.some(
+                (userChange) =>
+                    userChange.line === change.line && userChange.content !== change.content
+            )
+        );
+
+        if (!hasConflict) {
+            console.log('No conflicts detected.');
+            return { conflict: false };
+        }
+
+        // Provide AI-based conflict resolution suggestions
+        const aiSuggestions = await analyzeFileContent(filePath);
+
+        console.log('Conflict detected for file:', fileId);
+        return {
+            conflict: true,
+            options: {
+                keepYourVersion: userChanges,
+                useOtherVersion: latestVersion.changes,
+                merge: mergeChanges(latestVersion.changes, userChanges),
+                aiSuggestions,
+            },
+        };
+    } catch (error) {
+        console.error('Error detecting and resolving conflicts:', error);
+        throw new Error('Failed to detect or resolve conflicts.');
     }
-
-    const latestVersion = fileVersions[fileId][fileVersions[fileId].length - 1];
-
-    // Check for conflicts
-    const hasConflict = latestVersion.changes.some((change) =>
-        userChanges.some(
-            (userChange) =>
-                userChange.line === change.line && userChange.content !== change.content
-        )
-    );
-
-    if (!hasConflict) {
-        console.log('No conflicts detected.');
-        return { conflict: false };
-    }
-
-    // Provide AI-based conflict resolution suggestions
-    const aiSuggestions = await analyzeFileContent(filePath);
-
-    console.log('Conflict detected for file:', fileId);
-    return {
-        conflict: true,
-        options: {
-            keepYourVersion: userChanges,
-            useOtherVersion: latestVersion.changes,
-            merge: mergeChanges(latestVersion.changes, userChanges),
-            aiSuggestions,
-        },
-    };
 };
 
 // Merge changes intelligently

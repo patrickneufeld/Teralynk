@@ -1,31 +1,60 @@
-// File: /backend/middleware/rbacMiddleware.js
-
 const { hasPermission, getRole } = require('../services/rbacService');
+const { logAuditEvent } = require('../services/auditLogService');
 
-// Middleware to enforce RBAC
-const rbacMiddleware = (requiredPermissions) => {
-  return (req, res, next) => {
+// **Middleware to enforce Role-Based Access Control (RBAC)**
+const rbacMiddleware = (requiredPermissions = [], allowedRoles = []) => {
+  return async (req, res, next) => {
     try {
-      const userId = req.userId;  // Extracted from authentication middleware
-      const userRole = req.role;  // Role also added from authentication
-      if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized: No user ID provided.' });
+      // **Step 1: Extract user details from the request (set by authMiddleware)**
+      const userId = req.userId;  
+      const userRole = req.role;  
+
+      if (!userId || !userRole) {
+        logAuditEvent('MISSING_USER_DATA', { userId: null, route: req.originalUrl });
+        return res.status(401).json({ error: 'Unauthorized: User ID or role missing.' });
       }
 
-      const permissions = Array.isArray(requiredPermissions) ? requiredPermissions : [requiredPermissions];
+      // **Step 2: Automatically allow admins if applicable**
+      if (userRole.toLowerCase() === 'admin') {
+        console.log(`Admin access granted for user: ${userId}`);
+        return next();
+      }
 
-      // Check if the user has all the required permissions
-      const isAuthorized = permissions.every((permission) => hasPermission(userId, permission));
-      if (!isAuthorized) {
-        return res.status(403).json({
-          error: `Forbidden: Your role '${userRole}' lacks the required permissions: ${permissions.join(', ')}.`,
+      // **Step 3: Check if the user role is one of the allowed roles**
+      if (allowedRoles.length > 0 && !allowedRoles.includes(userRole)) {
+        logAuditEvent('ACCESS_DENIED', { userId, role: userRole, route: req.originalUrl });
+        return res.status(403).json({ 
+          error: `Access Denied: Role '${userRole}' is not allowed to access this route.`
         });
       }
 
-      next();  // Proceed to the next middleware or route handler
+      // **Step 4: Ensure the requiredPermissions is always an array**
+      const permissions = Array.isArray(requiredPermissions) ? requiredPermissions : [requiredPermissions];
+
+      // **Step 5: Check if the user has all the required permissions**
+      const permissionResults = await Promise.all(
+        permissions.map((permission) => hasPermission(userId, permission))
+      );
+
+      const missingPermissions = permissions.filter((_, index) => !permissionResults[index]);
+
+      if (missingPermissions.length > 0) {
+        logAuditEvent('ACCESS_DENIED', { 
+          userId, 
+          role: userRole, 
+          route: req.originalUrl, 
+          missingPermissions 
+        });
+        
+        return res.status(403).json({ 
+          error: `Access Denied: Missing required permissions: ${missingPermissions.join(', ')}`
+        });
+      }
+
+      next(); // Proceed to the next middleware or route handler
     } catch (error) {
       console.error('RBAC Error:', error);
-      res.status(500).json({ error: 'An error occurred while verifying permissions.' });
+      next(error); // Pass to global error handler
     }
   };
 };

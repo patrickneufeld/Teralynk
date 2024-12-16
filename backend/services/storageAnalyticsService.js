@@ -1,11 +1,9 @@
-// File: /Users/patrick/Projects/Teralynk/backend/services/storageAnalyticsService.js
-
-const fs = require('fs');
+const fs = require('fs').promises; // Use async fs methods
 const path = require('path');
 const { recordActivity } = require('./activityLogService');
 const { hasPermission } = require('./rbacService');
+const { query } = require('./db'); // Database integration (for storing file metadata)
 
-// Directory for user storage data (update as needed)
 const STORAGE_BASE_PATH = path.join(__dirname, '../../storage');
 
 // Fetch storage usage for a specific user
@@ -14,72 +12,47 @@ const getUserStorageUsage = async (userId) => {
         throw new Error('User ID is required to fetch storage usage.');
     }
 
-    if (!hasPermission(userId, 'read')) {
+    if (!await hasPermission(userId, 'read')) {
         throw new Error('You do not have permission to view storage analytics.');
     }
 
     const userStoragePath = path.join(STORAGE_BASE_PATH, userId);
 
-    if (!fs.existsSync(userStoragePath)) {
-        return { totalSize: 0, fileCount: 0 };
+    try {
+        const stats = await fs.stat(userStoragePath).catch(() => false);
+        if (!stats) {
+            return { totalSize: 0, fileCount: 0 };
+        }
+
+        const { totalSize, fileCount } = await calculateUsage(userStoragePath);
+
+        // Log activity
+        await recordActivity(userId, 'getUserStorageUsage', null, { totalSize, fileCount });
+
+        return { totalSize, fileCount };
+    } catch (error) {
+        console.error('Error fetching user storage usage:', error);
+        throw new Error('Failed to fetch user storage usage.');
     }
-
-    let totalSize = 0;
-    let fileCount = 0;
-
-    const calculateUsage = (directory) => {
-        const items = fs.readdirSync(directory);
-        items.forEach((item) => {
-            const itemPath = path.join(directory, item);
-            const stats = fs.statSync(itemPath);
-
-            if (stats.isDirectory()) {
-                calculateUsage(itemPath);
-            } else if (stats.isFile()) {
-                totalSize += stats.size;
-                fileCount += 1;
-            }
-        });
-    };
-
-    calculateUsage(userStoragePath);
-
-    // Log activity
-    await recordActivity(userId, 'getUserStorageUsage', null, { totalSize, fileCount });
-
-    return { totalSize, fileCount };
 };
 
 // Fetch system-wide storage usage
 const getSystemStorageUsage = async (adminId) => {
-    if (!adminId || !hasPermission(adminId, 'admin')) {
+    if (!adminId || !await hasPermission(adminId, 'admin')) {
         throw new Error('Admin permissions are required to fetch system storage analytics.');
     }
 
-    let totalSize = 0;
-    let fileCount = 0;
+    try {
+        const { totalSize, fileCount } = await calculateUsage(STORAGE_BASE_PATH);
 
-    const calculateUsage = (directory) => {
-        const items = fs.readdirSync(directory);
-        items.forEach((item) => {
-            const itemPath = path.join(directory, item);
-            const stats = fs.statSync(itemPath);
+        // Log activity
+        await recordActivity(adminId, 'getSystemStorageUsage', null, { totalSize, fileCount });
 
-            if (stats.isDirectory()) {
-                calculateUsage(itemPath);
-            } else if (stats.isFile()) {
-                totalSize += stats.size;
-                fileCount += 1;
-            }
-        });
-    };
-
-    calculateUsage(STORAGE_BASE_PATH);
-
-    // Log activity
-    await recordActivity(adminId, 'getSystemStorageUsage', null, { totalSize, fileCount });
-
-    return { totalSize, fileCount };
+        return { totalSize, fileCount };
+    } catch (error) {
+        console.error('Error fetching system storage usage:', error);
+        throw new Error('Failed to fetch system storage usage.');
+    }
 };
 
 // Generate storage analytics report for a user
@@ -101,8 +74,69 @@ const generateStorageReport = async (userId) => {
     return report;
 };
 
+// Helper function to calculate storage usage recursively in a directory
+const calculateUsage = async (directory) => {
+    let totalSize = 0;
+    let fileCount = 0;
+
+    const items = await fs.readdir(directory);
+
+    for (const item of items) {
+        const itemPath = path.join(directory, item);
+        const stats = await fs.stat(itemPath);
+
+        if (stats.isDirectory()) {
+            const { totalSize: subTotal, fileCount: subFileCount } = await calculateUsage(itemPath);
+            totalSize += subTotal;
+            fileCount += subFileCount;
+        } else if (stats.isFile()) {
+            totalSize += stats.size;
+            fileCount += 1;
+        }
+    }
+
+    return { totalSize, fileCount };
+};
+
+// Save file metadata to the database (for efficient querying and reporting)
+const saveFileMetadata = async (filePath) => {
+    try {
+        const stats = await fs.stat(filePath);
+        const metadata = {
+            filePath,
+            fileName: path.basename(filePath),
+            size: stats.size,
+            createdAt: stats.birthtime,
+            updatedAt: stats.mtime,
+            fileType: path.extname(filePath).slice(1),
+        };
+
+        // Insert or update metadata in the database
+        await query(
+            `INSERT INTO file_metadata (file_path, file_name, size, created_at, updated_at, file_type) 
+             VALUES ($1, $2, $3, $4, $5, $6) 
+             ON CONFLICT (file_path) 
+             DO UPDATE SET size = $3, updated_at = $5`,
+            [
+                metadata.filePath,
+                metadata.fileName,
+                metadata.size,
+                metadata.createdAt,
+                metadata.updatedAt,
+                metadata.fileType,
+            ]
+        );
+
+        console.log(`File metadata saved for: ${filePath}`);
+    } catch (error) {
+        console.error(`Error saving file metadata for: ${filePath}`, error);
+        throw new Error('Failed to save file metadata.');
+    }
+};
+
 module.exports = {
     getUserStorageUsage,
     getSystemStorageUsage,
     generateStorageReport,
+    saveFileMetadata, // Export the save function for file metadata
 };

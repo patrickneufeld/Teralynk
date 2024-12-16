@@ -10,6 +10,9 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: [dev, uat, main]  # Deploys to multiple environments
     steps:
     - name: Checkout Code
       uses: actions/checkout@v3
@@ -17,21 +20,45 @@ jobs:
     - name: Set Up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '16'
+        node-version: '16.x'  # Allows for patch updates (e.g., 16.17, 16.18)
 
     - name: Install Dependencies
       run: npm install
 
-    - name: Deploy to Environment
+    - name: Deploy to ${{ matrix.environment }} Environment
+      env:
+        API_KEY: ${{ secrets.API_KEY }}
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        ENVIRONMENT: ${{ matrix.environment }}
       run: |
-        if [[ ${{ github.ref_name }} == "dev" ]]; then
-          echo "Deploying to Development..."
-          # Add development deployment commands here
-        elif [[ ${{ github.ref_name }} == "uat" ]]; then
-          echo "Deploying to UAT..."
-          # Add UAT deployment commands here
-        elif [[ ${{ github.ref_name }} == "main" ]]; then
-          echo "Deploying to Production..."
-          # Add production deployment commands here
+        echo "Starting deployment to ${{ matrix.environment }} environment..."
+        
+        if [[ ${{ matrix.environment }} == "dev" ]]; then
+          echo "Running Development Deployment Commands"
+          echo "Using API Key: *** (masked)"
+          # Custom commands for development
+          npm run build:dev
+          npm run deploy:dev
+        elif [[ ${{ matrix.environment }} == "uat" ]]; then
+          echo "Running UAT Deployment Commands"
+          echo "Using API Key: *** (masked)"
+          # Custom commands for UAT
+          npm run build:uat
+          npm run deploy:uat
+        elif [[ ${{ matrix.environment }} == "main" ]]; then
+          echo "Running Production Deployment Commands"
+          echo "Using API Key: *** (masked)"
+          # Custom commands for production
+          npm run build:prod
+          npm run deploy:prod
         fi
 
+    - name: Notify Success
+      if: success()
+      run: |
+        echo "✅ Deployment to ${{ matrix.environment }} was successful"
+
+    - name: Notify Failure
+      if: failure()
+      run: |
+        echo "❌ Deployment to ${{ matrix.environment }} failed"

@@ -1,12 +1,9 @@
-// File: /backend/services/notificationDashboardService.js
-
 const { v4: uuidv4 } = require('uuid');
-
-// In-memory notification store (replace with database for production)
-const userNotifications = {};
+const { query } = require('./db'); // Database integration
+const { recordActivity } = require('./activityLogService');
 
 // Add a new notification for a user
-const addNotification = (userId, type, message, data = {}) => {
+const addNotification = async (userId, type, message, data = {}) => {
     if (!userId || !type || !message) {
         throw new Error('User ID, type, and message are required to add a notification.');
     }
@@ -20,50 +17,110 @@ const addNotification = (userId, type, message, data = {}) => {
         read: false,
     };
 
-    if (!userNotifications[userId]) {
-        userNotifications[userId] = [];
-    }
+    try {
+        // Insert notification into the database
+        await query(
+            `INSERT INTO user_notifications (user_id, type, message, data, timestamp, read) 
+            VALUES ($1, $2, $3, $4, $5, $6)`,
+            [userId, type, message, JSON.stringify(data), notification.timestamp, notification.read]
+        );
 
-    userNotifications[userId].push(notification);
-    console.log(`Notification added for user ${userId}: ${message}`);
-    return notification;
+        // Log activity for adding a notification
+        await recordActivity(userId, 'addNotification', null, { message });
+
+        console.log(`Notification added for user ${userId}: ${message}`);
+        return notification;
+    } catch (error) {
+        console.error('Error adding notification:', error);
+        throw new Error('Failed to add notification.');
+    }
 };
 
 // Get all notifications for a user
-const getNotifications = (userId) => {
-    if (!userNotifications[userId]) {
-        return [];
-    }
+const getNotifications = async (userId) => {
+    try {
+        const result = await query(
+            'SELECT * FROM user_notifications WHERE user_id = $1 ORDER BY timestamp DESC',
+            [userId]
+        );
 
-    return userNotifications[userId];
+        return result.rows.map((row) => ({
+            id: row.id,
+            type: row.type,
+            message: row.message,
+            data: JSON.parse(row.data),
+            timestamp: row.timestamp,
+            read: row.read,
+        }));
+    } catch (error) {
+        console.error('Error retrieving notifications:', error);
+        throw new Error('Failed to retrieve notifications.');
+    }
 };
 
 // Mark a notification as read
-const markAsRead = (userId, notificationId) => {
-    if (!userNotifications[userId]) {
-        throw new Error(`No notifications found for user ${userId}`);
+const markAsRead = async (userId, notificationId) => {
+    try {
+        // Find the notification by user and notification ID
+        const result = await query(
+            'SELECT * FROM user_notifications WHERE user_id = $1 AND id = $2',
+            [userId, notificationId]
+        );
+
+        if (result.rows.length === 0) {
+            throw new Error(`Notification ${notificationId} not found for user ${userId}`);
+        }
+
+        // Mark the notification as read
+        await query(
+            'UPDATE user_notifications SET read = $1 WHERE id = $2',
+            [true, notificationId]
+        );
+
+        // Log activity for marking as read
+        await recordActivity(userId, 'markAsRead', null, { notificationId });
+
+        console.log(`Notification ${notificationId} marked as read for user ${userId}`);
+        return { message: `Notification ${notificationId} marked as read.` };
+    } catch (error) {
+        console.error('Error marking notification as read:', error);
+        throw new Error('Failed to mark notification as read.');
     }
-
-    const notification = userNotifications[userId].find((n) => n.id === notificationId);
-
-    if (!notification) {
-        throw new Error(`Notification ID ${notificationId} not found for user ${userId}`);
-    }
-
-    notification.read = true;
-    console.log(`Notification ${notificationId} marked as read for user ${userId}`);
-    return notification;
 };
 
 // Clear all notifications for a user
-const clearNotifications = (userId) => {
-    if (!userNotifications[userId]) {
-        return { message: 'No notifications to clear.' };
-    }
+const clearNotifications = async (userId) => {
+    try {
+        // Delete notifications from the database
+        await query('DELETE FROM user_notifications WHERE user_id = $1', [userId]);
 
-    delete userNotifications[userId];
-    console.log(`All notifications cleared for user ${userId}`);
-    return { message: 'All notifications cleared successfully.' };
+        // Log activity for clearing notifications
+        await recordActivity(userId, 'clearNotifications', null, { message: 'All notifications cleared' });
+
+        console.log(`All notifications cleared for user ${userId}`);
+        return { message: 'All notifications cleared successfully.' };
+    } catch (error) {
+        console.error('Error clearing notifications:', error);
+        throw new Error('Failed to clear notifications.');
+    }
+};
+
+// Automatically expire notifications after a certain period (e.g., 7 days)
+const expireOldNotifications = async () => {
+    try {
+        const expirationDate = new Date();
+        expirationDate.setDate(expirationDate.getDate() - 7); // Set expiration to 7 days ago
+
+        await query(
+            'DELETE FROM user_notifications WHERE timestamp < $1',
+            [expirationDate]
+        );
+
+        console.log('Expired notifications cleared.');
+    } catch (error) {
+        console.error('Error expiring old notifications:', error);
+        throw new Error('Failed to expire old notifications.');
+    }
 };
 
 module.exports = {
@@ -71,4 +128,5 @@ module.exports = {
     getNotifications,
     markAsRead,
     clearNotifications,
+    expireOldNotifications,
 };

@@ -1,9 +1,11 @@
 // File: /backend/services/collaborationService.js
 
-const activeSessions = {}; // Store active collaboration sessions in-memory
 const uuid = require('uuid'); // For generating unique session IDs
 
-// Handle collaboration events
+// Temporary in-memory store for active sessions (Replace with a database for production)
+const activeSessions = {};
+
+// **1️⃣ Handle collaboration events**
 const handleCollaborationEvent = async (event, data) => {
     switch (event) {
         case 'start-session':
@@ -14,17 +16,23 @@ const handleCollaborationEvent = async (event, data) => {
             return endCollaborationSession(data);
         case 'get-session':
             return getCollaborationSession(data);
+        case 'list-sessions':
+            return listAllSessions();
+        case 'add-participant':
+            return addParticipantToSession(data);
+        case 'remove-participant':
+            return removeParticipantFromSession(data);
         default:
             throw new Error('Unsupported collaboration event.');
     }
 };
 
-// Start a new collaboration session
+// **2️⃣ Start a new collaboration session**
 const startCollaborationSession = (data) => {
     const { fileId, participants } = data;
 
     if (!fileId || !participants || !Array.isArray(participants)) {
-        throw new Error('Invalid session data.');
+        throw new Error('Invalid session data. fileId and participants are required.');
     }
 
     const sessionId = uuid.v4();
@@ -40,7 +48,7 @@ const startCollaborationSession = (data) => {
     return activeSessions[sessionId];
 };
 
-// Update an existing session with real-time changes
+// **3️⃣ Update an existing session with real-time changes**
 const updateCollaborationSession = (data) => {
     const { sessionId, update } = data;
 
@@ -59,7 +67,7 @@ const updateCollaborationSession = (data) => {
     return session;
 };
 
-// End a collaboration session
+// **4️⃣ End a collaboration session**
 const endCollaborationSession = (data) => {
     const { sessionId } = data;
 
@@ -78,7 +86,7 @@ const endCollaborationSession = (data) => {
     return { message: 'Session ended successfully.' };
 };
 
-// Retrieve an active session
+// **5️⃣ Retrieve an active session**
 const getCollaborationSession = (data) => {
     const { sessionId } = data;
 
@@ -94,4 +102,60 @@ const getCollaborationSession = (data) => {
     return session;
 };
 
-module.exports = { handleCollaborationEvent };
+// **6️⃣ List all active collaboration sessions**
+const listAllSessions = () => {
+    const allSessions = Object.values(activeSessions);
+    console.log(`Listing all active sessions:`, allSessions);
+    return allSessions;
+};
+
+// **7️⃣ Add a participant to an existing session**
+const addParticipantToSession = (data) => {
+    const { sessionId, participant } = data;
+
+    if (!sessionId || !participant) {
+        throw new Error('Invalid data. Session ID and participant are required.');
+    }
+
+    const session = activeSessions[sessionId];
+    if (!session) {
+        throw new Error('Session not found.');
+    }
+
+    if (!session.participants.includes(participant)) {
+        session.participants.push(participant);
+    }
+
+    console.log(`Added participant to session ${sessionId}: ${participant}`);
+    return session;
+};
+
+// **8️⃣ Remove a participant from an existing session**
+const removeParticipantFromSession = (data) => {
+    const { sessionId, participant } = data;
+
+    if (!sessionId || !participant) {
+        throw new Error('Invalid data. Session ID and participant are required.');
+    }
+
+    const session = activeSessions[sessionId];
+    if (!session) {
+        throw new Error('Session not found.');
+    }
+
+    session.participants = session.participants.filter(p => p !== participant);
+
+    console.log(`Removed participant from session ${sessionId}: ${participant}`);
+    return session;
+};
+
+module.exports = { 
+    handleCollaborationEvent, 
+    startCollaborationSession, 
+    updateCollaborationSession, 
+    endCollaborationSession, 
+    getCollaborationSession, 
+    listAllSessions, 
+    addParticipantToSession, 
+    removeParticipantFromSession 
+};

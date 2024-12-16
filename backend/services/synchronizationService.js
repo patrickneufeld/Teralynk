@@ -1,22 +1,26 @@
-// File: /backend/services/synchronizationService.js
-
-const fs = require('fs');
+const fs = require('fs').promises; // Use async fs methods
 const path = require('path');
-const { recordActivity } = require('./activityLogService'); // For activity logging
-const { detectAndResolveConflicts } = require('./versioningService'); // Conflict resolution
-const { sendNotification } = require('./notificationService'); // Notifications
-const WebSocket = require('ws'); // For real-time sync across devices
+const { recordActivity } = require('./activityLogService');
+const { detectAndResolveConflicts } = require('./versioningService');
+const { sendNotification } = require('./notificationService');
+const WebSocket = require('ws');
+const { query } = require('./db'); // Database integration for storing sync tasks and changes
+const Redis = require('redis'); // Message queue for offline sync
 
-// In-memory synchronization queue (replace with a database for production)
-const syncQueue = [];
-const offlineChanges = {}; // Track offline changes per user and file
+// Initialize Redis for offline change syncing
+const redisClient = Redis.createClient({ url: process.env.REDIS_URL });
+redisClient.connect().catch(console.error);
+
+// In-memory synchronization queue (replace with a message queue in production)
+const syncQueue = []; 
 
 // Add a file to the synchronization queue
 const queueFileForSync = async (filePath, userId, changes, platform, isOffline = false) => {
-    if (!fs.existsSync(filePath)) {
-        throw new Error(`File does not exist: ${filePath}`);
+    if (!filePath || !userId || !changes) {
+        throw new Error('File path, user ID, and changes are required.');
     }
 
+    // Save to Redis or database depending on whether it's offline or real-time
     const syncTask = {
         filePath,
         userId,
@@ -25,23 +29,23 @@ const queueFileForSync = async (filePath, userId, changes, platform, isOffline =
         timestamp: new Date(),
     };
 
-    if (isOffline) {
-        // Store offline changes locally for the user
-        if (!offlineChanges[userId]) {
-            offlineChanges[userId] = {};
+    try {
+        if (isOffline) {
+            // Save offline changes in Redis for future syncing
+            await redisClient.set(`offline_sync:${userId}:${filePath}`, JSON.stringify(syncTask));
+            console.log(`[${platform}] Offline change logged for file: ${filePath}`);
+            return syncTask;
         }
-        offlineChanges[userId][filePath] = syncTask;
-        console.log(`[${platform}] Offline change logged for file: ${filePath}`);
+
+        // Save sync task to the queue or database
+        syncQueue.push(syncTask);
+        await recordActivity(userId, 'queueSync', filePath, { changes, platform });
+        console.log(`[${platform}] File queued for synchronization: ${filePath}`);
         return syncTask;
+    } catch (error) {
+        console.error('Error queueing sync task:', error);
+        throw new Error('Failed to queue file for synchronization.');
     }
-
-    syncQueue.push(syncTask);
-
-    // Log the activity
-    await recordActivity(userId, 'queueSync', filePath, { changes, platform });
-
-    console.log(`[${platform}] File queued for synchronization: ${filePath}`);
-    return syncTask;
 };
 
 // Process the synchronization queue
@@ -85,24 +89,29 @@ const processSyncQueue = async () => {
     console.log('Synchronization queue processed.');
 };
 
-// Sync offline changes when user reconnects
+// Sync offline changes when the user reconnects
 const syncOfflineChanges = async (userId, platform) => {
-    if (!offlineChanges[userId]) {
-        console.log(`No offline changes for user: ${userId}`);
-        return;
+    try {
+        const offlineFiles = await redisClient.keys(`offline_sync:${userId}:*`);
+
+        if (offlineFiles.length === 0) {
+            console.log(`No offline changes for user: ${userId}`);
+            return;
+        }
+
+        console.log(`[${platform}] Synchronizing offline changes for user: ${userId}`);
+
+        for (const fileKey of offlineFiles) {
+            const offlineData = JSON.parse(await redisClient.get(fileKey));
+            await queueFileForSync(offlineData.filePath, offlineData.userId, offlineData.changes, offlineData.platform);
+            await redisClient.del(fileKey); // Remove from Redis after syncing
+        }
+
+        console.log(`[${platform}] Offline changes synchronized for user: ${userId}`);
+    } catch (error) {
+        console.error(`[${platform}] Error syncing offline changes for user: ${userId}`, error);
+        throw new Error('Failed to sync offline changes.');
     }
-
-    console.log(`[${platform}] Synchronizing offline changes for user: ${userId}`);
-
-    const userOfflineChanges = offlineChanges[userId];
-    for (const filePath in userOfflineChanges) {
-        const task = userOfflineChanges[filePath];
-        await queueFileForSync(task.filePath, task.userId, task.changes, task.platform);
-    }
-
-    // Clear offline changes for the user
-    delete offlineChanges[userId];
-    console.log(`[${platform}] Offline changes synchronized for user: ${userId}`);
 };
 
 // Monitor a directory for changes

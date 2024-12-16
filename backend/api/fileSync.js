@@ -7,16 +7,24 @@ const {
     resolveFileConflicts,
     getSyncStatus,
     updateSyncState,
+    listSyncHistory,
+    getFileSyncDetails
 } = require('../services/fileSyncService');
+const rbacMiddleware = require('../middleware/rbacMiddleware');
 
-// Sync a file
-router.post('/sync', async (req, res) => {
+// Middleware to validate request body
+const validateRequestBody = (requiredFields) => (req, res, next) => {
+    const missingFields = requiredFields.filter(field => !req.body[field]);
+    if (missingFields.length > 0) {
+        return res.status(400).json({ error: `Missing required fields: ${missingFields.join(', ')}` });
+    }
+    next();
+};
+
+// **1️⃣ Sync a file**
+router.post('/sync', rbacMiddleware('user'), validateRequestBody(['filePath', 'userId', 'changes']), async (req, res) => {
     try {
         const { filePath, userId, changes } = req.body;
-
-        if (!filePath || !userId || !changes) {
-            return res.status(400).json({ error: 'File path, user ID, and changes are required.' });
-        }
 
         const syncResult = await syncFile(filePath, userId, changes);
         res.status(200).json({ message: 'File synced successfully.', syncResult });
@@ -26,14 +34,10 @@ router.post('/sync', async (req, res) => {
     }
 });
 
-// Detect and resolve file conflicts
-router.post('/resolve-conflicts', async (req, res) => {
+// **2️⃣ Detect and resolve file conflicts**
+router.post('/resolve-conflicts', rbacMiddleware('user'), validateRequestBody(['filePath', 'userId', 'userChanges']), async (req, res) => {
     try {
         const { filePath, userId, userChanges } = req.body;
-
-        if (!filePath || !userId || !userChanges) {
-            return res.status(400).json({ error: 'File path, user ID, and user changes are required.' });
-        }
 
         const conflictResolution = await resolveFileConflicts(filePath, userId, userChanges);
         res.status(200).json({ message: 'Conflict resolution completed.', conflictResolution });
@@ -43,8 +47,8 @@ router.post('/resolve-conflicts', async (req, res) => {
     }
 });
 
-// Get sync status for a file
-router.get('/status', async (req, res) => {
+// **3️⃣ Get sync status for a file**
+router.get('/status', rbacMiddleware('user'), async (req, res) => {
     try {
         const { filePath } = req.query;
 
@@ -52,28 +56,58 @@ router.get('/status', async (req, res) => {
             return res.status(400).json({ error: 'File path is required.' });
         }
 
-        const syncStatus = getSyncStatus(filePath);
-        res.status(200).json({ syncStatus });
+        const syncStatus = await getSyncStatus(filePath);
+        res.status(200).json({ message: 'Sync status retrieved successfully.', syncStatus });
     } catch (error) {
         console.error('Error retrieving sync status:', error);
         res.status(500).json({ error: 'An error occurred while retrieving sync status.' });
     }
 });
 
-// Update sync state for a file
-router.post('/update-state', async (req, res) => {
+// **4️⃣ Update sync state for a file**
+router.post('/update-state', rbacMiddleware('user'), validateRequestBody(['filePath', 'state']), async (req, res) => {
     try {
         const { filePath, state } = req.body;
 
-        if (!filePath || !state) {
-            return res.status(400).json({ error: 'File path and state are required.' });
-        }
-
-        const updatedState = updateSyncState(filePath, state);
-        res.status(200).json({ message: 'File sync state updated.', updatedState });
+        const updatedState = await updateSyncState(filePath, state);
+        res.status(200).json({ message: 'File sync state updated successfully.', updatedState });
     } catch (error) {
         console.error('Error updating sync state:', error);
         res.status(500).json({ error: 'An error occurred while updating sync state.' });
+    }
+});
+
+// **5️⃣ List sync history for a file**
+router.get('/history', rbacMiddleware('user'), async (req, res) => {
+    try {
+        const { filePath, userId } = req.query;
+
+        if (!filePath || !userId) {
+            return res.status(400).json({ error: 'File path and user ID are required.' });
+        }
+
+        const history = await listSyncHistory(filePath, userId);
+        res.status(200).json({ message: 'Sync history retrieved successfully.', history });
+    } catch (error) {
+        console.error('Error retrieving sync history:', error);
+        res.status(500).json({ error: 'An error occurred while retrieving sync history.' });
+    }
+});
+
+// **6️⃣ Get file sync details**
+router.get('/details/:filePath', rbacMiddleware('user'), async (req, res) => {
+    try {
+        const { filePath } = req.params;
+
+        if (!filePath) {
+            return res.status(400).json({ error: 'File path is required.' });
+        }
+
+        const fileDetails = await getFileSyncDetails(filePath);
+        res.status(200).json({ message: 'File sync details retrieved successfully.', fileDetails });
+    } catch (error) {
+        console.error('Error retrieving file sync details:', error);
+        res.status(500).json({ error: 'An error occurred while retrieving file sync details.' });
     }
 });
 

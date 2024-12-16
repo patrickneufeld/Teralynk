@@ -11,17 +11,20 @@ const {
     createNotification,
     setUserPreferences,
     getUserPreferences,
+    getNotificationHistory,
+    clearUserNotifications
 } = require('../services/notificationService');
 const { hasPermission } = require('../services/rbacService'); // RBAC integration
 
-// WebSocket endpoint for notifications
+// **1️⃣ WebSocket endpoint for notifications**
 const setupNotificationWebSocket = (server) => {
     const wss = new WebSocket.Server({ server, path: '/ws/notifications' });
 
     console.log('WebSocket server for notifications initialized.');
 
     wss.on('connection', (ws, req) => {
-        const userId = req.url.split('?userId=')[1]; // Extract userId from the query string
+        const urlParams = new URLSearchParams(req.url.split('?')[1]);
+        const userId = urlParams.get('userId');
 
         if (!userId) {
             console.error('Connection rejected: No userId provided.');
@@ -45,7 +48,7 @@ const setupNotificationWebSocket = (server) => {
     });
 };
 
-// Send a notification to a specific user
+// **2️⃣ Send a notification to a specific user**
 router.post('/send', async (req, res) => {
     try {
         const { userId, type, message, data } = req.body;
@@ -62,14 +65,14 @@ router.post('/send', async (req, res) => {
         const notification = createNotification(type, message, data);
         const response = await sendNotification(userId, notification);
 
-        res.status(200).json({ message: 'Notification sent.', response });
+        res.status(200).json({ message: 'Notification sent successfully.', response });
     } catch (error) {
         console.error('Error sending notification:', error);
         res.status(500).json({ error: 'An error occurred while sending the notification.' });
     }
 });
 
-// Broadcast a notification to all users
+// **3️⃣ Broadcast a notification to all users**
 router.post('/broadcast', async (req, res) => {
     try {
         const { type, message, data } = req.body;
@@ -81,14 +84,14 @@ router.post('/broadcast', async (req, res) => {
         const notification = createNotification(type, message, data);
         const response = await broadcastNotification(notification);
 
-        res.status(200).json({ message: 'Notification broadcasted.', response });
+        res.status(200).json({ message: 'Notification broadcasted successfully.', response });
     } catch (error) {
         console.error('Error broadcasting notification:', error);
         res.status(500).json({ error: 'An error occurred while broadcasting the notification.' });
     }
 });
 
-// Set user notification preferences
+// **4️⃣ Set user notification preferences**
 router.post('/preferences', async (req, res) => {
     try {
         const { userId, preferences } = req.body;
@@ -97,16 +100,16 @@ router.post('/preferences', async (req, res) => {
             return res.status(400).json({ error: 'UserId and preferences are required.' });
         }
 
-        const updatedPreferences = setUserPreferences(userId, preferences);
+        const updatedPreferences = await setUserPreferences(userId, preferences);
 
-        res.status(200).json({ message: 'Notification preferences updated.', preferences: updatedPreferences });
+        res.status(200).json({ message: 'Notification preferences updated successfully.', preferences: updatedPreferences });
     } catch (error) {
         console.error('Error updating notification preferences:', error);
         res.status(500).json({ error: 'An error occurred while updating preferences.' });
     }
 });
 
-// Get user notification preferences
+// **5️⃣ Get user notification preferences**
 router.get('/preferences', async (req, res) => {
     try {
         const { userId } = req.query;
@@ -115,12 +118,46 @@ router.get('/preferences', async (req, res) => {
             return res.status(400).json({ error: 'UserId is required.' });
         }
 
-        const preferences = getUserPreferences(userId);
+        const preferences = await getUserPreferences(userId);
 
-        res.status(200).json({ preferences });
+        res.status(200).json({ message: 'Preferences retrieved successfully.', preferences });
     } catch (error) {
         console.error('Error fetching notification preferences:', error);
         res.status(500).json({ error: 'An error occurred while fetching preferences.' });
+    }
+});
+
+// **6️⃣ Get notification history for a user**
+router.get('/history', async (req, res) => {
+    try {
+        const { userId } = req.query;
+
+        if (!userId) {
+            return res.status(400).json({ error: 'UserId is required.' });
+        }
+
+        const history = await getNotificationHistory(userId);
+        res.status(200).json({ message: 'Notification history retrieved successfully.', history });
+    } catch (error) {
+        console.error('Error retrieving notification history:', error);
+        res.status(500).json({ error: 'An error occurred while retrieving notification history.' });
+    }
+});
+
+// **7️⃣ Clear user notifications**
+router.delete('/clear', async (req, res) => {
+    try {
+        const { userId } = req.body;
+
+        if (!userId) {
+            return res.status(400).json({ error: 'UserId is required.' });
+        }
+
+        const response = await clearUserNotifications(userId);
+        res.status(200).json({ message: 'User notifications cleared successfully.', response });
+    } catch (error) {
+        console.error('Error clearing user notifications:', error);
+        res.status(500).json({ error: 'An error occurred while clearing notifications.' });
     }
 });
 
