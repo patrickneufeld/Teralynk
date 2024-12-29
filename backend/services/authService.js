@@ -1,8 +1,10 @@
+// File: /backend/services/authService.js
+
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { query } = require('./db');
 const { recordActivity } = require('./activityLogService');
-const { hasPermission } = require('./rbacService');
+const { getRole } = require('./rbacService');
 const AWS = require('aws-sdk');
 const dotenv = require('dotenv');
 const Redis = require('redis');
@@ -12,7 +14,7 @@ dotenv.config();
 
 // **AWS Secrets Manager Configuration**
 const secretsManager = new AWS.SecretsManager({
-    region: process.env.AWS_REGION || 'us-east-1'
+    region: process.env.AWS_REGION || 'us-east-1',
 });
 
 // **Redis connection for token blacklisting**
@@ -24,8 +26,8 @@ const getSecretValue = async (secretName) => {
     try {
         const data = await secretsManager.getSecretValue({ SecretId: secretName }).promise();
         return data.SecretString ? JSON.parse(data.SecretString) : data.SecretBinary.toString('ascii');
-    } catch (err) {
-        console.error("Error retrieving the secret:", err);
+    } catch (error) {
+        console.error('Error retrieving the secret:', error.message);
         throw new Error('Failed to retrieve secret.');
     }
 };
@@ -38,13 +40,21 @@ const getJWTSecret = async () => {
 
 // **Login function to authenticate a user**
 const loginUser = async (email, password) => {
+    if (!email || !password) {
+        throw new Error('Email and password are required.');
+    }
+
     const result = await query('SELECT * FROM users WHERE email = $1', [email]);
     const user = result.rows[0];
 
-    if (!user) throw new Error('User not found.');
+    if (!user) {
+        throw new Error('User not found.');
+    }
 
     const validPassword = await bcrypt.compare(password, user.password);
-    if (!validPassword) throw new Error('Invalid password.');
+    if (!validPassword) {
+        throw new Error('Invalid password.');
+    }
 
     const JWT_SECRET_KEY = await getJWTSecret();
     const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET_KEY, { expiresIn: '1h' });
@@ -56,8 +66,14 @@ const loginUser = async (email, password) => {
 
 // **Register a new user**
 const registerUser = async (email, password, role) => {
+    if (!email || !password || !role) {
+        throw new Error('Email, password, and role are required.');
+    }
+
     const result = await query('SELECT * FROM users WHERE email = $1', [email]);
-    if (result.rows.length > 0) throw new Error('User already exists.');
+    if (result.rows.length > 0) {
+        throw new Error('User already exists.');
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     await query('INSERT INTO users (email, password, role) VALUES ($1, $2, $3)', [email, hashedPassword, role]);
@@ -70,12 +86,15 @@ const refreshToken = async (oldToken) => {
     try {
         const JWT_SECRET_KEY = await getJWTSecret();
         const decoded = jwt.verify(oldToken, JWT_SECRET_KEY);
-        
-        if (await isTokenBlacklisted(oldToken)) throw new Error('Token has been blacklisted.');
+
+        if (await isTokenBlacklisted(oldToken)) {
+            throw new Error('Token has been blacklisted.');
+        }
 
         const newToken = jwt.sign({ userId: decoded.userId, role: decoded.role }, JWT_SECRET_KEY, { expiresIn: '1h' });
         return { newToken };
     } catch (error) {
+        console.error('Error refreshing token:', error.message);
         throw new Error('Invalid or expired refresh token.');
     }
 };
@@ -108,19 +127,11 @@ const secureRouteAccess = async (userId, requiredPermission) => {
     }
 };
 
-// **Get the role of a user**
-const getRole = async (userId) => {
-    const result = await query('SELECT role FROM users WHERE id = $1', [userId]);
-    if (result.rows.length === 0) throw new Error('User not found.');
-    return result.rows[0];
-};
-
 module.exports = {
     loginUser,
     registerUser,
     refreshToken,
     logoutUser,
-    secureRouteAccess,
     blacklistToken,
-    isTokenBlacklisted
+    isTokenBlacklisted,
 };

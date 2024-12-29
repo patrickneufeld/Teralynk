@@ -1,20 +1,23 @@
+// File: /backend/services/notificationService.js
+
 const WebSocket = require('ws');
+const Redis = require('redis'); // Redis for persistence and message brokering
 const { hasPermission } = require('./rbacService'); // RBAC integration
 const { recordActivity } = require('./activityLogService'); // Activity log integration
-const Redis = require('redis'); // Redis for persistence and message brokering
 const { sendEmailNotification, sendPushNotification } = require('./notificationFallbackService'); // Fallback notifications
 
-// In-memory notification store (replace with Redis or database for production)
-const activeConnections = new Map();
+// **Redis client for session persistence and notifications**
 const redisClient = Redis.createClient({ url: process.env.REDIS_URL });
+redisClient.connect().catch(console.error);
 
-// Stores user-specific notification preferences (could be moved to Redis or a database)
+// **In-memory notification store (to be replaced with Redis or database in production)**
+const activeConnections = new Map();
 const userPreferences = new Map();
 
-// Rate limiter for notification sending
+// **Rate limiter for notifications (can be replaced with Redis for distributed systems)**
 const rateLimit = new Map();
 
-// Add a new WebSocket connection for a user
+// **Add a new WebSocket connection for a user**
 const addConnection = (userId, ws) => {
     if (!userId || !ws) {
         throw new Error('User ID and WebSocket instance are required.');
@@ -23,7 +26,7 @@ const addConnection = (userId, ws) => {
     console.log(`Connection added for user: ${userId}`);
 };
 
-// Remove a WebSocket connection for a user
+// **Remove a WebSocket connection for a user**
 const removeConnection = (userId) => {
     if (activeConnections.has(userId)) {
         activeConnections.delete(userId);
@@ -31,16 +34,16 @@ const removeConnection = (userId) => {
     }
 };
 
-// Send a notification to a specific user
+// **Send a notification to a specific user**
 const sendNotification = async (userId, notification) => {
     try {
-        // Check if user has permission to receive this notification type
+        // **RBAC permission check**
         if (!hasPermission(userId, `notify:${notification.type}`)) {
             console.error(`User ${userId} does not have permission for notification type: ${notification.type}`);
             return { success: false, message: 'Permission denied for this notification type.' };
         }
 
-        // Rate limit logic
+        // **Rate limiting logic**
         const now = Date.now();
         const userRateLimit = rateLimit.get(userId) || { lastSent: 0, count: 0 };
 
@@ -55,25 +58,24 @@ const sendNotification = async (userId, notification) => {
 
         rateLimit.get(userId).count += 1;
 
-        // Check user preferences (if notifications are enabled for the type)
+        // **User preferences check**
         const preferences = userPreferences.get(userId) || {};
         if (preferences[notification.type] === false) {
             console.log(`Notification of type '${notification.type}' is disabled for user: ${userId}`);
             return { success: false, message: 'Notification type is disabled for the user.' };
         }
 
-        // Send notification to the WebSocket connection if online
+        // **Send notification via WebSocket if online**
         const connection = activeConnections.get(userId);
         if (connection && connection.readyState === WebSocket.OPEN) {
             connection.send(JSON.stringify(notification));
             console.log(`Notification sent to user: ${userId}`);
 
-            // Log activity for sending a notification
+            // **Log activity**
             await recordActivity(userId, 'sendNotification', null, { notification });
-
             return { success: true };
         } else {
-            // Fallback if user is offline (send email or push notification)
+            // **Fallback for offline users**
             await sendFallbackNotification(userId, notification);
             return { success: false, message: 'User is offline; fallback notification sent.' };
         }
@@ -83,7 +85,7 @@ const sendNotification = async (userId, notification) => {
     }
 };
 
-// Broadcast a notification to all connected users
+// **Broadcast a notification to all connected users**
 const broadcastNotification = async (notification) => {
     try {
         activeConnections.forEach((ws, userId) => {
@@ -93,7 +95,7 @@ const broadcastNotification = async (notification) => {
             }
         });
 
-        // Log activity for broadcasting a notification
+        // **Log activity**
         await recordActivity(null, 'broadcastNotification', null, { notification });
 
         return { success: true };
@@ -103,14 +105,12 @@ const broadcastNotification = async (notification) => {
     }
 };
 
-// Fallback mechanism for offline users (email or push notification)
+// **Fallback mechanism for offline users (email or push notification)**
 const sendFallbackNotification = async (userId, notification) => {
     try {
-        // Simulate sending an email or push notification
         console.log(`Sending fallback notification to user: ${userId}`, notification);
         await sendEmailNotification(userId, notification);
         await sendPushNotification(userId, notification);
-
         return { success: true };
     } catch (error) {
         console.error('Error sending fallback notification:', error);
@@ -118,22 +118,22 @@ const sendFallbackNotification = async (userId, notification) => {
     }
 };
 
-// Set user preferences for notifications
+// **Set user preferences for notifications**
 const setUserPreferences = (userId, preferences) => {
     userPreferences.set(userId, preferences);
     console.log(`Notification preferences updated for user: ${userId}`);
     return { userId, preferences };
 };
 
-// Get user preferences for notifications
+// **Get user preferences for notifications**
 const getUserPreferences = (userId) => {
     return userPreferences.get(userId) || {};
 };
 
-// Format a notification
+// **Format a notification**
 const createNotification = (type, message, data = {}) => {
     return {
-        id: Date.now(),
+        id: uuidv4(),
         type,
         message,
         data,

@@ -1,21 +1,33 @@
+require('dotenv').config(); // Load environment variables
 const express = require('express');
 const http = require('http');
-const { setupNotificationWebSocket } = require('./api/notification');
-const rateLimit = require('express-rate-limit');
 const cors = require('cors');
-const dotenv = require('dotenv');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const compression = require('compression');
 const winston = require('winston');
-const { body, validationResult } = require('express-validator'); // For validation
+const rateLimit = require('express-rate-limit');
+const { setupNotificationWebSocket } = require('./api/notification');
+const { authenticateToken } = require('./middleware/authMiddleware');
+const fileUploadRoute = require('./api/files');
+const workflowRouter = require('./api/workflow');
+const webhooksRouter = require('./api/webhooks');
+const searchRouter = require('./api/search');
+const docsRouter = require('./api/docs');
+const metricsRouter = require('./api/metrics');
 const { blacklistToken } = require('./services/sessionService');
 
-// Load environment variables from .env file
-dotenv.config();
-
+// Initialize Express app
 const app = express();
+const server = http.createServer(app);
 
 // Middleware setup
-app.use(express.json()); // For JSON payloads
-app.use(cors({ origin: process.env.ALLOWED_ORIGIN || 'http://localhost:3000' }));
+app.use(express.json()); // JSON body parser
+app.use(express.urlencoded({ extended: true })); // URL-encoded body parser
+app.use(cors({ origin: process.env.ALLOWED_ORIGIN || 'http://localhost:3000' })); // Enable CORS
+app.use(helmet()); // Add security headers
+app.use(morgan('combined')); // Log HTTP requests
+app.use(compression()); // Compress HTTP responses
 
 // Logger setup with winston
 const logger = winston.createLogger({
@@ -28,94 +40,71 @@ const logger = winston.createLogger({
     ],
 });
 
-// Rate-limiting middleware for critical API routes (e.g., login, file uploads)
+// Rate limiting middleware
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per window
+    message: 'Too many requests from this IP, please try again later.',
+});
+
 const uploadLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5, // Limit each user to 5 uploads per window
-    message: 'Too many file upload requests from this IP, please try again later.',
+    max: 5, // Limit file uploads to 5 requests per window
+    message: 'Too many file upload requests. Please try again later.',
 });
 
-const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 10, // Limit login attempts to 10 requests per window
-    message: 'Too many login attempts, please try again later.',
+// Apply global rate limiter to all API routes
+app.use('/api', apiLimiter);
+
+// Health Check
+app.get('/health', (req, res) => {
+    res.status(200).json({
+        status: 'Healthy',
+        uptime: process.uptime(),
+        timestamp: new Date(),
+    });
 });
 
-// Middleware for authentication (using session validation)
-const authenticateMiddleware = async (req, res, next) => {
-    const token = req.headers.authorization?.split(' ')[1]; // Extract token from header
+// API Routes
+app.use('/api/files', authenticateToken, uploadLimiter, fileUploadRoute); // File Upload API
+app.use('/api/workflows', authenticateToken, workflowRouter); // Workflow API
+app.use('/api/webhooks', webhooksRouter); // Webhooks API
+app.use('/api/search', authenticateToken, searchRouter); // Search API
+app.use('/api/docs', docsRouter); // Documentation API
+app.use('/api/metrics', authenticateToken, metricsRouter); // Metrics API
+
+// Logout and token revocation
+app.post('/api/logout', authenticateToken, async (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
-        return res.status(401).send('Unauthorized: No token provided');
+        return res.status(400).json({ error: 'Token is required.' });
     }
 
     try {
-        await authenticate(token); // Validate session and check if token is revoked
-        next(); // Proceed to the next middleware or route handler
-    } catch (err) {
-        logger.error('Invalid or blacklisted token:', err);
-        return res.status(401).send('Unauthorized: Invalid or revoked token');
-    }
-};
-
-// File upload route with user ID verification and file validation
-const fileUploadRoute = require('./api/files'); // Assuming your file upload logic is in the "files" route
-app.use('/api/files', authenticateMiddleware, uploadLimiter, [
-    body('file').custom((value, { req }) => {
-        const file = req.files && req.files.file;
-        if (!file) {
-            throw new Error('No file provided.');
-        }
-        if (!['image/jpeg', 'image/png', 'application/pdf'].includes(file.mimetype)) {
-            throw new Error('Invalid file type. Only JPEG, PNG, and PDF are allowed.');
-        }
-        if (file.size > 50 * 1024 * 1024) { // 50 MB limit
-            throw new Error('File is too large. Max size is 50MB.');
-        }
-        return true;
-    }),
-    (req, res, next) => {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
-        next();
-    }
-], fileUploadRoute); // Protect file upload routes with authentication, rate-limiting, and validation
-
-// Create HTTP server
-const server = http.createServer(app);
-
-// Integrate WebSocket for real-time notifications
-setupNotificationWebSocket(server);
-
-// Route for logging out and revoking the token (blacklist)
-app.post('/api/logout', authenticateMiddleware, async (req, res) => {
-    const token = req.headers.authorization?.split(' ')[1]; // Extract token from header
-    if (!token) {
-        return res.status(400).send('No token provided');
-    }
-
-    try {
-        // Blacklist the token to revoke it
         await blacklistToken(token);
-        res.send('Logged out successfully');
-    } catch (err) {
-        logger.error('Error logging out:', err);
-        res.status(500).send('Error logging out');
+        res.status(200).json({ message: 'Logged out successfully.' });
+    } catch (error) {
+        logger.error('Error revoking token:', error);
+        res.status(500).json({ error: 'An error occurred while logging out.' });
     }
 });
 
-// Global error handler
+// Error handling middleware
 app.use((err, req, res, next) => {
     logger.error('Unhandled error:', err);
-    res.status(500).send({ error: 'Something went wrong!' });
+    res.status(500).json({ error: 'Internal Server Error.' });
 });
 
-// Graceful shutdown on SIGINT (Ctrl+C) and SIGTERM (e.g., from Kubernetes/Docker)
+// Handle 404 for unknown routes
+app.use((req, res) => {
+    res.status(404).json({ error: 'Route not found.' });
+});
+
+// Graceful shutdown on SIGINT and SIGTERM
 const shutdown = () => {
     console.log('Shutting down gracefully...');
     server.close(() => {
-        console.log('Closed all connections.');
+        console.log('All connections closed.');
         process.exit(0);
     });
 };
@@ -123,11 +112,14 @@ const shutdown = () => {
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
 
+// Setup WebSocket for notifications
+setupNotificationWebSocket(server);
+
 // Start the server
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-    console.log(`WebSocket server is listening at ws://localhost:${PORT}/ws/notifications`);
+    console.log(`Server is running at http://localhost:${PORT}`);
+    console.log(`WebSocket notifications available at ws://localhost:${PORT}/ws/notifications`);
 });
 
 module.exports = app;

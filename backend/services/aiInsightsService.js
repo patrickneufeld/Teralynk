@@ -1,3 +1,5 @@
+// File: /backend/services/aiInsightsService.js
+
 const natural = require('natural'); // For NLP processing
 const fs = require('fs').promises; // Use async fs methods
 const path = require('path');
@@ -18,9 +20,9 @@ ensureDirectoryExists(AI_DATA_PATH);
 
 // **Analyze file content using AI**
 const analyzeFileContent = async (filePath) => {
+    if (!filePath) throw new Error('File path is required.');
+
     try {
-        if (!filePath) throw new Error('File path is required.');
-        
         const fileExists = await fs.stat(filePath).catch(() => false);
         if (!fileExists) throw new Error(`File does not exist: ${filePath}`);
 
@@ -51,16 +53,16 @@ const analyzeFileContent = async (filePath) => {
         console.log(`AI insights generated for file: ${filePath}`);
         return insights;
     } catch (error) {
-        console.error('Error analyzing file content:', error);
+        console.error('Error analyzing file content:', error.message);
         throw new Error('An error occurred while analyzing the file content.');
     }
 };
 
 // **Train the AI system with user queries**
 const trainAIWithQuery = async (userId, query, response) => {
-    try {
-        if (!query || !response) throw new Error('Both query and response are required for training.');
+    if (!query || !response) throw new Error('Both query and response are required for training.');
 
+    try {
         const trainingData = {
             userId,
             query,
@@ -75,7 +77,7 @@ const trainAIWithQuery = async (userId, query, response) => {
             const fileData = await fs.readFile(trainingFile, 'utf8');
             existingData = JSON.parse(fileData);
         } catch (error) {
-            existingData = []; // Start fresh if no file exists
+            console.warn('No existing training data found. Creating a new file.');
         }
 
         existingData.push(trainingData);
@@ -85,16 +87,16 @@ const trainAIWithQuery = async (userId, query, response) => {
         console.log(`AI trained with query: ${query}`);
         return trainingData;
     } catch (error) {
-        console.error('Error training AI with query:', error);
+        console.error('Error training AI with query:', error.message);
         throw new Error('An error occurred while training AI.');
     }
 };
 
 // **Retrieve AI insights for a user-specific query**
 const getAIInsightsForQuery = async (query, userId) => {
-    try {
-        if (!query) throw new Error('Query is required to retrieve AI insights.');
+    if (!query) throw new Error('Query is required to retrieve AI insights.');
 
+    try {
         const insights = {
             query,
             suggestions: [`Optimize "${query}" for better performance`, `Check related files for "${query}"`],
@@ -105,7 +107,7 @@ const getAIInsightsForQuery = async (query, userId) => {
         console.log(`AI insights retrieved for query: ${query}`);
         return insights;
     } catch (error) {
-        console.error('Error retrieving AI insights:', error);
+        console.error('Error retrieving AI insights:', error.message);
         throw new Error('An error occurred while retrieving AI insights.');
     }
 };

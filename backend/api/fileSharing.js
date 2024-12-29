@@ -1,5 +1,3 @@
-// File: /backend/api/fileSharing.js
-
 const express = require('express');
 const router = express.Router();
 const {
@@ -8,7 +6,7 @@ const {
     deleteShareableLink,
     listShareableLinks,
     getShareableLinkDetails,
-    updateShareableLinkPermissions
+    updateShareableLinkPermissions,
 } = require('../services/fileSharingService');
 const rbacMiddleware = require('../middleware/rbacMiddleware');
 
@@ -16,7 +14,7 @@ const rbacMiddleware = require('../middleware/rbacMiddleware');
 const validateRequestBody = (requiredFields) => (req, res, next) => {
     const missingFields = requiredFields.filter(field => !req.body[field]);
     if (missingFields.length > 0) {
-        return res.status(400).json({ error: `Missing required fields: ${missingFields.join(', ')}` });
+        return res.status(400).json({ success: false, error: `Missing required fields: ${missingFields.join(', ')}` });
     }
     next();
 };
@@ -27,10 +25,17 @@ router.post('/generate', rbacMiddleware('user'), validateRequestBody(['filePath'
         const { filePath, userId, permissions = 'view', expiration = null } = req.body;
 
         const shareableLink = await generateShareableLink(filePath, userId, permissions, expiration);
-        res.status(201).json({ message: 'Shareable link generated successfully.', shareableLink });
+        res.status(201).json({
+            success: true,
+            message: 'Shareable link generated successfully.',
+            data: shareableLink,
+        });
     } catch (error) {
         console.error('Error generating shareable link:', error);
-        res.status(500).json({ error: 'An error occurred while generating the shareable link.' });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while generating the shareable link.',
+        });
     }
 });
 
@@ -41,41 +46,79 @@ router.get('/get/:shareId', rbacMiddleware('user'), async (req, res) => {
         const { userId } = req.query;
 
         if (!shareId || !userId) {
-            return res.status(400).json({ error: 'Share ID and user ID are required.' });
+            return res.status(400).json({
+                success: false,
+                error: 'Share ID and user ID are required.',
+            });
         }
 
         const sharedFile = await getSharedFile(shareId, userId);
-        res.status(200).json({ sharedFile });
+        res.status(200).json({
+            success: true,
+            message: 'Shared file retrieved successfully.',
+            data: sharedFile,
+        });
     } catch (error) {
         console.error('Error retrieving shared file:', error);
-        res.status(500).json({ error: 'An error occurred while retrieving the shared file.' });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while retrieving the shared file.',
+        });
     }
 });
 
 // **3️⃣ Delete a shareable link**
-router.delete('/delete/:shareId', rbacMiddleware('user'), validateRequestBody(['userId']), async (req, res) => {
+router.delete('/delete/:shareId', rbacMiddleware('user'), async (req, res) => {
     try {
         const { shareId } = req.params;
         const { userId } = req.body;
 
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                error: 'User ID is required.',
+            });
+        }
+
         const response = await deleteShareableLink(shareId, userId);
-        res.status(200).json({ message: 'Shareable link deleted successfully.', response });
+        res.status(200).json({
+            success: true,
+            message: 'Shareable link deleted successfully.',
+            data: response,
+        });
     } catch (error) {
         console.error('Error deleting shareable link:', error);
-        res.status(500).json({ error: 'An error occurred while deleting the shareable link.' });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while deleting the shareable link.',
+        });
     }
 });
 
 // **4️⃣ List all active shareable links for a file**
-router.get('/list', rbacMiddleware('user'), validateRequestBody(['filePath', 'userId']), async (req, res) => {
+router.get('/list', rbacMiddleware('user'), async (req, res) => {
     try {
         const { filePath, userId } = req.query;
 
+        if (!filePath || !userId) {
+            return res.status(400).json({
+                success: false,
+                error: 'File path and user ID are required.',
+            });
+        }
+
         const activeLinks = await listShareableLinks(filePath, userId);
-        res.status(200).json({ activeLinks });
+        res.status(200).json({
+            success: true,
+            message: 'Active shareable links retrieved successfully.',
+            data: activeLinks,
+        });
     } catch (error) {
         console.error('Error listing shareable links:', error);
-        res.status(500).json({ error: 'An error occurred while listing shareable links.' });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while listing shareable links.',
+        });
     }
 });
 
@@ -85,14 +128,24 @@ router.get('/details/:shareId', rbacMiddleware('user'), async (req, res) => {
         const { shareId } = req.params;
 
         if (!shareId) {
-            return res.status(400).json({ error: 'Share ID is required.' });
+            return res.status(400).json({
+                success: false,
+                error: 'Share ID is required.',
+            });
         }
 
         const linkDetails = await getShareableLinkDetails(shareId);
-        res.status(200).json({ message: 'Shareable link details retrieved successfully.', linkDetails });
+        res.status(200).json({
+            success: true,
+            message: 'Shareable link details retrieved successfully.',
+            data: linkDetails,
+        });
     } catch (error) {
         console.error('Error retrieving shareable link details:', error);
-        res.status(500).json({ error: 'An error occurred while retrieving shareable link details.' });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while retrieving shareable link details.',
+        });
     }
 });
 
@@ -103,10 +156,17 @@ router.put('/update-permissions/:shareId', rbacMiddleware('user'), validateReque
         const { permissions } = req.body;
 
         const updatedLink = await updateShareableLinkPermissions(shareId, permissions);
-        res.status(200).json({ message: 'Shareable link permissions updated successfully.', updatedLink });
+        res.status(200).json({
+            success: true,
+            message: 'Shareable link permissions updated successfully.',
+            data: updatedLink,
+        });
     } catch (error) {
         console.error('Error updating shareable link permissions:', error);
-        res.status(500).json({ error: 'An error occurred while updating the shareable link permissions.' });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while updating the shareable link permissions.',
+        });
     }
 });
 

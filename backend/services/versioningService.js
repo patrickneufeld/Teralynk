@@ -1,3 +1,5 @@
+// File: /backend/services/versioningService.js
+
 const fs = require('fs').promises; // Use async fs methods
 const path = require('path');
 const uuid = require('uuid');
@@ -6,7 +8,7 @@ const { analyzeFileContent } = require('./aiInsightsService');
 const { hasPermission } = require('./rbacService');
 const { query } = require('./db'); // Database integration
 
-// Validate file existence before proceeding
+// **Validate file existence before proceeding**
 const validateFileExists = async (filePath) => {
     try {
         await fs.stat(filePath); // Async file stat
@@ -17,7 +19,7 @@ const validateFileExists = async (filePath) => {
     }
 };
 
-// Save a new version of a file
+// **Save a new version of a file**
 const saveFileVersion = async (filePath, userId, changes, metadata = {}) => {
     if (!filePath || !userId || !changes || !Array.isArray(changes)) {
         throw new Error('Invalid data for saving file version.');
@@ -45,25 +47,23 @@ const saveFileVersion = async (filePath, userId, changes, metadata = {}) => {
     };
 
     try {
-        // Store the version in the database
         await query(
             `INSERT INTO file_versions (file_id, version_id, user_id, changes, metadata, ai_suggestions, timestamp) 
              VALUES ($1, $2, $3, $4, $5, $6, $7)`,
             [fileId, versionId, userId, JSON.stringify(changes), JSON.stringify(metadata), JSON.stringify(aiSuggestions), new Date()]
         );
 
-        // Log activity
         await recordActivity(userId, 'saveVersion', filePath, { versionId });
 
         console.log(`New version saved for file: ${fileId}, versionId: ${versionId}`);
         return newVersion;
     } catch (error) {
-        console.error('Error saving file version:', error);
+        console.error('Error saving file version:', error.message);
         throw new Error('Failed to save file version.');
     }
 };
 
-// Get version history for a file
+// **Get version history for a file**
 const getFileVersionHistory = async (filePath, userId) => {
     await validateFileExists(filePath);
 
@@ -85,12 +85,12 @@ const getFileVersionHistory = async (filePath, userId) => {
 
         return result.rows;
     } catch (error) {
-        console.error('Error retrieving file version history:', error);
+        console.error('Error retrieving file version history:', error.message);
         throw new Error('Failed to retrieve file version history.');
     }
 };
 
-// Retrieve the latest version of a file
+// **Retrieve the latest version of a file**
 const getLatestFileVersion = async (filePath, userId) => {
     await validateFileExists(filePath);
 
@@ -112,12 +112,12 @@ const getLatestFileVersion = async (filePath, userId) => {
 
         return result.rows[0];
     } catch (error) {
-        console.error('Error retrieving the latest file version:', error);
-        throw new Error('Failed to retrieve latest file version.');
+        console.error('Error retrieving the latest file version:', error.message);
+        throw new Error('Failed to retrieve the latest file version.');
     }
 };
 
-// Rollback to a specific version
+// **Rollback to a specific version**
 const rollbackFileVersion = async (filePath, userId, versionId) => {
     await validateFileExists(filePath);
 
@@ -139,18 +139,17 @@ const rollbackFileVersion = async (filePath, userId, versionId) => {
 
         const targetVersion = result.rows[0];
 
-        // Log activity
         await recordActivity(userId, 'rollbackVersion', filePath, { versionId });
 
         console.log(`File ${fileId} rolled back to version: ${versionId}`);
         return targetVersion;
     } catch (error) {
-        console.error('Error rolling back file version:', error);
+        console.error('Error rolling back file version:', error.message);
         throw new Error('Failed to rollback file version.');
     }
 };
 
-// Detect and resolve conflicts
+// **Detect and resolve conflicts**
 const detectAndResolveConflicts = async (filePath, userId, userChanges) => {
     await validateFileExists(filePath);
 
@@ -172,7 +171,6 @@ const detectAndResolveConflicts = async (filePath, userId, userChanges) => {
 
         const latestVersion = result.rows[0];
 
-        // Check for conflicts
         const hasConflict = latestVersion.changes.some((change) =>
             userChanges.some(
                 (userChange) =>
@@ -185,7 +183,6 @@ const detectAndResolveConflicts = async (filePath, userId, userChanges) => {
             return { conflict: false };
         }
 
-        // Provide AI-based conflict resolution suggestions
         const aiSuggestions = await analyzeFileContent(filePath);
 
         console.log('Conflict detected for file:', fileId);
@@ -199,12 +196,12 @@ const detectAndResolveConflicts = async (filePath, userId, userChanges) => {
             },
         };
     } catch (error) {
-        console.error('Error detecting and resolving conflicts:', error);
+        console.error('Error detecting and resolving conflicts:', error.message);
         throw new Error('Failed to detect or resolve conflicts.');
     }
 };
 
-// Merge changes intelligently
+// **Merge changes intelligently**
 const mergeChanges = (existingChanges, newChanges) => {
     const merged = [...existingChanges];
 

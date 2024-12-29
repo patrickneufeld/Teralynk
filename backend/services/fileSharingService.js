@@ -1,3 +1,5 @@
+// File: /backend/services/fileSharingService.js
+
 const fs = require('fs').promises;
 const path = require('path');
 const shortid = require('shortid'); // For generating secure shareable links
@@ -6,54 +8,51 @@ const { recordActivity } = require('./activityLogService');
 const { hasPermission } = require('./rbacService');
 const { query } = require('./db'); // For interacting with the database
 
-// Database table for shared files
+// **Database table for shared files**
 const SHARED_FILES_TABLE = 'shared_files'; // Replace with actual table name
 
-// Generate a secure shareable link for a file
+// **Generate a secure shareable link for a file**
 const generateShareableLink = async (filePath, userId, permissions = 'view', expiration = null) => {
-    if (!fs.existsSync(filePath)) {
-        throw new Error(`File does not exist: ${filePath}`);
-    }
-
-    // Ensure the user has permission to share files
-    if (!hasPermission(userId, 'share')) {
-        throw new Error('You do not have permission to share files.');
-    }
-
-    const fileId = uuid.v4();
-    const shareId = shortid.generate();
-
-    // Prepare data for storing in the database
-    const shareData = {
-        fileId,
-        shareId,
-        filePath,
-        userId,
-        permissions,
-        expiration: expiration ? new Date(expiration) : null,
-        createdAt: new Date(),
-    };
-
-    // Save the shareable link in the database
     try {
+        const fileExists = await fs.stat(filePath).catch(() => false);
+        if (!fileExists) {
+            throw new Error(`File does not exist: ${filePath}`);
+        }
+
+        if (!hasPermission(userId, 'share')) {
+            throw new Error('You do not have permission to share files.');
+        }
+
+        const fileId = uuid.v4();
+        const shareId = shortid.generate();
+
+        const shareData = {
+            fileId,
+            shareId,
+            filePath,
+            userId,
+            permissions,
+            expiration: expiration ? new Date(expiration) : null,
+            createdAt: new Date(),
+        };
+
         await query(
             `INSERT INTO ${SHARED_FILES_TABLE} (fileId, shareId, filePath, userId, permissions, expiration, createdAt)
             VALUES ($1, $2, $3, $4, $5, $6, $7)`,
             [fileId, shareId, filePath, userId, permissions, expiration, new Date()]
         );
 
-        // Log activity for generating a shareable link
         await recordActivity(userId, 'generateShareableLink', filePath, { shareId });
 
         console.log(`Shareable link created for file: ${filePath}`);
         return { shareId, link: `https://teralynk.com/share/${shareId}`, ...shareData };
     } catch (error) {
-        console.error('Error storing shareable link:', error);
+        console.error('Error generating shareable link:', error);
         throw new Error('An error occurred while generating a shareable link.');
     }
 };
 
-// Retrieve shared file information using the share ID
+// **Retrieve shared file information using the share ID**
 const getSharedFile = async (shareId, userId) => {
     try {
         const result = await query(
@@ -67,14 +66,11 @@ const getSharedFile = async (shareId, userId) => {
 
         const shareData = result.rows[0];
 
-        // Check if the user has permission or is the owner of the shared file
         if (shareData.userId !== userId && !hasPermission(userId, 'admin')) {
             throw new Error('You do not have permission to access this shared file.');
         }
 
-        // Check expiration
         if (shareData.expiration && new Date() > new Date(shareData.expiration)) {
-            // Clean up expired link from the database
             await query(
                 `DELETE FROM ${SHARED_FILES_TABLE} WHERE shareId = $1`,
                 [shareId]
@@ -89,7 +85,7 @@ const getSharedFile = async (shareId, userId) => {
     }
 };
 
-// Delete a shareable link
+// **Delete a shareable link**
 const deleteShareableLink = async (shareId, userId) => {
     try {
         const result = await query(
@@ -103,18 +99,15 @@ const deleteShareableLink = async (shareId, userId) => {
 
         const shareData = result.rows[0];
 
-        // Ensure the user has permission to delete the shareable link
         if (shareData.userId !== userId && !hasPermission(userId, 'admin')) {
             throw new Error('You do not have permission to delete this shared link.');
         }
 
-        // Delete the shareable link from the database
         await query(
             `DELETE FROM ${SHARED_FILES_TABLE} WHERE shareId = $1`,
             [shareId]
         );
 
-        // Log activity for deleting the shareable link
         await recordActivity(userId, 'deleteShareableLink', shareData.filePath, { shareId });
 
         console.log(`Shareable link deleted: ${shareId}`);
@@ -125,7 +118,7 @@ const deleteShareableLink = async (shareId, userId) => {
     }
 };
 
-// List all active shareable links for a file
+// **List all active shareable links for a file**
 const listShareableLinks = async (filePath, userId) => {
     try {
         if (!hasPermission(userId, 'read')) {
@@ -137,6 +130,7 @@ const listShareableLinks = async (filePath, userId) => {
             [filePath]
         );
 
+        console.log(`Shareable links retrieved for file: ${filePath}`);
         return result.rows;
     } catch (error) {
         console.error('Error listing shareable links:', error);

@@ -1,25 +1,31 @@
-// File: /Users/patrick/Projects/Teralynk/frontend/src/api/fileService.js
-
 import axios from 'axios';
 
 // Set up the base API URL for all file operations
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api/files';
 
+// Helper function to retrieve and attach the JWT token
+const getAuthHeaders = () => ({
+    Authorization: `Bearer ${localStorage.getItem('token')}`, // JWT token
+});
+
+// Helper function for error handling
+const handleApiError = (err, action) => {
+    console.error(`Error ${action}:`, err.response?.data || err.message);
+    throw new Error(err.response?.data?.error || `Error ${action}`);
+};
+
 // Function to fetch the list of files
 export const fetchFiles = async (continuationToken = null) => {
     try {
         const response = await axios.get(`${API_URL}/list`, {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`, // JWT token
-            },
+            headers: getAuthHeaders(),
             params: {
                 continuationToken,
             },
         });
         return response.data;
     } catch (err) {
-        console.error('Error fetching files:', err);
-        throw new Error('Error fetching files');
+        handleApiError(err, 'fetching files');
     }
 };
 
@@ -31,14 +37,13 @@ export const uploadFile = async (file) => {
     try {
         const response = await axios.post(`${API_URL}/upload`, formData, {
             headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`, // JWT token
+                ...getAuthHeaders(),
                 'Content-Type': 'multipart/form-data',
             },
         });
         return response.data;
     } catch (err) {
-        console.error('Error uploading file:', err);
-        throw new Error('Error uploading file');
+        handleApiError(err, 'uploading file');
     }
 };
 
@@ -46,14 +51,11 @@ export const uploadFile = async (file) => {
 export const generateFileLink = async (fileName) => {
     try {
         const response = await axios.post(`${API_URL}/generate-link`, { fileName }, {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`, // JWT token
-            },
+            headers: getAuthHeaders(),
         });
-        return response.data.url;
+        return response.data?.url;
     } catch (err) {
-        console.error('Error generating signed URL:', err);
-        throw new Error('Error generating signed URL');
+        handleApiError(err, 'generating signed URL');
     }
 };
 
@@ -61,13 +63,10 @@ export const generateFileLink = async (fileName) => {
 export const deleteFile = async (fileName) => {
     try {
         const response = await axios.post(`${API_URL}/delete`, { fileName }, {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`, // JWT token
-            },
+            headers: getAuthHeaders(),
         });
         return response.data;
     } catch (err) {
-        console.error('Error deleting file:', err);
-        throw new Error('Error deleting file');
+        handleApiError(err, 'deleting file');
     }
 };

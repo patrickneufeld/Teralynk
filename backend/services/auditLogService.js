@@ -1,3 +1,5 @@
+// File: /backend/services/auditLogService.js
+
 const fs = require('fs').promises; // Use async fs methods
 const path = require('path');
 const winston = require('winston');
@@ -47,7 +49,7 @@ const logAction = async (userId, action, details = {}) => {
         logger.info(logEntry);
         console.log(`Audit log recorded: ${action} by ${userId}`);
     } catch (error) {
-        console.error('Error writing to audit log:', error);
+        console.error('Error writing to audit log:', error.message);
         throw new Error('An error occurred while logging an action.');
     }
 
@@ -61,16 +63,15 @@ const getLogs = async (filters = {}) => {
         const logFiles = files.filter(file => file.includes('audit') && file.endsWith('.log'));
         
         const allLogs = [];
-        
         for (const file of logFiles) {
             const logFilePath = path.join(path.dirname(AUDIT_LOG_PATH), file);
             const fileContent = await fs.readFile(logFilePath, 'utf8');
-            
+
             const logs = fileContent
                 .split('\n')
                 .filter(log => log.trim())
                 .map(log => JSON.parse(log));
-            
+
             allLogs.push(...logs);
         }
 
@@ -82,7 +83,7 @@ const getLogs = async (filters = {}) => {
 
         return filteredLogs;
     } catch (error) {
-        console.error('Error retrieving audit logs:', error);
+        console.error('Error retrieving audit logs:', error.message);
         throw new Error('An error occurred while retrieving audit logs.');
     }
 };
@@ -90,7 +91,7 @@ const getLogs = async (filters = {}) => {
 // **Export logs to CSV**
 const exportLogsToCSV = (logs) => {
     const headers = ['timestamp', 'userId', 'action', 'details'];
-    const csvData = logs.map(log => 
+    const csvData = logs.map(log =>
         headers.map(header => JSON.stringify(log[header] || '')).join(',')
     );
     csvData.unshift(headers.join(','));
@@ -111,7 +112,7 @@ const clearLogs = async () => {
         console.log('Audit logs cleared successfully.');
         return { message: 'Audit logs cleared successfully.' };
     } catch (error) {
-        console.error('Error clearing audit log:', error);
+        console.error('Error clearing audit log:', error.message);
         throw new Error('Failed to clear audit log.');
     }
 };
@@ -120,5 +121,5 @@ module.exports = {
     logAction,
     getLogs,
     exportLogsToCSV,
-    clearLogs
+    clearLogs,
 };

@@ -1,18 +1,20 @@
+// File: /backend/services/storageAnalyticsService.js
+
 const fs = require('fs').promises; // Use async fs methods
 const path = require('path');
 const { recordActivity } = require('./activityLogService');
 const { hasPermission } = require('./rbacService');
-const { query } = require('./db'); // Database integration (for storing file metadata)
+const { query } = require('./db'); // Database integration for storing file metadata
 
 const STORAGE_BASE_PATH = path.join(__dirname, '../../storage');
 
-// Fetch storage usage for a specific user
+// **Fetch storage usage for a specific user**
 const getUserStorageUsage = async (userId) => {
     if (!userId) {
         throw new Error('User ID is required to fetch storage usage.');
     }
 
-    if (!await hasPermission(userId, 'read')) {
+    if (!(await hasPermission(userId, 'read'))) {
         throw new Error('You do not have permission to view storage analytics.');
     }
 
@@ -31,14 +33,14 @@ const getUserStorageUsage = async (userId) => {
 
         return { totalSize, fileCount };
     } catch (error) {
-        console.error('Error fetching user storage usage:', error);
+        console.error('Error fetching user storage usage:', error.message);
         throw new Error('Failed to fetch user storage usage.');
     }
 };
 
-// Fetch system-wide storage usage
+// **Fetch system-wide storage usage**
 const getSystemStorageUsage = async (adminId) => {
-    if (!adminId || !await hasPermission(adminId, 'admin')) {
+    if (!adminId || !(await hasPermission(adminId, 'admin'))) {
         throw new Error('Admin permissions are required to fetch system storage analytics.');
     }
 
@@ -50,12 +52,12 @@ const getSystemStorageUsage = async (adminId) => {
 
         return { totalSize, fileCount };
     } catch (error) {
-        console.error('Error fetching system storage usage:', error);
+        console.error('Error fetching system storage usage:', error.message);
         throw new Error('Failed to fetch system storage usage.');
     }
 };
 
-// Generate storage analytics report for a user
+// **Generate storage analytics report for a user**
 const generateStorageReport = async (userId) => {
     if (!userId) {
         throw new Error('User ID is required to generate a storage report.');
@@ -74,7 +76,7 @@ const generateStorageReport = async (userId) => {
     return report;
 };
 
-// Helper function to calculate storage usage recursively in a directory
+// **Helper function to calculate storage usage recursively in a directory**
 const calculateUsage = async (directory) => {
     let totalSize = 0;
     let fileCount = 0;
@@ -98,8 +100,12 @@ const calculateUsage = async (directory) => {
     return { totalSize, fileCount };
 };
 
-// Save file metadata to the database (for efficient querying and reporting)
+// **Save file metadata to the database (for efficient querying and reporting)**
 const saveFileMetadata = async (filePath) => {
+    if (!filePath) {
+        throw new Error('File path is required to save metadata.');
+    }
+
     try {
         const stats = await fs.stat(filePath);
         const metadata = {
@@ -128,8 +134,9 @@ const saveFileMetadata = async (filePath) => {
         );
 
         console.log(`File metadata saved for: ${filePath}`);
+        return metadata;
     } catch (error) {
-        console.error(`Error saving file metadata for: ${filePath}`, error);
+        console.error(`Error saving file metadata for: ${filePath}`, error.message);
         throw new Error('Failed to save file metadata.');
     }
 };

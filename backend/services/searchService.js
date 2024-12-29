@@ -1,3 +1,5 @@
+// File: /backend/services/searchService.js
+
 const fs = require('fs').promises; // Use async fs methods
 const path = require('path');
 const natural = require('natural'); // NLP library for tokenization and relevance scoring
@@ -5,105 +7,138 @@ const { hasPermission } = require('./rbacService'); // RBAC integration
 const { analyzeSearchQuery } = require('./aiInsightsService'); // AI integration
 const { query } = require('./db'); // Database integration
 
-// Sample directory for scanning files (adjust to your actual storage path)
-const storageDirectory = path.join(__dirname, '../../storage');
+// Define the storage directory (adjust to your actual storage path)
+const STORAGE_DIRECTORY = path.join(__dirname, '../../storage');
 
-// Function to search for files based on a query and filters
-const searchFiles = async (query, userId, filters = {}) => {
+// **Search for files based on a query and filters**
+const searchFiles = async (searchQuery, userId, filters = {}) => {
+    if (!searchQuery || !userId) {
+        throw new Error('Search query and user ID are required.');
+    }
+
     try {
-        // AI integration for query analysis
-        const aiInsights = await analyzeSearchQuery(query);
+        // Analyze the search query using AI
+        const aiInsights = await analyzeSearchQuery(searchQuery);
 
+        // Tokenize the search query
         const tokenizer = new natural.WordTokenizer();
-        const queryTokens = tokenizer.tokenize(query.toLowerCase());
+        const queryTokens = tokenizer.tokenize(searchQuery.toLowerCase());
 
         const results = [];
 
-        // Recursively scan the storage directory asynchronously
-        await scanDirectory(storageDirectory, queryTokens, userId, filters, aiInsights, results);
+        // Recursively scan the storage directory
+        await scanDirectory(STORAGE_DIRECTORY, queryTokens, userId, filters, aiInsights, results);
 
-        // Return results sorted by relevance and additional AI insights
-        return results.sort((a, b) => b.relevance - a.relevance);
+        // Sort results by relevance and return along with AI insights
+        return {
+            results: results.sort((a, b) => b.relevance - a.relevance),
+            aiInsights,
+        };
     } catch (error) {
-        console.error('Error in searchFiles:', error);
+        console.error('Error in searchFiles:', error.message);
         throw new Error('An error occurred while searching for files.');
     }
 };
 
-// Asynchronous directory scanning
+// **Scan a directory asynchronously**
 const scanDirectory = async (directory, queryTokens, userId, filters, aiInsights, results) => {
-    const files = await fs.readdir(directory);
+    try {
+        const files = await fs.readdir(directory);
 
-    for (const file of files) {
-        const filePath = path.join(directory, file);
-        const stats = await fs.stat(filePath);
+        for (const file of files) {
+            const filePath = path.join(directory, file);
+            const stats = await fs.stat(filePath);
 
-        if (stats.isDirectory()) {
-            await scanDirectory(filePath, queryTokens, userId, filters, aiInsights, results); // Recursively scan subdirectories
-        } else if (stats.isFile()) {
-            const fileName = file.toLowerCase();
+            if (stats.isDirectory()) {
+                // Recursively scan subdirectories
+                await scanDirectory(filePath, queryTokens, userId, filters, aiInsights, results);
+            } else if (stats.isFile()) {
+                // Calculate relevance based on query tokens
+                const relevance = calculateRelevance(file.toLowerCase(), queryTokens);
 
-            // Check relevance based on query tokens
-            const relevance = queryTokens.reduce(
-                (score, token) => (fileName.includes(token) ? score + 1 : score),
-                0
-            );
+                // Extract metadata for the file
+                const metadata = extractMetadata(filePath, stats, relevance);
 
-            // Extract file metadata
-            const metadata = {
-                fileName: file,
-                path: filePath,
-                relevance,
-                fileType: path.extname(file).slice(1), // File extension as type
-                dateCreated: stats.birthtime, // File creation date
-                size: stats.size, // File size in bytes
-            };
+                // Check user permissions
+                if (!(await hasPermission(userId, 'read'))) {
+                    continue; // Skip files the user cannot access
+                }
 
-            // Enforce RBAC: Ensure user has access to the file
-            if (!await hasPermission(userId, 'read')) {
-                continue;
-            }
-
-            // Apply filters
-            if (applyFilters(metadata, filters)) {
-                results.push({ ...metadata, aiInsights });
+                // Apply filters
+                if (applyFilters(metadata, filters)) {
+                    results.push({ ...metadata, aiInsights });
+                }
             }
         }
+    } catch (error) {
+        console.error(`Error scanning directory ${directory}:`, error.message);
+        throw new Error('An error occurred during directory scanning.');
     }
 };
 
-// Function to apply filters to file metadata
+// **Calculate relevance based on query tokens**
+const calculateRelevance = (fileName, queryTokens) => {
+    return queryTokens.reduce(
+        (score, token) => (fileName.includes(token) ? score + 1 : score),
+        0
+    );
+};
+
+// **Extract metadata from file stats**
+const extractMetadata = (filePath, stats, relevance) => {
+    return {
+        fileName: path.basename(filePath),
+        path: filePath,
+        relevance,
+        fileType: path.extname(filePath).slice(1),
+        dateCreated: stats.birthtime,
+        size: stats.size,
+    };
+};
+
+// **Apply filters to metadata**
 const applyFilters = (metadata, filters) => {
-    if (filters.fileType && metadata.fileType !== filters.fileType) {
-        return false;
-    }
-    if (filters.dateCreatedFrom && new Date(metadata.dateCreated) < new Date(filters.dateCreatedFrom)) {
-        return false;
-    }
-    if (filters.dateCreatedTo && new Date(metadata.dateCreated) > new Date(filters.dateCreatedTo)) {
-        return false;
-    }
-    if (filters.minSize && metadata.size < filters.minSize) {
-        return false;
-    }
-    if (filters.maxSize && metadata.size > filters.maxSize) {
-        return false;
-    }
+    if (filters.fileType && metadata.fileType !== filters.fileType) return false;
+    if (filters.dateCreatedFrom && new Date(metadata.dateCreated) < new Date(filters.dateCreatedFrom)) return false;
+    if (filters.dateCreatedTo && new Date(metadata.dateCreated) > new Date(filters.dateCreatedTo)) return false;
+    if (filters.minSize && metadata.size < filters.minSize) return false;
+    if (filters.maxSize && metadata.size > filters.maxSize) return false;
     return true;
 };
 
-// Save search results to the database or cache for quick retrieval (optional)
-const saveSearchResults = async (userId, query, results) => {
+// **Save search results to the database**
+const saveSearchResults = async (userId, searchQuery, results) => {
     try {
-        // Optionally store the search results in the database
-        const resultJSON = JSON.stringify(results);
         await query(
             'INSERT INTO search_history (user_id, query, results, timestamp) VALUES ($1, $2, $3, $4)',
-            [userId, query, resultJSON, new Date()]
+            [userId, searchQuery, JSON.stringify(results), new Date()]
         );
     } catch (error) {
-        console.error('Error saving search results to database:', error);
+        console.error('Error saving search results to database:', error.message);
+        throw new Error('Failed to save search results.');
     }
 };
 
-module.exports = { searchFiles, saveSearchResults };
+// **Retrieve search history for a user**
+const getSearchHistory = async (userId) => {
+    try {
+        const result = await query(
+            'SELECT * FROM search_history WHERE user_id = $1 ORDER BY timestamp DESC',
+            [userId]
+        );
+        return result.rows.map((row) => ({
+            query: row.query,
+            results: JSON.parse(row.results),
+            timestamp: row.timestamp,
+        }));
+    } catch (error) {
+        console.error('Error retrieving search history:', error.message);
+        throw new Error('Failed to retrieve search history.');
+    }
+};
+
+module.exports = {
+    searchFiles,
+    saveSearchResults,
+    getSearchHistory,
+};

@@ -1,5 +1,3 @@
-// File: /backend/api/metadata.js
-
 const express = require('express');
 const router = express.Router();
 const {
@@ -10,15 +8,15 @@ const {
     deleteMetadata,
     searchMetadata,
     getMetadataDetails,
-    updateMetadata
+    updateMetadata,
 } = require('../services/metadataService');
 const rbacMiddleware = require('../middleware/rbacMiddleware');
 
 // Middleware to validate request body
 const validateRequestBody = (requiredFields) => (req, res, next) => {
-    const missingFields = requiredFields.filter(field => !req.body[field]);
+    const missingFields = requiredFields.filter((field) => !req.body[field]);
     if (missingFields.length > 0) {
-        return res.status(400).json({ error: `Missing required fields: ${missingFields.join(', ')}` });
+        return res.status(400).json({ success: false, error: `Missing required fields: ${missingFields.join(', ')}` });
     }
     next();
 };
@@ -29,10 +27,18 @@ router.post('/save', rbacMiddleware('user'), validateRequestBody(['filePath']), 
         const { filePath, customMetadata = {} } = req.body;
 
         const metadata = await saveOrUpdateMetadata(filePath, customMetadata);
-        res.status(201).json({ message: 'Metadata saved successfully.', metadata });
+        res.status(201).json({
+            success: true,
+            message: 'Metadata saved successfully.',
+            data: metadata,
+        });
     } catch (error) {
         console.error('Error saving metadata:', error);
-        res.status(500).json({ error: 'An error occurred while saving metadata.', details: error.message });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while saving metadata.',
+            details: error.message,
+        });
     }
 });
 
@@ -42,31 +48,53 @@ router.get('/get', rbacMiddleware('user'), async (req, res) => {
         const { filePath } = req.query;
 
         if (!filePath) {
-            return res.status(400).json({ error: 'File path is required.' });
+            return res.status(400).json({
+                success: false,
+                error: 'File path is required.',
+            });
         }
 
         const metadata = await getMetadata(filePath);
-        res.status(200).json({ message: 'Metadata retrieved successfully.', metadata });
+        res.status(200).json({
+            success: true,
+            message: 'Metadata retrieved successfully.',
+            data: metadata,
+        });
     } catch (error) {
         console.error('Error fetching metadata:', error);
-        res.status(500).json({ error: 'An error occurred while fetching metadata.', details: error.message });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while fetching metadata.',
+            details: error.message,
+        });
     }
 });
 
 // **3️⃣ Get metadata history for a file**
 router.get('/history', rbacMiddleware('user'), async (req, res) => {
     try {
-        const { filePath } = req.query;
+        const { filePath, page = 1, limit = 10 } = req.query;
 
         if (!filePath) {
-            return res.status(400).json({ error: 'File path is required.' });
+            return res.status(400).json({
+                success: false,
+                error: 'File path is required.',
+            });
         }
 
-        const history = await getMetadataHistory(filePath);
-        res.status(200).json({ message: 'Metadata history retrieved successfully.', history });
+        const history = await getMetadataHistory(filePath, parseInt(page), parseInt(limit));
+        res.status(200).json({
+            success: true,
+            message: 'Metadata history retrieved successfully.',
+            data: history,
+        });
     } catch (error) {
         console.error('Error fetching metadata history:', error);
-        res.status(500).json({ error: 'An error occurred while fetching metadata history.', details: error.message });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while fetching metadata history.',
+            details: error.message,
+        });
     }
 });
 
@@ -76,10 +104,18 @@ router.delete('/delete', rbacMiddleware('user'), validateRequestBody(['filePath'
         const { filePath } = req.body;
 
         const response = await deleteMetadata(filePath);
-        res.status(200).json({ message: 'Metadata deleted successfully.', response });
+        res.status(200).json({
+            success: true,
+            message: 'Metadata deleted successfully.',
+            data: response,
+        });
     } catch (error) {
         console.error('Error deleting metadata:', error);
-        res.status(500).json({ error: 'An error occurred while deleting metadata.', details: error.message });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while deleting metadata.',
+            details: error.message,
+        });
     }
 });
 
@@ -89,14 +125,25 @@ router.post('/search', rbacMiddleware('user'), validateRequestBody(['filters']),
         const { filters } = req.body;
 
         if (Object.keys(filters).length === 0) {
-            return res.status(400).json({ error: 'At least one filter is required for searching metadata.' });
+            return res.status(400).json({
+                success: false,
+                error: 'At least one filter is required for searching metadata.',
+            });
         }
 
         const results = await searchMetadata(filters);
-        res.status(200).json({ message: 'Metadata search completed successfully.', results });
+        res.status(200).json({
+            success: true,
+            message: 'Metadata search completed successfully.',
+            data: results,
+        });
     } catch (error) {
         console.error('Error searching metadata:', error);
-        res.status(500).json({ error: 'An error occurred while searching metadata.', details: error.message });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while searching metadata.',
+            details: error.message,
+        });
     }
 });
 
@@ -106,14 +153,25 @@ router.get('/details', rbacMiddleware('user'), async (req, res) => {
         const { filePath } = req.query;
 
         if (!filePath) {
-            return res.status(400).json({ error: 'File path is required.' });
+            return res.status(400).json({
+                success: false,
+                error: 'File path is required.',
+            });
         }
 
         const metadataDetails = await getMetadataDetails(filePath);
-        res.status(200).json({ message: 'Metadata details retrieved successfully.', metadataDetails });
+        res.status(200).json({
+            success: true,
+            message: 'Metadata details retrieved successfully.',
+            data: metadataDetails,
+        });
     } catch (error) {
         console.error('Error retrieving metadata details:', error);
-        res.status(500).json({ error: 'An error occurred while retrieving metadata details.', details: error.message });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while retrieving metadata details.',
+            details: error.message,
+        });
     }
 });
 
@@ -123,10 +181,18 @@ router.put('/update', rbacMiddleware('user'), validateRequestBody(['filePath', '
         const { filePath, updatedMetadata } = req.body;
 
         const metadata = await updateMetadata(filePath, updatedMetadata);
-        res.status(200).json({ message: 'Metadata updated successfully.', metadata });
+        res.status(200).json({
+            success: true,
+            message: 'Metadata updated successfully.',
+            data: metadata,
+        });
     } catch (error) {
         console.error('Error updating metadata:', error);
-        res.status(500).json({ error: 'An error occurred while updating metadata.', details: error.message });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while updating metadata.',
+            details: error.message,
+        });
     }
 });
 

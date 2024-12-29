@@ -1,30 +1,31 @@
+// File: /backend/services/fileService.js
+
 const express = require('express');
 const { S3Client, PutObjectCommand, GetObjectCommand, ListObjectsV2Command } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const cors = require('cors');
 const fs = require('fs');
 const formidable = require('formidable');
-const shortid = require('shortid');
 const winston = require('winston');
 const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
-const rateLimit = require('express-rate-limit'); // Rate limiting package
+const rateLimit = require('express-rate-limit');
 
-// Load environment variables from .env file
+// **Load environment variables**
 dotenv.config();
 
-// Initialize Express app
+// **Initialize Express app**
 const app = express();
 
-// Initialize S3 client
+// **Initialize S3 client**
 const s3Client = new S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
 const BUCKET_NAME = process.env.BUCKET_NAME || 'teralynk-storage';
 
-// Set up middleware
+// **Set up middleware**
 app.use(cors({ origin: process.env.ALLOWED_ORIGIN || 'http://localhost:3000' }));
 app.use(express.json());
 
-// Logger setup with winston
+// **Logger setup with Winston**
 const logger = winston.createLogger({
     level: 'info',
     format: winston.format.json(),
@@ -34,7 +35,7 @@ const logger = winston.createLogger({
     ],
 });
 
-// Middleware for authentication
+// **Middleware for authentication**
 const authenticate = (req, res, next) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
@@ -50,13 +51,14 @@ const authenticate = (req, res, next) => {
     }
 };
 
-// File upload route with user ID verification
+// **Rate Limiting Middleware**
 const uploadLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 5, // Limit each user to 5 uploads per window
     message: 'Too many file upload requests from this IP, please try again later.',
 });
 
+// **Route: File Upload**
 app.post('/api/files/upload', authenticate, uploadLimiter, (req, res) => {
     const form = new formidable.IncomingForm();
     form.parse(req, (err, fields, files) => {
@@ -65,14 +67,14 @@ app.post('/api/files/upload', authenticate, uploadLimiter, (req, res) => {
             return res.status(400).send('Error parsing form.');
         }
 
-        const { userId } = req.user; // Get user ID from token
+        const { userId } = req.user; // Extract user ID from token
         const file = files.file;
 
         if (!file) {
             return res.status(400).send('No file provided.');
         }
 
-        // Validate file type (optional)
+        // Validate file type
         const allowedMimeTypes = ['image/jpeg', 'image/png', 'application/pdf'];
         if (!allowedMimeTypes.includes(file.mimetype)) {
             return res.status(400).send('Invalid file type. Only JPEG, PNG, and PDF are allowed.');
@@ -94,7 +96,7 @@ app.post('/api/files/upload', authenticate, uploadLimiter, (req, res) => {
     });
 });
 
-// Generate signed URL for downloading files
+// **Route: Generate Signed URL for Download**
 app.post('/api/files/generate-link', authenticate, async (req, res) => {
     const { fileName, expiresIn = 3600 } = req.body;
 
@@ -113,7 +115,7 @@ app.post('/api/files/generate-link', authenticate, async (req, res) => {
     }
 });
 
-// Paginated file listing
+// **Route: Paginated File Listing**
 app.get('/api/files/list', authenticate, async (req, res) => {
     const { continuationToken, maxKeys = 10 } = req.query;
 
@@ -138,7 +140,29 @@ app.get('/api/files/list', authenticate, async (req, res) => {
     }
 });
 
-// Start the server
+// **Route: Delete File**
+app.post('/api/files/delete', authenticate, async (req, res) => {
+    const { fileName } = req.body;
+
+    if (!fileName) {
+        return res.status(400).send('File name is required.');
+    }
+
+    const params = {
+        Bucket: BUCKET_NAME,
+        Key: `users/${req.user.userId}/${fileName}`,
+    };
+
+    try {
+        await s3Client.send(new DeleteObjectCommand(params));
+        res.send({ message: 'File deleted successfully' });
+    } catch (err) {
+        logger.error('Error deleting file:', err);
+        res.status(500).send('Error deleting file.');
+    }
+});
+
+// **Start the server**
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => logger.info(`Teralynk backend running on port ${PORT}`));
 

@@ -1,3 +1,5 @@
+// File: /backend/services/activityLogService.js
+
 const fs = require('fs');
 const path = require('path');
 const { promisify } = require('util');
@@ -14,7 +16,10 @@ if (!fs.existsSync(LOG_DIRECTORY)) {
 // **Configure Winston Logger with Daily Rotation**
 const logger = winston.createLogger({
     level: 'info',
-    format: winston.format.json(),
+    format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.json()
+    ),
     transports: [
         new winston.transports.DailyRotateFile({
             filename: `${LOG_DIRECTORY}/activity-%DATE%.log`,
@@ -43,7 +48,7 @@ const recordActivity = async (userId, action, resource = null, details = {}) => 
         logger.info(logEntry);
         console.log(`Activity logged: ${action} by user ${userId}`);
     } catch (error) {
-        console.error('Error logging activity:', error);
+        console.error('Error logging activity:', error.message);
         throw new Error('An error occurred while logging activity.');
     }
 };
@@ -54,20 +59,27 @@ const getUserActivityLogs = async (userId) => {
         throw new Error('User ID is required to retrieve activity logs.');
     }
 
-    const logFilePath = path.join(LOG_DIRECTORY, `activity-${userId}.log`);
-
-    if (!fs.existsSync(logFilePath)) {
-        throw new Error('No activity logs found for this user.');
-    }
-
     try {
-        const logs = await promisify(fs.readFile)(logFilePath, 'utf8');
-        return logs
-            .split('\n')
-            .filter((log) => log.trim() !== '')
-            .map((log) => JSON.parse(log));
+        const logFiles = fs
+            .readdirSync(LOG_DIRECTORY)
+            .filter((file) => file.startsWith(`activity-`) && file.endsWith('.log'));
+
+        const userLogs = [];
+
+        for (const file of logFiles) {
+            const logFilePath = path.join(LOG_DIRECTORY, file);
+            const logs = await promisify(fs.readFile)(logFilePath, 'utf8');
+            logs
+                .split('\n')
+                .filter((log) => log.trim() !== '')
+                .map((log) => JSON.parse(log))
+                .filter((log) => log.userId === userId)
+                .forEach((log) => userLogs.push(log));
+        }
+
+        return userLogs;
     } catch (error) {
-        console.error('Error reading activity logs:', error);
+        console.error('Error reading user activity logs:', error.message);
         throw new Error('An error occurred while retrieving activity logs.');
     }
 };
@@ -78,12 +90,12 @@ const getSystemActivityLogs = async (adminId) => {
         throw new Error('Admin ID is required to retrieve system activity logs.');
     }
 
-    const allLogs = [];
-
     try {
-        const logFiles = fs.readdirSync(LOG_DIRECTORY).filter((file) =>
-            file.endsWith('.log')
-        );
+        const logFiles = fs
+            .readdirSync(LOG_DIRECTORY)
+            .filter((file) => file.endsWith('.log'));
+
+        const allLogs = [];
 
         for (const file of logFiles) {
             const logFilePath = path.join(LOG_DIRECTORY, file);
@@ -96,7 +108,7 @@ const getSystemActivityLogs = async (adminId) => {
 
         return allLogs;
     } catch (error) {
-        console.error('Error retrieving system-wide logs:', error);
+        console.error('Error retrieving system-wide logs:', error.message);
         throw new Error('An error occurred while retrieving system-wide logs.');
     }
 };
@@ -104,8 +116,8 @@ const getSystemActivityLogs = async (adminId) => {
 // **Export activity logs to CSV**
 const exportLogsToCSV = (logs) => {
     const csvHeaders = ['timestamp', 'userId', 'action', 'resource', 'details'];
-    const csvData = logs.map(log => 
-        csvHeaders.map(header => log[header] || '').join(',')
+    const csvData = logs.map((log) =>
+        csvHeaders.map((header) => (log[header] !== undefined ? log[header] : '')).join(',')
     );
     csvData.unshift(csvHeaders.join(','));
     return csvData.join('\n');
@@ -115,5 +127,5 @@ module.exports = {
     recordActivity,
     getUserActivityLogs,
     getSystemActivityLogs,
-    exportLogsToCSV
+    exportLogsToCSV,
 };

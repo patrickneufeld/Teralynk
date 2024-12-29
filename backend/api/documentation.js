@@ -1,5 +1,3 @@
-// File: /backend/api/documentation.js
-
 const express = require('express');
 const router = express.Router();
 const {
@@ -14,7 +12,7 @@ const rbacMiddleware = require('../middleware/rbacMiddleware');
 const validateQueryParams = (requiredParams) => (req, res, next) => {
     const missingParams = requiredParams.filter(param => !req.query[param]);
     if (missingParams.length > 0) {
-        return res.status(400).json({ error: `Missing required query params: ${missingParams.join(', ')}` });
+        return res.status(400).json({ success: false, error: `Missing required query params: ${missingParams.join(', ')}` });
     }
     next();
 };
@@ -23,10 +21,17 @@ const validateQueryParams = (requiredParams) => (req, res, next) => {
 router.get('/generate', rbacMiddleware('admin'), async (req, res) => {
     try {
         const docs = await generateApiDocs();
-        res.status(200).json({ message: 'API documentation generated successfully.', docs });
+        res.status(200).json({
+            success: true,
+            message: 'API documentation generated successfully.',
+            data: docs,
+        });
     } catch (error) {
         console.error('Error generating API documentation:', error);
-        res.status(500).json({ error: 'An error occurred while generating API documentation.' });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while generating API documentation.',
+        });
     }
 });
 
@@ -36,10 +41,24 @@ router.get('/endpoint', rbacMiddleware('user'), validateQueryParams(['endpoint']
         const { endpoint } = req.query;
 
         const details = await getEndpointDetails(endpoint);
-        res.status(200).json({ endpoint, details });
+        if (!details) {
+            return res.status(404).json({
+                success: false,
+                error: `Endpoint '${endpoint}' not found.`,
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: `Details for endpoint '${endpoint}' retrieved successfully.`,
+            data: details,
+        });
     } catch (error) {
         console.error('Error retrieving endpoint details:', error);
-        res.status(500).json({ error: 'An error occurred while retrieving endpoint details.' });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while retrieving endpoint details.',
+        });
     }
 });
 
@@ -47,10 +66,17 @@ router.get('/endpoint', rbacMiddleware('user'), validateQueryParams(['endpoint']
 router.get('/endpoints', rbacMiddleware('user'), async (req, res) => {
     try {
         const endpoints = await listAllEndpoints();
-        res.status(200).json({ message: 'List of all available API endpoints retrieved successfully.', endpoints });
+        res.status(200).json({
+            success: true,
+            message: 'List of all available API endpoints retrieved successfully.',
+            data: endpoints,
+        });
     } catch (error) {
         console.error('Error retrieving list of API endpoints:', error);
-        res.status(500).json({ error: 'An error occurred while retrieving the list of endpoints.' });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while retrieving the list of endpoints.',
+        });
     }
 });
 
@@ -60,10 +86,17 @@ router.get('/search', rbacMiddleware('user'), validateQueryParams(['query']), as
         const { query } = req.query;
 
         const searchResults = await searchApiDocs(query);
-        res.status(200).json({ message: 'Search results retrieved successfully.', searchResults });
+        res.status(200).json({
+            success: true,
+            message: 'Search results retrieved successfully.',
+            data: searchResults,
+        });
     } catch (error) {
         console.error('Error searching API documentation:', error);
-        res.status(500).json({ error: 'An error occurred while searching API documentation.' });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while searching API documentation.',
+        });
     }
 });
 

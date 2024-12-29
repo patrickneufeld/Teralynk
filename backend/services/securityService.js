@@ -1,21 +1,26 @@
+// File: /backend/services/securityService.js
+
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
-const { hasPermission } = require('./rbacService');
-const { recordActivity } = require('./activityLogService');
+const { hasPermission } = require('./rbacService'); // RBAC integration
+const { recordActivity } = require('./activityLogService'); // Activity logging
 const { query } = require('./db'); // Database integration
 const Redis = require('redis');
 
-// Environment variables for security (set these in a .env file)
+// **Environment Variables**
 const JWT_SECRET = process.env.JWT_SECRET;
 const TOKEN_EXPIRATION = process.env.TOKEN_EXPIRATION || '1h';
 const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
 
-// Initialize Redis for token blacklisting
+// **Initialize Redis Client for Token Blacklisting**
 const redisClient = Redis.createClient({ url: REDIS_URL });
-redisClient.connect().catch(console.error);
+redisClient.connect().catch((error) => {
+    console.error('Error connecting to Redis:', error);
+    process.exit(1); // Exit if Redis connection fails
+});
 
-// Hash a password for secure storage
+// **Hash a Password**
 const hashPassword = async (password) => {
     if (!password) {
         throw new Error('Password is required for hashing.');
@@ -24,7 +29,7 @@ const hashPassword = async (password) => {
     return await bcrypt.hash(password, saltRounds);
 };
 
-// Compare a password with its hashed version
+// **Verify a Password**
 const verifyPassword = async (password, hashedPassword) => {
     if (!password || !hashedPassword) {
         throw new Error('Both password and hashed password are required for verification.');
@@ -32,7 +37,7 @@ const verifyPassword = async (password, hashedPassword) => {
     return bcrypt.compare(password, hashedPassword);
 };
 
-// Generate a JWT token
+// **Generate a JWT Token**
 const generateToken = (userId, permissions = []) => {
     if (!userId) {
         throw new Error('User ID is required to generate a token.');
@@ -41,7 +46,7 @@ const generateToken = (userId, permissions = []) => {
     return jwt.sign(payload, JWT_SECRET, { expiresIn: TOKEN_EXPIRATION });
 };
 
-// Verify a JWT token
+// **Verify a JWT Token**
 const verifyToken = (token) => {
     if (!token) {
         throw new Error('Token is required for verification.');
@@ -49,8 +54,11 @@ const verifyToken = (token) => {
     return jwt.verify(token, JWT_SECRET);
 };
 
-// Encrypt sensitive data
+// **Encrypt Data**
 const encryptData = (data) => {
+    if (!data) {
+        throw new Error('Data is required for encryption.');
+    }
     const algorithm = 'aes-256-ctr';
     const key = crypto.createHash('sha256').update(String(JWT_SECRET)).digest('base64').substr(0, 32);
     const iv = crypto.randomBytes(16);
@@ -61,8 +69,11 @@ const encryptData = (data) => {
     return `${iv.toString('hex')}:${encrypted.toString('hex')}`;
 };
 
-// Decrypt sensitive data
+// **Decrypt Data**
 const decryptData = (encryptedData) => {
+    if (!encryptedData) {
+        throw new Error('Encrypted data is required for decryption.');
+    }
     const algorithm = 'aes-256-ctr';
     const key = crypto.createHash('sha256').update(String(JWT_SECRET)).digest('base64').substr(0, 32);
 
@@ -73,14 +84,14 @@ const decryptData = (encryptedData) => {
     return decrypted.toString('utf8');
 };
 
-// Log a security event (e.g., failed login, token refresh attempt, etc.)
+// **Log Security Events**
 const logSecurityEvent = async (userId, eventType, details = {}) => {
     if (!userId || !eventType) {
         throw new Error('User ID and event type are required for logging security events.');
     }
 
     try {
-        // Store security event in the database (for auditing)
+        // Store security event in the database
         await query(
             'INSERT INTO security_events (user_id, event_type, details, timestamp) VALUES ($1, $2, $3, $4)',
             [userId, eventType, JSON.stringify(details), new Date()]
@@ -96,15 +107,21 @@ const logSecurityEvent = async (userId, eventType, details = {}) => {
     }
 };
 
-// Blacklist a JWT token (invalidate it before its expiration)
+// **Blacklist a Token**
 const blacklistToken = async (token) => {
+    if (!token) {
+        throw new Error('Token is required for blacklisting.');
+    }
     const decoded = jwt.decode(token);
     const expiresIn = decoded.exp - Math.floor(Date.now() / 1000);
-    await redisClient.set(token, 'blacklisted', 'EX', expiresIn); // Store the token in Redis with expiration time
+    await redisClient.set(token, 'blacklisted', 'EX', expiresIn); // Set expiration time
 };
 
-// Check if a JWT token is blacklisted
+// **Check if a Token is Blacklisted**
 const isTokenBlacklisted = async (token) => {
+    if (!token) {
+        throw new Error('Token is required to check blacklist status.');
+    }
     const result = await redisClient.get(token);
     return result !== null;
 };

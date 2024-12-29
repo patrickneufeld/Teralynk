@@ -1,38 +1,100 @@
+// File: /backend/services/authenticationService.js
+
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { query } = require('./db'); // Database integration for user info
 const dotenv = require('dotenv');
+const { recordActivity } = require('./activityLogService'); // Log user activities
 
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'defaultSecretKey';
 const TOKEN_EXPIRATION = process.env.TOKEN_EXPIRATION || '1h';
 
-// Register a new user
+/**
+ * Register a new user.
+ * @param {string} email - The user's email address.
+ * @param {string} password - The user's password.
+ * @param {string} role - The role to assign to the user.
+ * @returns {Promise<object>} - The registered user object.
+ */
 const registerUser = async (email, password, role) => {
+    if (!email || !password || !role) {
+        throw new Error('Email, password, and role are required for registration.');
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
-    const result = await query(
-        'INSERT INTO users (email, password, role) VALUES ($1, $2, $3) RETURNING *',
-        [email, hashedPassword, role]
-    );
-    return result.rows[0];
+
+    try {
+        const result = await query(
+            'INSERT INTO users (email, password, role) VALUES ($1, $2, $3) RETURNING id, email, role',
+            [email, hashedPassword, role]
+        );
+
+        const newUser = result.rows[0];
+        await recordActivity(newUser.id, 'registerUser', null, { email, role });
+
+        console.log(`User registered successfully: ${email}`);
+        return newUser;
+    } catch (error) {
+        console.error('Error registering user:', error.message);
+        throw new Error('An error occurred while registering the user.');
+    }
 };
 
-// Authenticate user and generate JWT token
+/**
+ * Authenticate a user and generate a JWT token.
+ * @param {string} email - The user's email address.
+ * @param {string} password - The user's password.
+ * @returns {Promise<string>} - The JWT token.
+ */
 const authenticateUser = async (email, password) => {
-    const result = await query('SELECT * FROM users WHERE email = $1', [email]);
-    if (result.rows.length === 0) throw new Error('User not found.');
-    
-    const user = result.rows[0];
-    const validPassword = await bcrypt.compare(password, user.password);
-    if (!validPassword) throw new Error('Invalid password.');
+    if (!email || !password) {
+        throw new Error('Email and password are required for authentication.');
+    }
 
-    const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: TOKEN_EXPIRATION });
-    return token;
+    try {
+        const result = await query('SELECT * FROM users WHERE email = $1', [email]);
+        if (result.rows.length === 0) {
+            throw new Error('User not found.');
+        }
+
+        const user = result.rows[0];
+        const validPassword = await bcrypt.compare(password, user.password);
+        if (!validPassword) {
+            throw new Error('Invalid password.');
+        }
+
+        const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: TOKEN_EXPIRATION });
+
+        await recordActivity(user.id, 'authenticateUser', null, { email });
+        console.log(`User authenticated successfully: ${email}`);
+        return token;
+    } catch (error) {
+        console.error('Error authenticating user:', error.message);
+        throw new Error('An error occurred while authenticating the user.');
+    }
 };
 
-// Verify JWT token
-const verifyToken = (token) => jwt.verify(token, JWT_SECRET);
+/**
+ * Verify a JWT token.
+ * @param {string} token - The JWT token to verify.
+ * @returns {object} - The decoded token payload.
+ */
+const verifyToken = (token) => {
+    if (!token) {
+        throw new Error('Token is required for verification.');
+    }
+
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        console.log('Token verified successfully.');
+        return decoded;
+    } catch (error) {
+        console.error('Error verifying token:', error.message);
+        throw new Error('Invalid or expired token.');
+    }
+};
 
 module.exports = {
     registerUser,

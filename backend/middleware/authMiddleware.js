@@ -43,14 +43,16 @@ const authenticateUser = async (req, res, next) => {
         const decoded = await promisify(jwt.verify)(token, getKey, {
             audience: JWT_AUDIENCE,
             issuer: `https://cognito-idp.${COGNITO_REGION}.amazonaws.com/${COGNITO_POOL_ID}`,
-            algorithms: ['RS256']
+            algorithms: ['RS256'],
         });
 
         // **Attach user data to the request object**
-        req.userId = decoded.sub; // Unique user ID from Cognito token
-        req.userEmail = decoded.email; // User's email from token
-        req.role = decoded['cognito:groups']?.[0] || 'Viewer'; // Default to Viewer if no role
-        req.permissions = decoded.scope ? decoded.scope.split(' ') : []; // Custom scope/permissions if present
+        req.user = {
+            id: decoded.sub, // Unique user ID from Cognito token
+            email: decoded.email, // User's email from token
+            role: decoded['cognito:groups']?.[0] || 'Viewer', // Default to Viewer if no role
+            permissions: decoded.scope ? decoded.scope.split(' ') : [], // Custom scope/permissions if present
+        };
 
         next(); // Continue to next middleware
     } catch (error) {
@@ -59,4 +61,33 @@ const authenticateUser = async (req, res, next) => {
     }
 };
 
-module.exports = authenticateUser;
+// **Middleware to enforce role-based access control (RBAC)**
+const rbacMiddleware = (requiredRoles = []) => {
+    return (req, res, next) => {
+        if (!req.user || !requiredRoles.includes(req.user.role)) {
+            return res.status(403).json({ error: 'Access denied. Insufficient permissions.' });
+        }
+        next();
+    };
+};
+
+// **Middleware to enforce specific permissions**
+const permissionMiddleware = (requiredPermissions = []) => {
+    return (req, res, next) => {
+        const hasPermission = requiredPermissions.every((permission) =>
+            req.user.permissions.includes(permission)
+        );
+
+        if (!hasPermission) {
+            return res.status(403).json({ error: 'Access denied. Insufficient permissions.' });
+        }
+
+        next();
+    };
+};
+
+module.exports = {
+    authenticateUser,
+    rbacMiddleware,
+    permissionMiddleware,
+};

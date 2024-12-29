@@ -1,5 +1,3 @@
-// File: /backend/api/versioning.js
-
 const express = require('express');
 const router = express.Router();
 const {
@@ -10,15 +8,15 @@ const {
     detectAndResolveConflicts,
     validateFileExists,
     deleteFileVersion,
-    compareFileVersions
+    compareFileVersions,
 } = require('../services/versioningService');
 const rbacMiddleware = require('../middleware/rbacMiddleware');
 
 // Middleware to validate request body
 const validateRequestBody = (requiredFields) => (req, res, next) => {
-    const missingFields = requiredFields.filter(field => !req.body[field]);
+    const missingFields = requiredFields.filter((field) => !req.body[field]);
     if (missingFields.length > 0) {
-        return res.status(400).json({ error: `Missing required fields: ${missingFields.join(', ')}` });
+        return res.status(400).json({ success: false, error: `Missing required fields: ${missingFields.join(', ')}` });
     }
     next();
 };
@@ -28,31 +26,49 @@ router.post('/save-version', rbacMiddleware('user'), validateRequestBody(['fileP
     try {
         const { filePath, userId, changes, metadata = {} } = req.body;
 
-        // Validate the file exists before saving a version
-        await validateFileExists(filePath);
+        await validateFileExists(filePath); // Ensure file exists
 
         const newVersion = await saveFileVersion(filePath, userId, changes, metadata);
-        res.status(201).json({ message: 'Version saved successfully.', version: newVersion });
+        res.status(201).json({
+            success: true,
+            message: 'Version saved successfully.',
+            data: newVersion,
+        });
     } catch (error) {
         console.error('Error saving file version:', error);
-        res.status(500).json({ error: 'An error occurred while saving the file version.', details: error.message });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while saving the file version.',
+            details: error.message,
+        });
     }
 });
 
 // **2️⃣ Get version history for a file**
 router.get('/version-history', rbacMiddleware('user'), async (req, res) => {
     try {
-        const { filePath, userId } = req.query;
+        const { filePath, userId, page = 1, limit = 10 } = req.query;
 
         if (!filePath || !userId) {
-            return res.status(400).json({ error: 'File path and user ID are required.' });
+            return res.status(400).json({
+                success: false,
+                error: 'File path and user ID are required.',
+            });
         }
 
-        const history = await getFileVersionHistory(filePath, userId);
-        res.status(200).json({ message: 'Version history retrieved successfully.', history });
+        const history = await getFileVersionHistory(filePath, userId, parseInt(page), parseInt(limit));
+        res.status(200).json({
+            success: true,
+            message: 'Version history retrieved successfully.',
+            data: history,
+        });
     } catch (error) {
         console.error('Error fetching version history:', error);
-        res.status(500).json({ error: 'An error occurred while fetching version history.', details: error.message });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while fetching version history.',
+            details: error.message,
+        });
     }
 });
 
@@ -62,14 +78,25 @@ router.get('/latest-version', rbacMiddleware('user'), async (req, res) => {
         const { filePath, userId } = req.query;
 
         if (!filePath || !userId) {
-            return res.status(400).json({ error: 'File path and user ID are required.' });
+            return res.status(400).json({
+                success: false,
+                error: 'File path and user ID are required.',
+            });
         }
 
         const latestVersion = await getLatestFileVersion(filePath, userId);
-        res.status(200).json({ message: 'Latest file version retrieved successfully.', latestVersion });
+        res.status(200).json({
+            success: true,
+            message: 'Latest file version retrieved successfully.',
+            data: latestVersion,
+        });
     } catch (error) {
         console.error('Error retrieving latest version:', error);
-        res.status(500).json({ error: 'An error occurred while retrieving the latest version.', details: error.message });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while retrieving the latest version.',
+            details: error.message,
+        });
     }
 });
 
@@ -79,10 +106,18 @@ router.post('/rollback-version', rbacMiddleware('user'), validateRequestBody(['f
         const { filePath, userId, versionId } = req.body;
 
         const rolledBackVersion = await rollbackFileVersion(filePath, userId, versionId);
-        res.status(200).json({ message: 'File rolled back successfully.', version: rolledBackVersion });
+        res.status(200).json({
+            success: true,
+            message: 'File rolled back successfully.',
+            data: rolledBackVersion,
+        });
     } catch (error) {
         console.error('Error rolling back file version:', error);
-        res.status(500).json({ error: 'An error occurred while rolling back the version.', details: error.message });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while rolling back the version.',
+            details: error.message,
+        });
     }
 });
 
@@ -92,10 +127,18 @@ router.post('/detect-conflicts', rbacMiddleware('user'), validateRequestBody(['f
         const { filePath, userId, userChanges } = req.body;
 
         const conflictData = await detectAndResolveConflicts(filePath, userId, userChanges);
-        res.status(200).json({ message: 'Conflicts detected and resolved successfully.', conflict: conflictData });
+        res.status(200).json({
+            success: true,
+            message: 'Conflicts detected and resolved successfully.',
+            data: conflictData,
+        });
     } catch (error) {
         console.error('Error detecting conflicts:', error);
-        res.status(500).json({ error: 'An error occurred while detecting conflicts.', details: error.message });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while detecting conflicts.',
+            details: error.message,
+        });
     }
 });
 
@@ -105,10 +148,18 @@ router.delete('/delete-version', rbacMiddleware('user'), validateRequestBody(['f
         const { filePath, versionId } = req.body;
 
         const response = await deleteFileVersion(filePath, versionId);
-        res.status(200).json({ message: 'File version deleted successfully.', response });
+        res.status(200).json({
+            success: true,
+            message: 'File version deleted successfully.',
+            data: response,
+        });
     } catch (error) {
         console.error('Error deleting file version:', error);
-        res.status(500).json({ error: 'An error occurred while deleting the file version.', details: error.message });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while deleting the file version.',
+            details: error.message,
+        });
     }
 });
 
@@ -118,10 +169,18 @@ router.post('/compare-versions', rbacMiddleware('user'), validateRequestBody(['f
         const { filePath, version1Id, version2Id } = req.body;
 
         const comparisonResult = await compareFileVersions(filePath, version1Id, version2Id);
-        res.status(200).json({ message: 'File versions compared successfully.', comparison: comparisonResult });
+        res.status(200).json({
+            success: true,
+            message: 'File versions compared successfully.',
+            data: comparisonResult,
+        });
     } catch (error) {
         console.error('Error comparing file versions:', error);
-        res.status(500).json({ error: 'An error occurred while comparing file versions.', details: error.message });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while comparing file versions.',
+            details: error.message,
+        });
     }
 });
 

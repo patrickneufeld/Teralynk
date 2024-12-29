@@ -12,12 +12,19 @@ const jwt = require('jsonwebtoken');
 // Load environment variables from .env file
 dotenv.config();
 
+// Validate critical environment variables
+['AWS_REGION', 'BUCKET_NAME', 'JWT_SECRET'].forEach((key) => {
+    if (!process.env[key]) {
+        throw new Error(`Environment variable ${key} is not set.`);
+    }
+});
+
 // Initialize Express app
 const app = express();
 
 // Initialize S3 client
-const s3Client = new S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
-const BUCKET_NAME = process.env.BUCKET_NAME || 'teralynk-storage';
+const s3Client = new S3Client({ region: process.env.AWS_REGION });
+const BUCKET_NAME = process.env.BUCKET_NAME;
 
 // Set up middleware
 app.use(cors({ origin: process.env.ALLOWED_ORIGIN || 'http://localhost:3000' }));
@@ -31,6 +38,12 @@ const logger = winston.createLogger({
         new winston.transports.File({ filename: 'error.log', level: 'error' }),
         new winston.transports.File({ filename: 'combined.log' }),
     ],
+});
+
+// Centralized error handler
+app.use((err, req, res, next) => {
+    logger.error(err.message);
+    res.status(err.status || 500).send({ error: err.message });
 });
 
 // Middleware for authentication
@@ -49,16 +62,15 @@ const authenticate = (req, res, next) => {
     }
 };
 
-// File upload route with user ID verification
-app.post('/api/files/upload', authenticate, (req, res) => {
+// File upload route
+app.post('/api/files/upload', authenticate, (req, res, next) => {
     const form = new formidable.IncomingForm();
     form.parse(req, (err, fields, files) => {
         if (err) {
-            logger.error('Error parsing form:', err);
-            return res.status(400).send('Error parsing form.');
+            return next(err);
         }
 
-        const { userId } = req.user; // Get user ID from token
+        const { userId } = req.user;
         const file = files.file;
 
         if (!file) {
@@ -74,15 +86,12 @@ app.post('/api/files/upload', authenticate, (req, res) => {
 
         s3Client.send(new PutObjectCommand(params))
             .then(() => res.send({ message: 'File uploaded successfully' }))
-            .catch(err => {
-                logger.error('Error uploading file:', err);
-                res.status(500).send('Error uploading file.');
-            });
+            .catch(next);
     });
 });
 
 // Generate signed URL for downloading files
-app.post('/api/files/generate-link', authenticate, async (req, res) => {
+app.post('/api/files/generate-link', authenticate, async (req, res, next) => {
     const { fileName, expiresIn = 3600 } = req.body;
 
     const params = {
@@ -95,13 +104,12 @@ app.post('/api/files/generate-link', authenticate, async (req, res) => {
         const url = await getSignedUrl(s3Client, command, { expiresIn });
         res.send({ url });
     } catch (err) {
-        logger.error('Error generating signed URL:', err);
-        res.status(500).send('Error generating signed URL.');
+        next(err);
     }
 });
 
 // Paginated file listing
-app.get('/api/files/list', authenticate, async (req, res) => {
+app.get('/api/files/list', authenticate, async (req, res, next) => {
     const { continuationToken, maxKeys = 10 } = req.query;
 
     const params = {
@@ -120,8 +128,7 @@ app.get('/api/files/list', authenticate, async (req, res) => {
             continuationToken: data.NextContinuationToken || null,
         });
     } catch (err) {
-        logger.error('Error listing files:', err);
-        res.status(500).send('Error listing files.');
+        next(err);
     }
 });
 

@@ -1,8 +1,10 @@
+// File: /backend/services/notificationDashboardService.js
+
 const { v4: uuidv4 } = require('uuid');
 const { query } = require('./db'); // Database integration
 const { recordActivity } = require('./activityLogService');
 
-// Add a new notification for a user
+// **Add a new notification for a user**
 const addNotification = async (userId, type, message, data = {}) => {
     if (!userId || !type || !message) {
         throw new Error('User ID, type, and message are required to add a notification.');
@@ -20,9 +22,9 @@ const addNotification = async (userId, type, message, data = {}) => {
     try {
         // Insert notification into the database
         await query(
-            `INSERT INTO user_notifications (user_id, type, message, data, timestamp, read) 
-            VALUES ($1, $2, $3, $4, $5, $6)`,
-            [userId, type, message, JSON.stringify(data), notification.timestamp, notification.read]
+            `INSERT INTO user_notifications (id, user_id, type, message, data, timestamp, read) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+            [notification.id, userId, type, message, JSON.stringify(data), notification.timestamp, notification.read]
         );
 
         // Log activity for adding a notification
@@ -36,7 +38,7 @@ const addNotification = async (userId, type, message, data = {}) => {
     }
 };
 
-// Get all notifications for a user
+// **Get all notifications for a user**
 const getNotifications = async (userId) => {
     try {
         const result = await query(
@@ -58,7 +60,7 @@ const getNotifications = async (userId) => {
     }
 };
 
-// Mark a notification as read
+// **Mark a notification as read**
 const markAsRead = async (userId, notificationId) => {
     try {
         // Find the notification by user and notification ID
@@ -88,7 +90,7 @@ const markAsRead = async (userId, notificationId) => {
     }
 };
 
-// Clear all notifications for a user
+// **Clear all notifications for a user**
 const clearNotifications = async (userId) => {
     try {
         // Delete notifications from the database
@@ -105,7 +107,7 @@ const clearNotifications = async (userId) => {
     }
 };
 
-// Automatically expire notifications after a certain period (e.g., 7 days)
+// **Automatically expire notifications after a certain period (e.g., 7 days)**
 const expireOldNotifications = async () => {
     try {
         const expirationDate = new Date();
@@ -123,10 +125,26 @@ const expireOldNotifications = async () => {
     }
 };
 
+// **Get the count of unread notifications for a user**
+const getUnreadCount = async (userId) => {
+    try {
+        const result = await query(
+            'SELECT COUNT(*) AS unread_count FROM user_notifications WHERE user_id = $1 AND read = false',
+            [userId]
+        );
+
+        return { unreadCount: parseInt(result.rows[0].unread_count, 10) };
+    } catch (error) {
+        console.error('Error retrieving unread notifications count:', error);
+        throw new Error('Failed to retrieve unread notifications count.');
+    }
+};
+
 module.exports = {
     addNotification,
     getNotifications,
     markAsRead,
     clearNotifications,
     expireOldNotifications,
+    getUnreadCount,
 };

@@ -1,5 +1,3 @@
-// File: /backend/api/activityLog.js
-
 const express = require('express');
 const router = express.Router();
 const {
@@ -19,6 +17,18 @@ const validateActivityInput = (req, res, next) => {
     next();
 };
 
+// Middleware to validate query parameters for GET requests
+const validateQueryParams = (req, res, next) => {
+    const { startDate, endDate } = req.query;
+    if (startDate && isNaN(Date.parse(startDate))) {
+        return res.status(400).json({ error: 'Invalid startDate format.' });
+    }
+    if (endDate && isNaN(Date.parse(endDate))) {
+        return res.status(400).json({ error: 'Invalid endDate format.' });
+    }
+    next();
+};
+
 // Record a file activity
 router.post('/record', validateActivityInput, async (req, res) => {
     try {
@@ -32,10 +42,10 @@ router.post('/record', validateActivityInput, async (req, res) => {
     }
 });
 
-// Retrieve activity logs with filters
-router.get('/logs', async (req, res) => {
+// Retrieve activity logs with filters and pagination
+router.get('/logs', validateQueryParams, async (req, res) => {
     try {
-        const { userId, filePath, action, startDate, endDate } = req.query;
+        const { userId, filePath, action, startDate, endDate, page = 1, limit = 10 } = req.query;
 
         const filters = {
             userId,
@@ -45,7 +55,7 @@ router.get('/logs', async (req, res) => {
             endDate: endDate ? new Date(endDate) : undefined,
         };
 
-        const logs = await getLogs(filters);
+        const logs = await getLogs(filters, { page: parseInt(page), limit: parseInt(limit) });
         res.status(200).json({ logs });
     } catch (error) {
         console.error('Error retrieving logs:', error);
@@ -57,6 +67,11 @@ router.get('/logs', async (req, res) => {
 router.get('/stats', async (req, res) => {
     try {
         const { userId } = req.query;
+
+        if (!userId) {
+            return res.status(400).json({ error: 'User ID is required to fetch statistics.' });
+        }
+
         const stats = await getActivityStats(userId);
         res.status(200).json({ stats });
     } catch (error) {
@@ -65,7 +80,7 @@ router.get('/stats', async (req, res) => {
     }
 });
 
-// Delete a specific activity log by ID
+// Delete a specific activity log by ID with permission check
 router.delete('/logs/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -78,7 +93,7 @@ router.delete('/logs/:id', async (req, res) => {
         if (result) {
             res.status(200).json({ message: 'Log deleted successfully.' });
         } else {
-            res.status(404).json({ error: 'Log not found.' });
+            res.status(404).json({ error: 'Log not found or permission denied.' });
         }
     } catch (error) {
         console.error('Error deleting log:', error);
@@ -86,7 +101,7 @@ router.delete('/logs/:id', async (req, res) => {
     }
 });
 
-// Clear all activity logs
+// Clear all activity logs (admin-only operation)
 router.delete('/clear', async (req, res) => {
     try {
         const response = await clearLogs();

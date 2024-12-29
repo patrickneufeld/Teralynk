@@ -1,5 +1,3 @@
-// File: /backend/api/encryption.js
-
 const express = require('express');
 const router = express.Router();
 const {
@@ -15,7 +13,7 @@ const rbacMiddleware = require('../middleware/rbacMiddleware');
 const validateRequestBody = (requiredFields) => (req, res, next) => {
     const missingFields = requiredFields.filter(field => !req.body[field]);
     if (missingFields.length > 0) {
-        return res.status(400).json({ error: `Missing required fields: ${missingFields.join(', ')}` });
+        return res.status(400).json({ success: false, error: `Missing required fields: ${missingFields.join(', ')}` });
     }
     next();
 };
@@ -26,10 +24,17 @@ router.post('/encrypt', rbacMiddleware('user'), validateRequestBody(['filePath',
         const { filePath, encryptedFilePath } = req.body;
 
         const result = await encryptFile(filePath, encryptedFilePath);
-        res.status(200).json({ message: 'File encrypted successfully.', result });
+        res.status(200).json({
+            success: true,
+            message: 'File encrypted successfully.',
+            data: result,
+        });
     } catch (error) {
         console.error('Error encrypting file:', error);
-        res.status(500).json({ error: 'An error occurred while encrypting the file.' });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while encrypting the file.',
+        });
     }
 });
 
@@ -39,10 +44,17 @@ router.post('/decrypt', rbacMiddleware('user'), validateRequestBody(['encryptedF
         const { encryptedFilePath, decryptedFilePath, ivHex } = req.body;
 
         const result = await decryptFile(encryptedFilePath, decryptedFilePath, ivHex);
-        res.status(200).json({ message: 'File decrypted successfully.', result });
+        res.status(200).json({
+            success: true,
+            message: 'File decrypted successfully.',
+            data: result,
+        });
     } catch (error) {
         console.error('Error decrypting file:', error);
-        res.status(500).json({ error: 'An error occurred while decrypting the file.' });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while decrypting the file.',
+        });
     }
 });
 
@@ -50,10 +62,20 @@ router.post('/decrypt', rbacMiddleware('user'), validateRequestBody(['encryptedF
 router.get('/generate-key', rbacMiddleware('admin'), async (req, res) => {
     try {
         const newKey = await generateSecureKey();
-        res.status(200).json({ message: 'New encryption key generated.', key: newKey });
+
+        // Mask the key in the response to prevent direct exposure
+        const maskedKey = `${newKey.slice(0, 4)}...${newKey.slice(-4)}`;
+        res.status(200).json({
+            success: true,
+            message: 'New encryption key generated.',
+            data: { maskedKey },
+        });
     } catch (error) {
         console.error('Error generating encryption key:', error);
-        res.status(500).json({ error: 'An error occurred while generating a new encryption key.' });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while generating a new encryption key.',
+        });
     }
 });
 
@@ -63,10 +85,17 @@ router.post('/encrypt-text', rbacMiddleware('user'), validateRequestBody(['text'
         const { text } = req.body;
 
         const result = await encryptText(text);
-        res.status(200).json({ message: 'Text encrypted successfully.', result });
+        res.status(200).json({
+            success: true,
+            message: 'Text encrypted successfully.',
+            data: result,
+        });
     } catch (error) {
         console.error('Error encrypting text:', error);
-        res.status(500).json({ error: 'An error occurred while encrypting the text.' });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while encrypting the text.',
+        });
     }
 });
 
@@ -76,10 +105,17 @@ router.post('/decrypt-text', rbacMiddleware('user'), validateRequestBody(['encry
         const { encryptedText, ivHex } = req.body;
 
         const result = await decryptText(encryptedText, ivHex);
-        res.status(200).json({ message: 'Text decrypted successfully.', result });
+        res.status(200).json({
+            success: true,
+            message: 'Text decrypted successfully.',
+            data: result,
+        });
     } catch (error) {
         console.error('Error decrypting text:', error);
-        res.status(500).json({ error: 'An error occurred while decrypting the text.' });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while decrypting the text.',
+        });
     }
 });
 

@@ -1,5 +1,3 @@
-// File: /backend/api/auditLog.js
-
 const express = require('express');
 const router = express.Router();
 const {
@@ -20,23 +18,35 @@ const validateRequestBody = (requiredFields) => (req, res, next) => {
     next();
 };
 
+// Middleware to validate query parameters
+const validateQueryParams = (req, res, next) => {
+    const { startDate, endDate } = req.query;
+    if (startDate && isNaN(Date.parse(startDate))) {
+        return res.status(400).json({ error: 'Invalid startDate format.' });
+    }
+    if (endDate && isNaN(Date.parse(endDate))) {
+        return res.status(400).json({ error: 'Invalid endDate format.' });
+    }
+    next();
+};
+
 // **1️⃣ Log an action**
 router.post('/log', privacyMiddleware('user'), validateRequestBody(['userId', 'action']), async (req, res) => {
     try {
         const { userId, action, details = {} } = req.body;
 
         const logEntry = await logAction(userId, action, details);
-        res.status(201).json({ message: 'Action logged successfully.', logEntry });
+        res.status(201).json({ success: true, message: 'Action logged successfully.', data: logEntry });
     } catch (error) {
         console.error('Error logging action:', error);
-        res.status(500).json({ error: 'An error occurred while logging the action.' });
+        res.status(500).json({ success: false, error: 'An error occurred while logging the action.' });
     }
 });
 
-// **2️⃣ Retrieve audit logs**
-router.get('/logs', privacyMiddleware('admin'), async (req, res) => {
+// **2️⃣ Retrieve audit logs with filters and pagination**
+router.get('/logs', privacyMiddleware('admin'), validateQueryParams, async (req, res) => {
     try {
-        const { userId, action, startDate, endDate } = req.query;
+        const { userId, action, startDate, endDate, page = 1, limit = 10 } = req.query;
 
         const filters = {
             userId,
@@ -45,11 +55,11 @@ router.get('/logs', privacyMiddleware('admin'), async (req, res) => {
             endDate: endDate ? new Date(endDate) : undefined,
         };
 
-        const logs = await getLogs(filters);
-        res.status(200).json({ logs });
+        const logs = await getLogs(filters, { page: parseInt(page), limit: parseInt(limit) });
+        res.status(200).json({ success: true, message: 'Audit logs retrieved successfully.', data: logs });
     } catch (error) {
         console.error('Error retrieving logs:', error);
-        res.status(500).json({ error: 'An error occurred while retrieving logs.' });
+        res.status(500).json({ success: false, error: 'An error occurred while retrieving logs.' });
     }
 });
 
@@ -57,10 +67,15 @@ router.get('/logs', privacyMiddleware('admin'), async (req, res) => {
 router.get('/summary', privacyMiddleware('admin'), async (req, res) => {
     try {
         const summary = await getAuditSummary();
-        res.status(200).json({ message: 'Audit summary retrieved successfully.', summary });
+
+        if (!summary || summary.length === 0) {
+            return res.status(404).json({ success: false, error: 'No audit data available.' });
+        }
+
+        res.status(200).json({ success: true, message: 'Audit summary retrieved successfully.', data: summary });
     } catch (error) {
         console.error('Error retrieving audit summary:', error);
-        res.status(500).json({ error: 'An error occurred while retrieving the audit summary.' });
+        res.status(500).json({ success: false, error: 'An error occurred while retrieving the audit summary.' });
     }
 });
 
@@ -70,29 +85,33 @@ router.delete('/logs/:id', privacyMiddleware('admin'), async (req, res) => {
         const { id } = req.params;
 
         if (!id) {
-            return res.status(400).json({ error: 'Log ID is required.' });
+            return res.status(400).json({ success: false, error: 'Log ID is required.' });
         }
 
         const result = await deleteLogById(id);
         if (result) {
-            res.status(200).json({ message: 'Log deleted successfully.' });
+            res.status(200).json({ success: true, message: 'Log deleted successfully.' });
         } else {
-            res.status(404).json({ error: 'Log not found.' });
+            res.status(404).json({ success: false, error: 'Log not found.' });
         }
     } catch (error) {
         console.error('Error deleting log:', error);
-        res.status(500).json({ error: 'An error occurred while deleting the log.' });
+        res.status(500).json({ success: false, error: 'An error occurred while deleting the log.' });
     }
 });
 
-// **5️⃣ Clear all audit logs**
+// **5️⃣ Clear all audit logs (admin-only)**
 router.delete('/clear', privacyMiddleware('admin'), async (req, res) => {
     try {
         const response = await clearLogs();
-        res.status(200).json(response);
+
+        // Log admin action for audit purposes
+        await logAction(req.user.id, 'CLEAR_LOGS', { admin: req.user.id });
+
+        res.status(200).json({ success: true, message: 'All audit logs cleared successfully.', data: response });
     } catch (error) {
         console.error('Error clearing logs:', error);
-        res.status(500).json({ error: 'An error occurred while clearing logs.' });
+        res.status(500).json({ success: false, error: 'An error occurred while clearing logs.' });
     }
 });
 

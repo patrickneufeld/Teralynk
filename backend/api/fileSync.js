@@ -1,5 +1,3 @@
-// File: /backend/api/fileSync.js
-
 const express = require('express');
 const router = express.Router();
 const {
@@ -8,15 +6,15 @@ const {
     getSyncStatus,
     updateSyncState,
     listSyncHistory,
-    getFileSyncDetails
+    getFileSyncDetails,
 } = require('../services/fileSyncService');
 const rbacMiddleware = require('../middleware/rbacMiddleware');
 
 // Middleware to validate request body
 const validateRequestBody = (requiredFields) => (req, res, next) => {
-    const missingFields = requiredFields.filter(field => !req.body[field]);
+    const missingFields = requiredFields.filter((field) => !req.body[field]);
     if (missingFields.length > 0) {
-        return res.status(400).json({ error: `Missing required fields: ${missingFields.join(', ')}` });
+        return res.status(400).json({ success: false, error: `Missing required fields: ${missingFields.join(', ')}` });
     }
     next();
 };
@@ -27,10 +25,17 @@ router.post('/sync', rbacMiddleware('user'), validateRequestBody(['filePath', 'u
         const { filePath, userId, changes } = req.body;
 
         const syncResult = await syncFile(filePath, userId, changes);
-        res.status(200).json({ message: 'File synced successfully.', syncResult });
+        res.status(200).json({
+            success: true,
+            message: 'File synced successfully.',
+            data: syncResult,
+        });
     } catch (error) {
         console.error('Error syncing file:', error);
-        res.status(500).json({ error: 'An error occurred while syncing the file.' });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while syncing the file.',
+        });
     }
 });
 
@@ -40,10 +45,17 @@ router.post('/resolve-conflicts', rbacMiddleware('user'), validateRequestBody(['
         const { filePath, userId, userChanges } = req.body;
 
         const conflictResolution = await resolveFileConflicts(filePath, userId, userChanges);
-        res.status(200).json({ message: 'Conflict resolution completed.', conflictResolution });
+        res.status(200).json({
+            success: true,
+            message: 'Conflict resolution completed.',
+            data: conflictResolution,
+        });
     } catch (error) {
         console.error('Error resolving conflicts:', error);
-        res.status(500).json({ error: 'An error occurred while resolving conflicts.' });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while resolving conflicts.',
+        });
     }
 });
 
@@ -53,14 +65,24 @@ router.get('/status', rbacMiddleware('user'), async (req, res) => {
         const { filePath } = req.query;
 
         if (!filePath) {
-            return res.status(400).json({ error: 'File path is required.' });
+            return res.status(400).json({
+                success: false,
+                error: 'File path is required.',
+            });
         }
 
         const syncStatus = await getSyncStatus(filePath);
-        res.status(200).json({ message: 'Sync status retrieved successfully.', syncStatus });
+        res.status(200).json({
+            success: true,
+            message: 'Sync status retrieved successfully.',
+            data: syncStatus,
+        });
     } catch (error) {
         console.error('Error retrieving sync status:', error);
-        res.status(500).json({ error: 'An error occurred while retrieving sync status.' });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while retrieving sync status.',
+        });
     }
 });
 
@@ -70,10 +92,17 @@ router.post('/update-state', rbacMiddleware('user'), validateRequestBody(['fileP
         const { filePath, state } = req.body;
 
         const updatedState = await updateSyncState(filePath, state);
-        res.status(200).json({ message: 'File sync state updated successfully.', updatedState });
+        res.status(200).json({
+            success: true,
+            message: 'File sync state updated successfully.',
+            data: updatedState,
+        });
     } catch (error) {
         console.error('Error updating sync state:', error);
-        res.status(500).json({ error: 'An error occurred while updating sync state.' });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while updating sync state.',
+        });
     }
 });
 
@@ -83,14 +112,24 @@ router.get('/history', rbacMiddleware('user'), async (req, res) => {
         const { filePath, userId } = req.query;
 
         if (!filePath || !userId) {
-            return res.status(400).json({ error: 'File path and user ID are required.' });
+            return res.status(400).json({
+                success: false,
+                error: 'File path and user ID are required.',
+            });
         }
 
         const history = await listSyncHistory(filePath, userId);
-        res.status(200).json({ message: 'Sync history retrieved successfully.', history });
+        res.status(200).json({
+            success: true,
+            message: 'Sync history retrieved successfully.',
+            data: history,
+        });
     } catch (error) {
         console.error('Error retrieving sync history:', error);
-        res.status(500).json({ error: 'An error occurred while retrieving sync history.' });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while retrieving sync history.',
+        });
     }
 });
 
@@ -100,14 +139,24 @@ router.get('/details/:filePath', rbacMiddleware('user'), async (req, res) => {
         const { filePath } = req.params;
 
         if (!filePath) {
-            return res.status(400).json({ error: 'File path is required.' });
+            return res.status(400).json({
+                success: false,
+                error: 'File path is required.',
+            });
         }
 
         const fileDetails = await getFileSyncDetails(filePath);
-        res.status(200).json({ message: 'File sync details retrieved successfully.', fileDetails });
+        res.status(200).json({
+            success: true,
+            message: 'File sync details retrieved successfully.',
+            data: fileDetails,
+        });
     } catch (error) {
         console.error('Error retrieving file sync details:', error);
-        res.status(500).json({ error: 'An error occurred while retrieving file sync details.' });
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while retrieving file sync details.',
+        });
     }
 });
 

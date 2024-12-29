@@ -1,3 +1,5 @@
+// File: /backend/services/encryptionService.js
+
 const crypto = require('crypto');
 const fs = require('fs').promises; // Use async fs methods
 const path = require('path');
@@ -10,7 +12,7 @@ dotenv.config();
 
 // **AWS Secrets Manager Configuration**
 const secretsManager = new AWS.SecretsManager({
-    region: process.env.AWS_REGION || 'us-east-1'
+    region: process.env.AWS_REGION || 'us-east-1',
 });
 
 // **Encryption configuration**
@@ -34,10 +36,10 @@ const getEncryptionKey = async () => {
 const encryptFile = async (filePath, encryptedFilePath) => {
     try {
         if (!filePath || !encryptedFilePath) throw new Error('File path and encrypted file path are required.');
-        
+
         const fileExists = await fs.stat(filePath).catch(() => false);
         if (!fileExists) throw new Error(`File does not exist: ${filePath}`);
-        
+
         const encryptionKey = await getEncryptionKey();
         const iv = crypto.randomBytes(IV_LENGTH);
         const cipher = crypto.createCipheriv(ALGORITHM, encryptionKey, iv);
@@ -69,10 +71,10 @@ const encryptFile = async (filePath, encryptedFilePath) => {
 const decryptFile = async (encryptedFilePath, decryptedFilePath, ivHex) => {
     try {
         if (!encryptedFilePath || !decryptedFilePath || !ivHex) throw new Error('Encrypted file path, decrypted file path, and IV are required.');
-        
+
         const fileExists = await fs.stat(encryptedFilePath).catch(() => false);
         if (!fileExists) throw new Error(`Encrypted file does not exist: ${encryptedFilePath}`);
-        
+
         const encryptionKey = await getEncryptionKey();
         const iv = Buffer.from(ivHex, 'hex');
         const decipher = crypto.createDecipheriv(ALGORITHM, encryptionKey, iv);
@@ -107,8 +109,48 @@ const generateSecureKey = () => {
     return key;
 };
 
+// **Encrypt text**
+const encryptText = async (text) => {
+    try {
+        if (!text) throw new Error('Text to encrypt is required.');
+
+        const encryptionKey = await getEncryptionKey();
+        const iv = crypto.randomBytes(IV_LENGTH);
+        const cipher = crypto.createCipheriv(ALGORITHM, encryptionKey, iv);
+
+        const encryptedText = Buffer.concat([cipher.update(text, 'utf8'), cipher.final()]).toString('hex');
+        return { encryptedText, iv: iv.toString('hex') };
+    } catch (error) {
+        console.error('Error encrypting text:', error);
+        throw new Error('Text encryption failed.');
+    }
+};
+
+// **Decrypt text**
+const decryptText = async (encryptedText, ivHex) => {
+    try {
+        if (!encryptedText || !ivHex) throw new Error('Encrypted text and IV are required.');
+
+        const encryptionKey = await getEncryptionKey();
+        const iv = Buffer.from(ivHex, 'hex');
+        const decipher = crypto.createDecipheriv(ALGORITHM, encryptionKey, iv);
+
+        const decryptedText = Buffer.concat([
+            decipher.update(Buffer.from(encryptedText, 'hex')),
+            decipher.final(),
+        ]).toString('utf8');
+
+        return decryptedText;
+    } catch (error) {
+        console.error('Error decrypting text:', error);
+        throw new Error('Text decryption failed.');
+    }
+};
+
 module.exports = {
     encryptFile,
     decryptFile,
     generateSecureKey,
+    encryptText,
+    decryptText,
 };
