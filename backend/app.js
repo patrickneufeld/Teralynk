@@ -4,18 +4,18 @@ const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const cors = require('cors');
 const fs = require('fs');
 const formidable = require('formidable');
-const shortid = require('shortid');
 const winston = require('winston');
 const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
 
-// Load environment variables from .env file
+// Load environment variables
 dotenv.config();
 
 // Validate critical environment variables
-['AWS_REGION', 'BUCKET_NAME', 'JWT_SECRET'].forEach((key) => {
+['AWS_REGION', 'BUCKET_NAME', 'JWT_SECRET', 'PORT'].forEach((key) => {
     if (!process.env[key]) {
-        throw new Error(`Environment variable ${key} is not set.`);
+        console.error(`Environment variable ${key} is not set.`);
+        process.exit(1); // Exit if critical variables are missing
     }
 });
 
@@ -58,7 +58,7 @@ const authenticate = (req, res, next) => {
         next();
     } catch (err) {
         logger.error('Invalid token:', err);
-        return res.status(401).send('Unauthorized: Invalid token');
+        res.status(401).send('Unauthorized: Invalid token');
     }
 };
 
@@ -67,7 +67,8 @@ app.post('/api/files/upload', authenticate, (req, res, next) => {
     const form = new formidable.IncomingForm();
     form.parse(req, (err, fields, files) => {
         if (err) {
-            return next(err);
+            logger.error('Form parsing error:', err);
+            return res.status(400).send('Error parsing the file upload form.');
         }
 
         const { userId } = req.user;
@@ -75,6 +76,12 @@ app.post('/api/files/upload', authenticate, (req, res, next) => {
 
         if (!file) {
             return res.status(400).send('No file provided.');
+        }
+
+        // Optional: Validate file MIME type
+        const allowedMimeTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+        if (!allowedMimeTypes.includes(file.mimetype)) {
+            return res.status(400).send('Invalid file type. Allowed: JPEG, PNG, PDF.');
         }
 
         const params = {
@@ -86,7 +93,10 @@ app.post('/api/files/upload', authenticate, (req, res, next) => {
 
         s3Client.send(new PutObjectCommand(params))
             .then(() => res.send({ message: 'File uploaded successfully' }))
-            .catch(next);
+            .catch((error) => {
+                logger.error('File upload error:', error);
+                next(error);
+            });
     });
 });
 
@@ -103,8 +113,9 @@ app.post('/api/files/generate-link', authenticate, async (req, res, next) => {
         const command = new GetObjectCommand(params);
         const url = await getSignedUrl(s3Client, command, { expiresIn });
         res.send({ url });
-    } catch (err) {
-        next(err);
+    } catch (error) {
+        logger.error('Error generating signed URL:', error);
+        next(error);
     }
 });
 
@@ -127,8 +138,9 @@ app.get('/api/files/list', authenticate, async (req, res, next) => {
             files,
             continuationToken: data.NextContinuationToken || null,
         });
-    } catch (err) {
-        next(err);
+    } catch (error) {
+        logger.error('Error listing files:', error);
+        next(error);
     }
 });
 
