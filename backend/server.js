@@ -1,6 +1,9 @@
-require('dotenv').config(); // Load environment variables
+// Load environment variables
+require('dotenv').config();
+
 const express = require('express');
 const http = require('http');
+const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
@@ -8,13 +11,17 @@ const compression = require('compression');
 const winston = require('winston');
 const rateLimit = require('express-rate-limit');
 const { setupNotificationWebSocket } = require('./api/notification');
-const { authenticateToken } = require('./middleware/authMiddleware');
+const { authenticateUser } = require('./middleware/authMiddleware');
 const fileUploadRoute = require('./api/files');
 const workflowRouter = require('./api/workflow');
 const webhooksRouter = require('./api/webhooks');
 const searchRouter = require('./api/search');
 const docsRouter = require('./api/docs');
 const metricsRouter = require('./api/metrics');
+const authRoutes = require('./routes/authRoutes'); // Auth Routes
+const contactRoutes = require('./routes/contactRoutes'); // Contact Routes
+const dashboardRoutes = require('./routes/dashboardRoutes'); // Dashboard Routes
+const settingsRoutes = require('./routes/settingsRoutes'); // Settings Routes
 const { blacklistToken } = require('./services/sessionService');
 
 // Initialize Express app
@@ -22,12 +29,12 @@ const app = express();
 const server = http.createServer(app);
 
 // Middleware setup
-app.use(express.json()); // JSON body parser
-app.use(express.urlencoded({ extended: true })); // URL-encoded body parser
-app.use(cors({ origin: process.env.ALLOWED_ORIGIN || 'http://localhost:3000' })); // Enable CORS
-app.use(helmet()); // Add security headers
-app.use(morgan('combined')); // Log HTTP requests
-app.use(compression()); // Compress HTTP responses
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cors({ origin: process.env.ALLOWED_ORIGIN || 'http://localhost:3000' }));
+app.use(helmet());
+app.use(morgan('combined'));
+app.use(compression());
 
 // Logger setup with winston
 const logger = winston.createLogger({
@@ -42,19 +49,33 @@ const logger = winston.createLogger({
 
 // Rate limiting middleware
 const apiLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per window
+    windowMs: 15 * 60 * 1000, 
+    max: 100, 
     message: 'Too many requests from this IP, please try again later.',
 });
 
 const uploadLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5, // Limit file uploads to 5 requests per window
+    windowMs: 15 * 60 * 1000, 
+    max: 5, 
     message: 'Too many file upload requests. Please try again later.',
 });
 
-// Apply global rate limiter to all API routes
+// Apply rate limiter
 app.use('/api', apiLimiter);
+
+// Root Route
+app.get('/', (req, res) => {
+    res.status(200).json({
+        message: 'Welcome to the Teralynk API!',
+        availableRoutes: {
+            health: '/health',
+            auth: '/api/auth',
+            contact: '/api/contact',
+            dashboard: '/api/user',
+            settings: '/api/settings',
+        },
+    });
+});
 
 // Health Check
 app.get('/health', (req, res) => {
@@ -66,15 +87,41 @@ app.get('/health', (req, res) => {
 });
 
 // API Routes
-app.use('/api/files', authenticateToken, uploadLimiter, fileUploadRoute); // File Upload API
-app.use('/api/workflows', authenticateToken, workflowRouter); // Workflow API
-app.use('/api/webhooks', webhooksRouter); // Webhooks API
-app.use('/api/search', authenticateToken, searchRouter); // Search API
-app.use('/api/docs', docsRouter); // Documentation API
-app.use('/api/metrics', authenticateToken, metricsRouter); // Metrics API
+try {
+    app.use('/api/files', authenticateUser, uploadLimiter, fileUploadRoute);
+    app.use('/api/workflows', authenticateUser, workflowRouter);
+    app.use('/api/webhooks', webhooksRouter);
+    app.use('/api/search', authenticateUser, searchRouter);
+    app.use('/api/docs', docsRouter);
+    app.use('/api/metrics', authenticateUser, metricsRouter);
+
+    // Authentication Routes
+    app.use('/api/auth', authRoutes);
+
+    // Contact Form Route
+    app.use('/api/contact', contactRoutes);
+
+    // Dashboard Routes
+    app.use('/api/user', authenticateUser, dashboardRoutes);
+
+    // Settings Routes
+    app.use('/api/settings', authenticateUser, settingsRoutes);
+} catch (error) {
+    logger.error('Error initializing routes:', error);
+    process.exit(1); // Exit process if routes fail to load
+}
+
+// Serve React Frontend (Optional)
+if (process.env.SERVE_FRONTEND === 'true') {
+    app.use(express.static(path.join(__dirname, 'frontend/build')));
+
+    app.get('*', (req, res) => {
+        res.sendFile(path.join(__dirname, 'frontend/build', 'index.html'));
+    });
+}
 
 // Logout and token revocation
-app.post('/api/logout', authenticateToken, async (req, res) => {
+app.post('/api/logout', authenticateUser, async (req, res) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
         return res.status(400).json({ error: 'Token is required.' });
@@ -116,7 +163,7 @@ process.on('SIGTERM', shutdown);
 setupNotificationWebSocket(server);
 
 // Start the server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5001;
 server.listen(PORT, () => {
     console.log(`Server is running at http://localhost:${PORT}`);
     console.log(`WebSocket notifications available at ws://localhost:${PORT}/ws/notifications`);

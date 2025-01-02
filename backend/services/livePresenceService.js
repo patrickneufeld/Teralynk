@@ -1,4 +1,4 @@
-// File Path: backend/collaboration/livePresenceService.js
+// File Path: backend/services/livePresenceService.js
 
 const presenceMap = new Map();
 

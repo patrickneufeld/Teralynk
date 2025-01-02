@@ -76,8 +76,9 @@ const sendNotification = async (userId, notification) => {
             return { success: true };
         } else {
             // **Fallback for offline users**
-            await sendFallbackNotification(userId, notification);
-            return { success: false, message: 'User is offline; fallback notification sent.' };
+            await sendEmailNotification(userId, notification);
+            await sendPushNotification(userId, notification);
+            return { success: false, message: 'User is offline; fallback notifications sent.' };
         }
     } catch (error) {
         console.error(`Error sending notification to user ${userId}:`, error);
@@ -102,19 +103,6 @@ const broadcastNotification = async (notification) => {
     } catch (error) {
         console.error('Error broadcasting notification:', error);
         return { success: false, message: 'An error occurred while broadcasting notifications.' };
-    }
-};
-
-// **Fallback mechanism for offline users (email or push notification)**
-const sendFallbackNotification = async (userId, notification) => {
-    try {
-        console.log(`Sending fallback notification to user: ${userId}`, notification);
-        await sendEmailNotification(userId, notification);
-        await sendPushNotification(userId, notification);
-        return { success: true };
-    } catch (error) {
-        console.error('Error sending fallback notification:', error);
-        return { success: false, message: 'An error occurred while sending fallback notification.' };
     }
 };
 
@@ -148,5 +136,4 @@ module.exports = {
     broadcastNotification,
     setUserPreferences,
     getUserPreferences,
-    createNotification,
 };

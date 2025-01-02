@@ -1,3 +1,5 @@
+// File Path: backend/middleware/authMiddleware.js
+
 const jwt = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa'); // Use JWKS to cache public keys
 const { promisify } = require('util');
@@ -86,8 +88,17 @@ const permissionMiddleware = (requiredPermissions = []) => {
     };
 };
 
+// **Default Middleware to Verify if User is Attached**
+const authMiddleware = (req, res, next) => {
+    if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized access.' });
+    }
+    next();
+};
+
 module.exports = {
     authenticateUser,
     rbacMiddleware,
     permissionMiddleware,
+    authMiddleware,
 };

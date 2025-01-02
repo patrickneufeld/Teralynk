@@ -1,10 +1,22 @@
-const loggingMiddleware = (req, res, next) => {
-    const start = Date.now();
-    res.on('finish', () => {
-        const duration = Date.now() - start;
-        console.log(`${req.method} ${req.originalUrl} - ${res.statusCode} - ${duration}ms`);
-    });
+const winston = require('winston');
+
+// Configure Winston logger
+const logger = winston.createLogger({
+    level: 'info',
+    format: winston.format.json(),
+    transports: [
+        new winston.transports.File({ filename: './backend/logs/error.log', level: 'error' }),
+        new winston.transports.File({ filename: './backend/logs/combined.log' }),
+    ],
+});
+
+// Middleware for logging requests
+const requestLogger = (req, res, next) => {
+    logger.info(`${req.method} ${req.url}`);
     next();
 };
 
-module.exports = loggingMiddleware;
+module.exports = {
+    logger,
+    requestLogger,
+};

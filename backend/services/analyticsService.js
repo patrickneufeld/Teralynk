@@ -1,57 +1,70 @@
-// File: /backend/services/analyticsService.js
-
-const { query } = require('./db');
-const { recordActivity } = require('./activityLogService');
+const Session = require('../models/sessionModel');
+const Participant = require('../models/participantModel');
+const { getEventsForSession } = require('./eventHistoryService'); // Correct import for event history service
 
 /**
- * Fetch user activity data (e.g., usage statistics).
- * @param {string} userId - The ID of the user.
- * @returns {Promise<Array>} - A list of user activity logs.
+ * Get global analytics.
+ * @returns {Promise<object>} - Metrics for all sessions.
  */
-const getUserActivityData = async (userId) => {
-    if (!userId) {
-        throw new Error('User ID is required to fetch activity data.');
-    }
+const getGlobalAnalytics = async () => {
+    const totalSessions = await Session.countDocuments();
+    const totalParticipants = await Participant.countDocuments();
+    const totalEvents = await getEventsForSession(); // Get total events globally
 
-    try {
-        const result = await query(
-            'SELECT * FROM activity_log WHERE user_id = $1 ORDER BY timestamp DESC LIMIT 100',
-            [userId]
-        );
-
-        console.log(`Retrieved activity data for user ${userId}`);
-        await recordActivity(userId, 'getUserActivityData', null, { count: result.rows.length });
-
-        return result.rows;
-    } catch (error) {
-        console.error('Error fetching user activity data:', error.message);
-        throw new Error('An error occurred while retrieving user activity data.');
-    }
+    return {
+        totalSessions,
+        totalParticipants,
+        totalEvents,
+    };
 };
 
 /**
- * Generate a report of system-wide activity.
- * @param {string} adminId - The ID of the admin requesting the report.
- * @returns {Promise<Array>} - A list of system-wide activity logs.
+ * Get analytics for active sessions.
+ * @returns {Promise<Array>} - Metrics for all active sessions.
  */
-const generateSystemActivityReport = async (adminId) => {
-    if (!adminId) {
-        throw new Error('Admin ID is required to generate system activity report.');
+const getActiveSessionsAnalytics = async () => {
+    const activeSessions = await Session.find({ endedAt: null });
+    const analytics = [];
+
+    for (const session of activeSessions) {
+        const totalParticipants = await Participant.countDocuments({ sessionId: session.sessionId });
+        const totalEvents = await getEventsForSession(session.sessionId); // Get events count for each active session
+        analytics.push({
+            sessionId: session.sessionId,
+            fileId: session.fileId,
+            totalParticipants,
+            totalEvents,
+            createdAt: session.createdAt,
+        });
     }
 
-    try {
-        const result = await query(
-            'SELECT * FROM activity_log ORDER BY timestamp DESC LIMIT 100'
-        );
-
-        console.log('System activity report generated.');
-        await recordActivity(adminId, 'generateSystemActivityReport', null, { count: result.rows.length });
-
-        return result.rows;
-    } catch (error) {
-        console.error('Error generating system activity report:', error.message);
-        throw new Error('An error occurred while generating system activity report.');
-    }
+    return analytics;
 };
 
-module.exports = { getUserActivityData, generateSystemActivityReport };
+/**
+ * Get analytics for a specific session.
+ * @param {string} sessionId - The ID of the session.
+ * @returns {Promise<object>} - Metrics for the session.
+ */
+const getSessionAnalytics = async (sessionId) => {
+    const session = await Session.findOne({ sessionId });
+    if (!session) throw new Error('Session not found.');
+
+    const totalParticipants = await Participant.countDocuments({ sessionId });
+    const totalEvents = await getEventsForSession(sessionId); // Get events count for this specific session
+
+    return {
+        sessionId: session.sessionId,
+        fileId: session.fileId,
+        totalParticipants,
+        totalEvents,
+        createdAt: session.createdAt,
+        endedAt: session.endedAt || null,
+    };
+};
+
+module.exports = {
+    getGlobalAnalytics,
+    getActiveSessionsAnalytics,
+    getSessionAnalytics,
+};

@@ -1,3 +1,5 @@
+// File Path: backend/collaboration/socketServer.js
+
 const WebSocket = require('ws');
 const { handleCollaborationEvent } = require('../services/collaborationService');
 const { addNotification } = require('../services/notificationDashboardService');
@@ -5,19 +7,22 @@ const { verifyToken } = require('../services/authService');
 const { hasPermission } = require('../services/rbacService');
 const { trackPresence, removeUserPresence } = require('./livePresenceService');
 
-// Store active connections per user
-const activeConnections = new Map();
+const activeConnections = new Map(); // Store active connections per user
 const rateLimit = new Map(); // For rate limiting user actions
 
+/**
+ * Initializes the WebSocket server.
+ * @param {object} server - The HTTP server instance.
+ * @returns {WebSocket.Server} - The WebSocket server instance.
+ */
 const startSocketServer = (server) => {
     const wss = new WebSocket.Server({ server, path: '/ws/collaboration' });
 
     console.log('WebSocket server initialized for collaboration.');
 
-    // **Handle WebSocket connection events**
     wss.on('connection', async (ws, req) => {
         try {
-            const token = req.headers['authorization']?.split(' ')[1]; // Extract Bearer token
+            const token = req.headers['authorization']?.split(' ')[1];
             if (!token) {
                 ws.close();
                 console.error('Connection rejected: No token provided.');
@@ -34,14 +39,14 @@ const startSocketServer = (server) => {
             const userId = user.id;
             console.log(`New client connected: ${userId}`);
 
-            // **Track the connection**
+            // Track the connection
             if (!activeConnections.has(userId)) {
                 activeConnections.set(userId, []);
             }
             activeConnections.get(userId).push(ws);
             trackPresence(userId);
 
-            // **Handle messages from clients**
+            // Handle messages from clients
             ws.on('message', async (message) => {
                 try {
                     if (isRateLimited(userId)) {
@@ -55,25 +60,22 @@ const startSocketServer = (server) => {
                         return;
                     }
 
-                    // **RBAC Check**
+                    // RBAC Check
                     if (!hasPermission(userId, `socket:${parsedMessage.event}`)) {
                         ws.send(JSON.stringify({ error: 'Permission denied for this action.' }));
                         return;
                     }
 
-                    // **Process the event via collaboration service**
+                    // Process the event
                     const response = await handleCollaborationEvent(parsedMessage.event, parsedMessage.data);
-                    
-                    // **Send response back to the client**
                     ws.send(JSON.stringify({ event: parsedMessage.event, data: response }));
-
                 } catch (error) {
                     console.error('Error processing message:', error);
                     ws.send(JSON.stringify({ error: 'An error occurred while processing the message.' }));
                 }
             });
 
-            // **Handle connection close**
+            // Handle connection close
             ws.on('close', () => {
                 console.log(`Client disconnected: ${userId}`);
                 const connections = activeConnections.get(userId) || [];
@@ -84,23 +86,21 @@ const startSocketServer = (server) => {
                 }
             });
 
-            // **Handle connection error**
+            // Handle connection error
             ws.on('error', (error) => {
                 console.error(`WebSocket error for user: ${userId}`, error);
             });
-
         } catch (error) {
             console.error('Error during connection initialization:', error);
             ws.close();
         }
     });
 
-    // **Global WebSocket Error Handling**
     wss.on('error', (error) => {
         console.error('Global WebSocket error:', error);
     });
 
-    // **Ping-Pong Heartbeat Check**
+    // Heartbeat ping-pong mechanism
     setInterval(() => {
         activeConnections.forEach((connections, userId) => {
             connections.forEach((ws) => {
@@ -109,12 +109,16 @@ const startSocketServer = (server) => {
                 }
             });
         });
-    }, 30000); // Send heartbeat ping every 30 seconds
+    }, 30000);
 
     return wss;
 };
 
-// **Send a notification to a specific user**
+/**
+ * Sends a notification to a specific user.
+ * @param {string} userId - The ID of the user to notify.
+ * @param {object} notification - The notification payload.
+ */
 const sendNotificationToUser = (userId, notification) => {
     const connections = activeConnections.get(userId) || [];
     connections.forEach((ws) => {
@@ -124,7 +128,10 @@ const sendNotificationToUser = (userId, notification) => {
     });
 };
 
-// **Broadcast a notification to all connected users**
+/**
+ * Broadcasts a notification to all connected users.
+ * @param {object} notification - The notification payload.
+ */
 const broadcastNotification = (notification) => {
     activeConnections.forEach((connections) => {
         connections.forEach((ws) => {
@@ -135,7 +142,13 @@ const broadcastNotification = (notification) => {
     });
 };
 
-// **Trigger a notification and send it to a specific user**
+/**
+ * Triggers a notification and sends it to a specific user.
+ * @param {string} userId - The ID of the user.
+ * @param {string} type - The type of the notification.
+ * @param {string} message - The notification message.
+ * @param {object} data - Additional notification data.
+ */
 const triggerNotification = async (userId, type, message, data) => {
     try {
         const notification = await addNotification(userId, type, message, data);
@@ -145,7 +158,10 @@ const triggerNotification = async (userId, type, message, data) => {
     }
 };
 
-// **Force disconnect a specific user (admin only)**
+/**
+ * Forcefully disconnects a specific user (admin only).
+ * @param {string} userId - The ID of the user to disconnect.
+ */
 const forceDisconnectUser = (userId) => {
     const connections = activeConnections.get(userId) || [];
     connections.forEach((ws) => ws.close());
@@ -153,22 +169,30 @@ const forceDisconnectUser = (userId) => {
     console.log(`Admin forcibly disconnected user: ${userId}`);
 };
 
-// **Rate limiter for WebSocket messages**
+/**
+ * Checks if a user has exceeded the message rate limit.
+ * @param {string} userId - The ID of the user.
+ * @returns {boolean} - Whether the user is rate-limited.
+ */
 const isRateLimited = (userId) => {
     const userLimit = rateLimit.get(userId) || { count: 0, startTime: Date.now() };
     const elapsed = Date.now() - userLimit.startTime;
 
-    if (elapsed > 1000) { // 1-second window
+    if (elapsed > 1000) {
         rateLimit.set(userId, { count: 1, startTime: Date.now() });
         return false;
     }
 
     userLimit.count += 1;
     rateLimit.set(userId, userLimit);
-    return userLimit.count > 10; // Limit to 10 messages per second
+    return userLimit.count > 10;
 };
 
-// **Parse and validate incoming message**
+/**
+ * Parses and validates an incoming WebSocket message.
+ * @param {string} message - The raw message.
+ * @returns {object|null} - The parsed message or null if invalid.
+ */
 const parseMessage = (message) => {
     try {
         const parsedMessage = JSON.parse(message);
@@ -187,5 +211,5 @@ module.exports = {
     sendNotificationToUser,
     broadcastNotification,
     triggerNotification,
-    forceDisconnectUser
+    forceDisconnectUser,
 };

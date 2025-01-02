@@ -6,12 +6,13 @@ const {
     getSessionDetails, 
     getActiveSessions 
 } = require('../services/collaborationService');
+const { validateSessionStart, validateSessionEnd } = require('../middleware/validationMiddleware');
+const authMiddleware = require('../middleware/authMiddleware');
 
-// **Start a collaboration session via API**
-router.post('/start', async (req, res) => {
+// Start a collaboration session
+router.post('/sessions', authMiddleware, validateSessionStart, async (req, res) => {
     try {
         const { fileId, participants } = req.body;
-
         const session = await startSession(fileId, participants);
         res.status(201).json({ message: 'Session started successfully.', session });
     } catch (error) {
@@ -20,11 +21,10 @@ router.post('/start', async (req, res) => {
     }
 });
 
-// **End a collaboration session via API**
-router.post('/end', async (req, res) => {
+// End a collaboration session
+router.delete('/sessions/:id', authMiddleware, validateSessionEnd, async (req, res) => {
     try {
-        const { sessionId } = req.body;
-
+        const { id: sessionId } = req.params;
         await endSession(sessionId);
         res.status(200).json({ message: 'Session ended successfully.' });
     } catch (error) {
@@ -33,11 +33,10 @@ router.post('/end', async (req, res) => {
     }
 });
 
-// **Get details of a session**
-router.get('/details', async (req, res) => {
+// Get details of a specific session
+router.get('/sessions/:id', authMiddleware, async (req, res) => {
     try {
-        const { sessionId } = req.query;
-
+        const { id: sessionId } = req.params;
         const session = await getSessionDetails(sessionId);
         res.status(200).json({ session });
     } catch (error) {
@@ -46,10 +45,11 @@ router.get('/details', async (req, res) => {
     }
 });
 
-// **Get all active collaboration sessions**
-router.get('/active-sessions', async (req, res) => {
+// Get all active collaboration sessions
+router.get('/sessions', authMiddleware, async (req, res) => {
     try {
-        const sessions = await getActiveSessions();
+        const { page = 1, limit = 10 } = req.query;
+        const sessions = await getActiveSessions(page, limit);
         res.status(200).json({ sessions });
     } catch (error) {
         console.error('Error fetching active sessions:', error);

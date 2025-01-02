@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 30
+    },
+    "auditLog": "/Users/patrick/Projects/Teralynk/logs/.a3707ebd5f756c799f9848494552e409d7869d5b-audit.json",
+    "files": [
+        {
+            "date": 1735753305441,
+            "name": "/Users/patrick/Projects/Teralynk/logs/audit.log-2025-01-01.log",
+            "hash": "c9251a582d3377619eb1c6cebc3b17f076a93da3e3536316fb28573fe646edcd"
+        }
+    ],
+    "hashType": "sha256"
+}

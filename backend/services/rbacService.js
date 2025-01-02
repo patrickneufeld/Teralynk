@@ -1,25 +1,33 @@
 // File: /backend/services/rbacService.js
 
+const { createClient } = require('redis');
 const { getUserFromCognito } = require('./cognitoService');
 const { query } = require('./db');
-const dotenv = require('dotenv');
-const Redis = require('redis');
 const { recordActivity } = require('./activityLogService');
-
-dotenv.config();
+require('dotenv').config();
 
 // Redis Client Initialization
-const redisClient = Redis.createClient({ url: process.env.REDIS_URL });
-redisClient.connect().catch((error) => {
-    console.error('Error connecting to Redis:', error.stack);
-    process.exit(1); // Exit if Redis connection fails
+const redisClient = createClient({
+    url: process.env.REDIS_URL || 'redis://localhost:6379',
 });
+
+redisClient.on('error', (error) => {
+    console.error('Redis client error:', error);
+});
+
+(async () => {
+    try {
+        await redisClient.connect();
+        console.log('Connected to Redis');
+    } catch (error) {
+        console.error('Error connecting to Redis:', error);
+        process.exit(1);
+    }
+})();
 
 // **Assign a role to a user**
 const assignRoleToUser = async (userId, roleName) => {
-    if (!userId || !roleName) {
-        throw new Error('User ID and role name are required.');
-    }
+    if (!userId || !roleName) throw new Error('User ID and role name are required.');
 
     try {
         const user = await getUserFromCognito(userId);
@@ -66,9 +74,7 @@ const getRole = async (userId) => {
 
 // **Check if a user has a specific permission**
 const hasPermission = async (userId, permission) => {
-    if (!userId || !permission) {
-        throw new Error('User ID and permission are required.');
-    }
+    if (!userId || !permission) throw new Error('User ID and permission are required.');
 
     try {
         const role = await getRole(userId);
@@ -128,9 +134,7 @@ const getRoleAssignmentHistory = async () => {
 
 // **Assign permissions to a role**
 const assignPermissionsToRole = async (roleName, permissions) => {
-    if (!roleName || !Array.isArray(permissions)) {
-        throw new Error('Role name and permissions array are required.');
-    }
+    if (!roleName || !Array.isArray(permissions)) throw new Error('Role name and permissions array are required.');
 
     try {
         await query(
