@@ -1,0 +1,91 @@
+/* File Path: frontend/styles/Header.css */
+
+/* Header Container */
+.header {
+    background-color: #0d6efd; /* Primary background color */
+    color: white; /* Text color */
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: Arial, sans-serif;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Logo */
+.header-logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-decoration: none;
+    color: white;
+}
+
+.header-logo:hover {
+    text-decoration: underline;
+}
+
+/* Navigation Bar */
+.navbar {
+    display: flex;
+    gap: 20px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.navbar li {
+    display: inline;
+}
+
+.navbar a {
+    color: white;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: color 0.3s ease;
+}
+
+.navbar a:hover {
+    color: #ffcc00; /* Highlight color */
+}
+
+/* Buttons */
+.header-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+.header-buttons button {
+    background-color: #ffffff;
+    color: #0d6efd;
+    padding: 8px 15px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.header-buttons button:hover {
+    background-color: #0d6efd;
+    color: white;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .navbar {
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .header-buttons {
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 10px;
+    }
+}
