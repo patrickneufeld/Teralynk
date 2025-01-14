@@ -1,0 +1,138 @@
+/* Reset some default styles */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Body styles */
+body {
+  font-family: 'Roboto', sans-serif; /* Use a global font */
+  line-height: 1.5;
+  background-color: #f4f4f4;
+  color: #333;
+  font-size: 16px;
+}
+
+/* Global container for main content */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+/* Links */
+a {
+  text-decoration: none;
+  color: inherit; /* Inherit color from parent */
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: #007bff;
+}
+
+/* Buttons */
+button {
+  cursor: pointer;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+/* Error and success messages */
+.error-message {
+  color: #f44336; /* Red for error messages */
+  font-size: 1rem;
+  margin-top: 1rem;
+}
+
+.success-message {
+  color: #4caf50; /* Green for success messages */
+  font-size: 1rem;
+  margin-top: 1rem;
+}
+
+/* Headings */
+h1, h2, h3 {
+  color: #333;
+  font-weight: 600;
+}
+
+h1 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+h3 {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+/* Flex utilities */
+.flex {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Cards */
+.card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin: 20px 0;
+}
+
+/* Forms */
+input, select, textarea {
+  font-size: 1rem;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+/* Media queries for responsiveness */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  button {
+    width: 100%;
+    padding: 12px 20px;
+  }
+}

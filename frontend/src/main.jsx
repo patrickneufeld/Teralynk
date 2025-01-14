@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'; // React 18+ entry point for rendering
 import './styles/index.css'; // Global CSS file for app-wide styles
 import App from './App'; // Main application component
 import { BrowserRouter as Router } from 'react-router-dom'; // Provides routing capabilities
+import './styles/global.css'; // Add this line to import global styles
 
 // Verify the root DOM node exists
 const rootElement = document.getElementById('root');
