@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-    getWorkflows,
-    createWorkflow,
-    deleteWorkflow,
-    startWorkflow,
-    stopWorkflow,
-} from '../api/workflows';
+import { getWorkflows, createWorkflow, deleteWorkflow, startWorkflow, stopWorkflow } from '../api/workflows';
 
 const WorkflowPage = () => {
     const [workflows, setWorkflows] = useState([]);

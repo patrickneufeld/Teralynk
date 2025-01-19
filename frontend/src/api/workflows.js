@@ -1,43 +1,59 @@
-import apiClient from './apiClient';
+const express = require('express');
+const router = express.Router();
+const {
+    createWorkflow,
+    listWorkflows,
+    executeWorkflow,
+    getWorkflowDetails,
+    updateWorkflow,
+    deleteWorkflow,
+    cloneWorkflow,
+    searchWorkflows,
+    pauseWorkflowExecution,
+    resumeWorkflowExecution,
+    cancelWorkflowExecution,
+    getWorkflowExecutionLogs,
+    validateWorkflowTasks,
+    saveWorkflowVersion,
+    getWorkflowVersionHistory
+} = require('../services/workflowService'); // Ensure these are correctly imported
+const rbacMiddleware = require('../middleware/rbacMiddleware');
+const { authenticateUser } = require('../middleware/authMiddleware');
 
-// Create a new workflow
-export const createWorkflow = async (workflowData) => {
-    const response = await apiClient.post('/workflows', workflowData);
-    return response.data;
+// Middleware to validate request body
+const validateRequestBody = (requiredFields) => (req, res, next) => {
+    const missingFields = requiredFields.filter((field) => !req.body[field]);
+    if (missingFields.length > 0) {
+        return res.status(400).json({ success: false, error: `Missing required fields: ${missingFields.join(', ')}` });
+    }
+    next();
 };
 
-// List workflows
-export const listWorkflows = async () => {
-    const response = await apiClient.get('/workflows');
-    return response.data;
-};
+// Define API routes for workflow management
+router.post('/create', rbacMiddleware('admin'), validateRequestBody(['name', 'tasks']), async (req, res) => {
+    try {
+        const { name, tasks } = req.body;
 
-// Get workflow details
-export const getWorkflowDetails = async (workflowId) => {
-    const response = await apiClient.get(`/workflows/${workflowId}`);
-    return response.data;
-};
+        if (!Array.isArray(tasks)) {
+            return res.status(400).json({ success: false, error: 'Tasks must be an array.' });
+        }
 
-// Update workflow
-export const updateWorkflow = async (workflowId, updatedData) => {
-    const response = await apiClient.put(`/workflows/${workflowId}`, updatedData);
-    return response.data;
-};
+        const result = await createWorkflow(name, tasks);
+        res.status(201).json({
+            success: true,
+            message: 'Workflow created successfully.',
+            data: result,
+        });
+    } catch (error) {
+        console.error('Error creating workflow:', error);
+        res.status(500).json({
+            success: false,
+            error: 'An error occurred while creating the workflow.',
+            details: error.message,
+        });
+    }
+});
 
-// Delete workflow
-export const deleteWorkflow = async (workflowId) => {
-    const response = await apiClient.delete(`/workflows/${workflowId}`);
-    return response.data;
-};
+// Other route handlers like /list, /execute, etc., continue here...
 
-// Start workflow
-export const startWorkflow = async (workflowId) => {
-    const response = await apiClient.post(`/workflows/${workflowId}/start`);
-    return response.data;
-};
-
-// Stop workflow
-export const stopWorkflow = async (workflowId) => {
-    const response = await apiClient.post(`/workflows/${workflowId}/stop`);
-    return response.data;
-};
+module.exports = router;

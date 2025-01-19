@@ -20,7 +20,7 @@ const {
     getWorkflowVersionHistory
 } = require('../services/workflowService'); // Ensure these are correctly imported
 const rbacMiddleware = require('../middleware/rbacMiddleware');
-const { authenticateUser } = require('../middleware/authMiddleware'); // Ensure this middleware is correctly implemented
+const { authenticateUser } = require('../middleware/authMiddleware');
 
 // Middleware to validate request body
 const validateRequestBody = (requiredFields) => (req, res, next) => {
@@ -31,7 +31,7 @@ const validateRequestBody = (requiredFields) => (req, res, next) => {
     next();
 };
 
-// **1️⃣ Create a new workflow**
+// **Create a new workflow**
 router.post('/create', rbacMiddleware('admin'), validateRequestBody(['name', 'tasks']), async (req, res) => {
     try {
         const { name, tasks } = req.body;
@@ -56,7 +56,7 @@ router.post('/create', rbacMiddleware('admin'), validateRequestBody(['name', 'ta
     }
 });
 
-// **2️⃣ List all workflows**
+// **List all workflows**
 router.get('/list', rbacMiddleware('user'), async (req, res) => {
     try {
         const workflows = await listWorkflows();
@@ -75,7 +75,7 @@ router.get('/list', rbacMiddleware('user'), async (req, res) => {
     }
 });
 
-// **3️⃣ Get workflow details by ID**
+// **Get workflow details by ID**
 router.get('/details/:workflowId', rbacMiddleware('user'), async (req, res) => {
     try {
         const { workflowId } = req.params;
@@ -110,7 +110,7 @@ router.get('/details/:workflowId', rbacMiddleware('user'), async (req, res) => {
     }
 });
 
-// **4️⃣ Update an existing workflow**
+// **Update an existing workflow**
 router.put('/update/:workflowId', rbacMiddleware('admin'), validateRequestBody(['name', 'tasks']), async (req, res) => {
     try {
         const { workflowId } = req.params;
@@ -136,7 +136,7 @@ router.put('/update/:workflowId', rbacMiddleware('admin'), validateRequestBody([
     }
 });
 
-// **5️⃣ Execute a workflow**
+// **Execute a workflow**
 router.post('/execute', rbacMiddleware('user'), validateRequestBody(['workflowId', 'input']), async (req, res) => {
     try {
         const { workflowId, input } = req.body;
@@ -157,7 +157,7 @@ router.post('/execute', rbacMiddleware('user'), validateRequestBody(['workflowId
     }
 });
 
-// **6️⃣ Delete a workflow**
+// **Delete a workflow**
 router.delete('/delete/:workflowId', rbacMiddleware('admin'), async (req, res) => {
     try {
         const { workflowId } = req.params;
@@ -185,7 +185,7 @@ router.delete('/delete/:workflowId', rbacMiddleware('admin'), async (req, res) =
     }
 });
 
-// **7️⃣ Clone a workflow**
+// **Clone a workflow**
 router.post('/clone', rbacMiddleware('admin'), validateRequestBody(['workflowId', 'newName']), async (req, res) => {
     try {
         const { workflowId, newName } = req.body;
@@ -205,7 +205,7 @@ router.post('/clone', rbacMiddleware('admin'), validateRequestBody(['workflowId'
     }
 });
 
-// **8️⃣ Search workflows**
+// **Search workflows**
 router.get('/search', rbacMiddleware('user'), async (req, res) => {
     try {
         const { name, taskType, createdBefore, createdAfter } = req.query;
@@ -226,7 +226,7 @@ router.get('/search', rbacMiddleware('user'), async (req, res) => {
     }
 });
 
-// **9️⃣ Pause a workflow**
+// **Pause a workflow**
 router.post('/pause', rbacMiddleware('admin'), validateRequestBody(['workflowId']), async (req, res) => {
     try {
         const { workflowId } = req.body;
@@ -246,7 +246,7 @@ router.post('/pause', rbacMiddleware('admin'), validateRequestBody(['workflowId'
     }
 });
 
-// **🔟 Resume a workflow**
+// **Resume a workflow**
 router.post('/resume', rbacMiddleware('admin'), validateRequestBody(['workflowId']), async (req, res) => {
     try {
         const { workflowId } = req.body;
@@ -266,7 +266,7 @@ router.post('/resume', rbacMiddleware('admin'), validateRequestBody(['workflowId
     }
 });
 
-// **🔟 Cancel a workflow**
+// **Cancel a workflow**
 router.post('/cancel', rbacMiddleware('admin'), validateRequestBody(['workflowId']), async (req, res) => {
     try {
         const { workflowId } = req.body;
@@ -286,7 +286,7 @@ router.post('/cancel', rbacMiddleware('admin'), validateRequestBody(['workflowId
     }
 });
 
-// **🔟 Workflow Execution Logs**
+// **Workflow Execution Logs**
 router.get('/logs/:workflowId', rbacMiddleware('user'), async (req, res) => {
     try {
         const { workflowId } = req.params;
@@ -306,7 +306,7 @@ router.get('/logs/:workflowId', rbacMiddleware('user'), async (req, res) => {
     }
 });
 
-// **🔟 Validate Workflow Tasks**
+// **Validate Workflow Tasks**
 router.post('/validate', rbacMiddleware('admin'), validateRequestBody(['tasks']), async (req, res) => {
     try {
         const { tasks } = req.body;
@@ -326,7 +326,7 @@ router.post('/validate', rbacMiddleware('admin'), validateRequestBody(['tasks'])
     }
 });
 
-// **🔟 Save Workflow Version**
+// **Save Workflow Version**
 router.post('/version', rbacMiddleware('admin'), validateRequestBody(['workflowId', 'changes']), async (req, res) => {
     try {
         const { workflowId, changes } = req.body;
@@ -346,7 +346,7 @@ router.post('/version', rbacMiddleware('admin'), validateRequestBody(['workflowI
     }
 });
 
-// **🔟 Get Workflow Version History**
+// **Get Workflow Version History**
 router.get('/version-history/:workflowId', rbacMiddleware('user'), async (req, res) => {
     try {
         const { workflowId } = req.params;

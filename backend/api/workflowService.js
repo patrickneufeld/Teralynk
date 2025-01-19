@@ -1,99 +1,133 @@
-const { v4: uuidv4 } = require('uuid'); // For generating unique workflow IDs
+const { query } = require('./db'); // Assuming query function is implemented in db.js
 
-// Temporary in-memory store for workflows (Replace with database for production)
-const workflows = [];
-
-// **1️⃣ Create a new workflow**
-const createWorkflow = async (name, tasks) => {
-    if (!Array.isArray(tasks)) {
-        throw { status: 400, message: 'Tasks must be an array.' };
+/**
+ * Get all workflows
+ * @returns {Promise<Array>} - List of all workflows.
+ */
+const getAllWorkflows = async () => {
+    try {
+        const result = await query('SELECT * FROM workflows');
+        return result.rows;
+    } catch (error) {
+        console.error('Error fetching workflows:', error.stack);
+        throw new Error('Failed to fetch workflows');
     }
+};
 
-    tasks.forEach((task, index) => {
-        if (!task.id || !task.type || typeof task.params !== 'object') {
-            throw { status: 400, message: `Invalid task structure at index ${index}.` };
+/**
+ * Create a new workflow
+ * @param {object} workflowData - Data for the new workflow.
+ * @returns {Promise<object>} - Created workflow data.
+ */
+const createWorkflow = async (workflowData) => {
+    const { name, description, steps } = workflowData;
+
+    try {
+        const result = await query(
+            'INSERT INTO workflows (name, description, steps) VALUES ($1, $2, $3) RETURNING *',
+            [name, description, steps]
+        );
+        return result.rows[0];
+    } catch (error) {
+        console.error('Error creating workflow:', error.stack);
+        throw new Error('Failed to create workflow');
+    }
+};
+
+/**
+ * Get a specific workflow by ID
+ * @param {string} workflowId - The ID of the workflow.
+ * @returns {Promise<object>} - The workflow data.
+ */
+const getWorkflowById = async (workflowId) => {
+    try {
+        const result = await query('SELECT * FROM workflows WHERE id = $1', [workflowId]);
+        if (result.rows.length === 0) {
+            throw new Error(`Workflow with ID ${workflowId} not found.`);
         }
-    });
-
-    const workflow = {
-        id: uuidv4(), // Generate a unique workflow ID
-        name,
-        tasks,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-    };
-
-    workflows.push(workflow);
-    return workflow;
-};
-
-// **2️⃣ List all workflows**
-const listWorkflows = async () => {
-    return workflows;
-};
-
-// **3️⃣ Get workflow details by ID**
-const getWorkflowDetails = async (workflowId) => {
-    const workflow = workflows.find((wf) => wf.id === workflowId);
-    if (!workflow) {
-        throw { status: 404, message: 'Workflow not found.' };
+        return result.rows[0];
+    } catch (error) {
+        console.error(`Error fetching workflow with ID ${workflowId}:`, error.stack);
+        throw new Error('Failed to fetch workflow');
     }
-    return workflow;
 };
 
-// **4️⃣ Update an existing workflow**
-const updateWorkflow = async (workflowId, name, tasks) => {
-    const workflow = workflows.find((wf) => wf.id === workflowId);
-    if (!workflow) {
-        throw { status: 404, message: 'Workflow not found.' };
-    }
+/**
+ * Update an existing workflow
+ * @param {string} workflowId - The ID of the workflow to update.
+ * @param {object} updatedData - The updated data.
+ * @returns {Promise<object>} - The updated workflow data.
+ */
+const updateWorkflow = async (workflowId, updatedData) => {
+    const { name, description, steps } = updatedData;
 
-    if (tasks) {
-        if (!Array.isArray(tasks)) {
-            throw { status: 400, message: 'Tasks must be an array.' };
+    try {
+        const result = await query(
+            'UPDATE workflows SET name = $1, description = $2, steps = $3 WHERE id = $4 RETURNING *',
+            [name, description, steps, workflowId]
+        );
+        if (result.rows.length === 0) {
+            throw new Error(`Workflow with ID ${workflowId} not found.`);
         }
-
-        tasks.forEach((task, index) => {
-            if (!task.id || !task.type || typeof task.params !== 'object') {
-                throw { status: 400, message: `Invalid task structure at index ${index}.` };
-            }
-        });
-
-        workflow.tasks = tasks;
+        return result.rows[0];
+    } catch (error) {
+        console.error(`Error updating workflow with ID ${workflowId}:`, error.stack);
+        throw new Error('Failed to update workflow');
     }
-
-    workflow.name = name || workflow.name;
-    workflow.updatedAt = new Date();
-
-    return workflow;
 };
 
-// **5️⃣ Execute a workflow**
+/**
+ * Delete a specific workflow by ID
+ * @param {string} workflowId - The ID of the workflow to delete.
+ * @returns {Promise<object>} - The deleted workflow data.
+ */
+const deleteWorkflow = async (workflowId) => {
+    try {
+        const result = await query('DELETE FROM workflows WHERE id = $1 RETURNING *', [workflowId]);
+        if (result.rows.length === 0) {
+            throw new Error(`Workflow with ID ${workflowId} not found.`);
+        }
+        return result.rows[0];
+    } catch (error) {
+        console.error(`Error deleting workflow with ID ${workflowId}:`, error.stack);
+        throw new Error('Failed to delete workflow');
+    }
+};
+
+/**
+ * Execute a workflow
+ * @param {string} workflowId - The ID of the workflow to execute.
+ * @param {object} input - The input data for the workflow.
+ * @returns {Promise<object>} - The result of the workflow execution.
+ */
 const executeWorkflow = async (workflowId, input) => {
-    const workflow = await getWorkflowDetails(workflowId);
+    const workflow = await getWorkflowById(workflowId);
 
     let result = input;
-    for (const task of workflow.tasks) {
+    for (const task of workflow.steps) {
         try {
             result = await executeTask(task, result);
         } catch (error) {
             console.error(`Error executing task "${task.id}":`, error);
-            throw { status: 500, message: `Task "${task.id}" failed: ${error.message}` };
+            throw new Error(`Task "${task.id}" failed: ${error.message}`);
         }
     }
 
     return result;
 };
 
-// **Helper function to execute a task**
+/**
+ * Helper function to execute a task in the workflow
+ * @param {object} task - The task to execute.
+ * @param {any} input - The input data for the task.
+ * @returns {Promise<any>} - The result of the task execution.
+ */
 const executeTask = async (task, input) => {
     switch (task.type) {
         case 'email':
-            // Simulate email sending logic
             console.log(`Sending email with params:`, task.params);
             break;
         case 'dataProcessing':
-            // Simulate data processing logic
             console.log(`Processing data with params:`, task.params);
             break;
         default:
@@ -108,22 +142,11 @@ const executeTask = async (task, input) => {
     });
 };
 
-// **6️⃣ Delete a specific workflow by ID**
-const deleteWorkflow = async (workflowId) => {
-    const index = workflows.findIndex((wf) => wf.id === workflowId);
-    if (index === -1) {
-        throw { status: 404, message: 'Workflow not found.' };
-    }
-
-    const deletedWorkflow = workflows.splice(index, 1);
-    return deletedWorkflow[0];
-};
-
 module.exports = {
+    getAllWorkflows,
     createWorkflow,
-    listWorkflows,
-    getWorkflowDetails,
+    getWorkflowById,
     updateWorkflow,
-    executeWorkflow,
     deleteWorkflow,
+    executeWorkflow,
 };

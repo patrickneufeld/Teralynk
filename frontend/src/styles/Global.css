@@ -14,6 +14,8 @@ body {
   background-color: #f4f4f4;
   color: #333;
   font-size: 16px;
+  -webkit-font-smoothing: antialiased; /* Improve text rendering on webkit browsers */
+  -moz-osx-font-smoothing: grayscale; /* Improve text rendering on Firefox on macOS */
 }
 
 /* Global container for main content */
@@ -105,6 +107,11 @@ h3 {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   padding: 20px;
   margin: 20px 0;
+  transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 }
 
 /* Forms */
@@ -121,6 +128,13 @@ input:focus, select:focus, textarea:focus {
   outline: none;
 }
 
+/* Form labels */
+label {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  display: inline-block;
+}
+
 /* Media queries for responsiveness */
 @media (max-width: 768px) {
   .container {
@@ -135,4 +149,60 @@ input:focus, select:focus, textarea:focus {
     width: 100%;
     padding: 12px 20px;
   }
+}
+
+/* Loader styles */
+.loader {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #007bff;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Modal styles */
+.modal {
+  background-color: rgba(0, 0, 0, 0.5);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal.open {
+  display: flex;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  max-width: 600px;
+  width: 100%;
+}
+
+.modal .close-button {
+  cursor: pointer;
+  padding: 10px 15px;
+  background-color: #ff4040;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+.modal .close-button:hover {
+  background-color: #e03a3a;
 }
