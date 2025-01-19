@@ -7,7 +7,12 @@
   },
   "servers": [
     {
-      "url": "https://api.teralynk.com/api" 
+      "url": "https://api.teralynk.com/api",
+      "description": "Production Server"
+    },
+    {
+      "url": "http://localhost:5001/api",
+      "description": "Development Server"
     }
   ],
   "paths": {
@@ -30,14 +35,17 @@
                 }
               }
             }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "File uploaded successfully"
           },
-          "responses": {
-            "200": {
-              "description": "File uploaded successfully"
-            },
-            "400": {
-              "description": "Invalid file"
-            }
+          "400": {
+            "description": "Invalid file"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         }
       }
@@ -60,6 +68,9 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "Internal server error"
           }
         }
       }

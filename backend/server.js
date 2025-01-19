@@ -1,172 +1,199 @@
-// Load environment variables
-require('dotenv').config();
+// File Path: backend/server.js
 
 const express = require('express');
-const http = require('http');
-const path = require('path');
+const { S3Client, PutObjectCommand, GetObjectCommand, ListObjectsV2Command } = require('@aws-sdk/client-s3');
+const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
-const compression = require('compression');
+const fs = require('fs');
+const formidable = require('formidable');
 const winston = require('winston');
+const dotenv = require('dotenv');
+const jwt = require('jsonwebtoken');
 const rateLimit = require('express-rate-limit');
-const { setupNotificationWebSocket } = require('./api/notification');
-const { authenticateUser } = require('./middleware/authMiddleware');
-const fileUploadRoute = require('./api/files');
-const workflowRouter = require('./api/workflow');
-const webhooksRouter = require('./api/webhooks');
-const searchRouter = require('./api/search');
-const docsRouter = require('./api/docs');
-const metricsRouter = require('./api/metrics');
-const authRoutes = require('./routes/authRoutes'); // Auth Routes
-const contactRoutes = require('./routes/contactRoutes'); // Contact Routes
-const dashboardRoutes = require('./routes/dashboardRoutes'); // Dashboard Routes
-const settingsRoutes = require('./routes/settingsRoutes'); // Settings Routes
-const { blacklistToken } = require('./services/sessionService');
+
+// Import API Routes
+const listWorkflows = require('./api/listWorkflows');
+
+// Load environment variables
+dotenv.config();
+
+// Validate critical environment variables
+['AWS_REGION', 'BUCKET_NAME', 'JWT_SECRET', 'PORT', 'ALLOWED_ORIGIN'].forEach((key) => {
+    if (!process.env[key]) {
+        console.error(`❌ Environment variable ${key} is not set.`);
+        process.exit(1);
+    }
+});
 
 // Initialize Express app
 const app = express();
-const server = http.createServer(app);
 
-// Middleware setup
+// Initialize S3 client
+const s3Client = new S3Client({ region: process.env.AWS_REGION });
+const BUCKET_NAME = process.env.BUCKET_NAME;
+
+// Set up middleware
+const corsOptions = { origin: process.env.ALLOWED_ORIGIN.split(',') };
+app.use(cors(corsOptions));
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cors({ origin: process.env.ALLOWED_ORIGIN || 'http://localhost:3000' }));
-app.use(helmet());
-app.use(morgan('combined'));
-app.use(compression());
 
 // Logger setup with winston
 const logger = winston.createLogger({
-    level: 'info',
-    format: winston.format.json(),
+    level: process.env.DEBUG === 'true' ? 'debug' : 'info',
+    format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.json()
+    ),
     transports: [
         new winston.transports.File({ filename: 'error.log', level: 'error' }),
         new winston.transports.File({ filename: 'combined.log' }),
-        new winston.transports.Console(),
     ],
 });
 
-// Rate limiting middleware
-const apiLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, 
-    max: 100, 
-    message: 'Too many requests from this IP, please try again later.',
-});
-
-const uploadLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, 
-    max: 5, 
-    message: 'Too many file upload requests. Please try again later.',
-});
-
-// Apply rate limiter
-app.use('/api', apiLimiter);
-
-// Root Route
-app.get('/', (req, res) => {
-    res.status(200).json({
-        message: 'Welcome to the Teralynk API!',
-        availableRoutes: {
-            health: '/health',
-            auth: '/api/auth',
-            contact: '/api/contact',
-            dashboard: '/api/user',
-            settings: '/api/settings',
-        },
-    });
-});
-
-// Health Check
-app.get('/health', (req, res) => {
-    res.status(200).json({
-        status: 'Healthy',
-        uptime: process.uptime(),
-        timestamp: new Date(),
-    });
-});
-
-// API Routes
-try {
-    app.use('/api/files', authenticateUser, uploadLimiter, fileUploadRoute);
-    app.use('/api/workflows', authenticateUser, workflowRouter);
-    app.use('/api/webhooks', webhooksRouter);
-    app.use('/api/search', authenticateUser, searchRouter);
-    app.use('/api/docs', docsRouter);
-    app.use('/api/metrics', authenticateUser, metricsRouter);
-
-    // Authentication Routes
-    app.use('/api/auth', authRoutes);
-
-    // Contact Form Route
-    app.use('/api/contact', contactRoutes);
-
-    // Dashboard Routes
-    app.use('/api/user', authenticateUser, dashboardRoutes);
-
-    // Settings Routes
-    app.use('/api/settings', authenticateUser, settingsRoutes);
-} catch (error) {
-    logger.error('Error initializing routes:', error);
-    process.exit(1); // Exit process if routes fail to load
+if (process.env.DEBUG === 'true') {
+    logger.add(new winston.transports.Console({
+        format: winston.format.combine(
+            winston.format.colorize(),
+            winston.format.simple()
+        )
+    }));
 }
 
-// Serve React Frontend (Optional)
-if (process.env.SERVE_FRONTEND === 'true') {
-    app.use(express.static(path.join(__dirname, 'frontend/build')));
-
-    app.get('*', (req, res) => {
-        res.sendFile(path.join(__dirname, 'frontend/build', 'index.html'));
+// Optional rate limiting
+if (process.env.ENABLE_RATE_LIMITING === 'true') {
+    const limiter = rateLimit({
+        windowMs: 15 * 60 * 1000, // 15 minutes
+        max: 100, // Limit each IP to 100 requests per window
+        message: 'Too many requests from this IP, please try again later.',
     });
+    app.use(limiter);
 }
 
-// Logout and token revocation
-app.post('/api/logout', authenticateUser, async (req, res) => {
+// Middleware for authentication
+const authenticate = (req, res, next) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
-        return res.status(400).json({ error: 'Token is required.' });
+        return res.status(401).send('Unauthorized: No token provided');
     }
-
     try {
-        await blacklistToken(token);
-        res.status(200).json({ message: 'Logged out successfully.' });
-    } catch (error) {
-        logger.error('Error revoking token:', error);
-        res.status(500).json({ error: 'An error occurred while logging out.' });
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded;
+        next();
+    } catch (err) {
+        logger.error('Invalid token:', err);
+        res.status(401).send('Unauthorized: Invalid token');
     }
-});
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-    logger.error('Unhandled error:', err);
-    res.status(500).json({ error: 'Internal Server Error.' });
-});
-
-// Handle 404 for unknown routes
-app.use((req, res) => {
-    res.status(404).json({ error: 'Route not found.' });
-});
-
-// Graceful shutdown on SIGINT and SIGTERM
-const shutdown = () => {
-    console.log('Shutting down gracefully...');
-    server.close(() => {
-        console.log('All connections closed.');
-        process.exit(0);
-    });
 };
 
-process.on('SIGINT', shutdown);
-process.on('SIGTERM', shutdown);
+// Health check endpoint
+if (process.env.ENABLE_HEALTH_CHECK === 'true') {
+    app.get('/api/health', (req, res) => res.send({ status: 'OK', environment: process.env.NODE_ENV }));
+}
 
-// Setup WebSocket for notifications
-setupNotificationWebSocket(server);
+// File upload route
+app.post('/api/files/upload', authenticate, (req, res, next) => {
+    const form = new formidable.IncomingForm();
+    form.parse(req, (err, fields, files) => {
+        if (err) {
+            logger.error('Form parsing error:', err);
+            return res.status(400).send('Error parsing the file upload form.');
+        }
 
-// Start the server
+        const { userId } = req.user;
+        const file = files.file;
+
+        if (!file) {
+            return res.status(400).send('No file provided.');
+        }
+
+        // Optional: Validate file MIME type
+        const allowedMimeTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+        if (!allowedMimeTypes.includes(file.mimetype)) {
+            return res.status(400).send('Invalid file type. Allowed: JPEG, PNG, PDF.');
+        }
+
+        const params = {
+            Bucket: BUCKET_NAME,
+            Key: `users/${userId}/${file.originalFilename}`,
+            Body: fs.createReadStream(file.filepath),
+            ContentType: file.mimetype,
+        };
+
+        s3Client.send(new PutObjectCommand(params))
+            .then(() => res.send({ message: 'File uploaded successfully' }))
+            .catch((error) => {
+                logger.error('File upload error:', error);
+                next(error);
+            });
+    });
+});
+
+// Generate signed URL for downloading files
+app.post('/api/files/generate-link', authenticate, async (req, res, next) => {
+    const { fileName, expiresIn = 3600 } = req.body;
+
+    const params = {
+        Bucket: BUCKET_NAME,
+        Key: `users/${req.user.userId}/${fileName}`,
+    };
+
+    try {
+        const command = new GetObjectCommand(params);
+        const url = await getSignedUrl(s3Client, command, { expiresIn });
+        res.send({ url });
+    } catch (error) {
+        logger.error('Error generating signed URL:', error);
+        next(error);
+    }
+});
+
+// Paginated file listing
+app.get('/api/files/list', authenticate, async (req, res, next) => {
+    const { continuationToken, maxKeys = 10 } = req.query;
+
+    const params = {
+        Bucket: BUCKET_NAME,
+        Prefix: `users/${req.user.userId}/`,
+        MaxKeys: parseInt(maxKeys, 10),
+        ContinuationToken: continuationToken || undefined,
+    };
+
+    try {
+        const data = await s3Client.send(new ListObjectsV2Command(params));
+        const files = data.Contents?.map(item => item.Key.replace(`users/${req.user.userId}/`, '')) || [];
+
+        res.send({
+            files,
+            continuationToken: data.NextContinuationToken || null,
+        });
+    } catch (error) {
+        logger.error('Error listing files:', error);
+        next(error);
+    }
+});
+
+// Register API Routes
+app.use('/api/workflows', listWorkflows);
+
+// Centralized error handler
+app.use((err, req, res, next) => {
+    logger.error(`Error on ${req.method} ${req.originalUrl}: ${err.message}`, { stack: err.stack });
+    res.status(err.status || 500).send({ error: 'An unexpected error occurred' });
+});
+
+// Start the server with error handling for port collision
 const PORT = process.env.PORT || 5001;
-server.listen(PORT, () => {
-    console.log(`Server is running at http://localhost:${PORT}`);
-    console.log(`WebSocket notifications available at ws://localhost:${PORT}/ws/notifications`);
+const server = app.listen(PORT, () => {
+    logger.info(`Teralynk backend running on port ${PORT} in ${process.env.NODE_ENV} mode`);
+});
+
+server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+        logger.error(`Port ${PORT} is already in use. Please use a different port.`);
+        process.exit(1);
+    } else {
+        throw err;
+    }
 });
 
 module.exports = app;

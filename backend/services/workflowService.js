@@ -1,12 +1,10 @@
-// File: backend/services/workflowService.js
-
 const { query } = require('./db'); // Ensure your DB query function is imported here
 
 /**
  * Get all workflows
  * @returns {Promise<Array>} - List of all workflows.
  */
-const getAllWorkflows = async () => {
+const getWorkflows = async () => {
     try {
         const result = await query('SELECT * FROM workflows'); // Query to fetch workflows from the database
         return result.rows; // Return the list of workflows
@@ -55,7 +53,7 @@ const getWorkflowById = async (workflowId) => {
 };
 
 module.exports = {
-    getAllWorkflows,
+    getWorkflows, // Renamed function for consistency
     createWorkflow,
     getWorkflowById,
 };

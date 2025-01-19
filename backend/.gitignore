@@ -1,2 +1,5 @@
 .DS_Store
 backend/logs/*
+# Ignore environment files
+.env
+.env.production

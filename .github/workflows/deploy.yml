@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        environment: [dev, uat, main]  # Deploys to multiple environments
+        environment: [dev, uat, main]
     steps:
     - name: Checkout Code
       uses: actions/checkout@v3
@@ -20,7 +20,7 @@ jobs:
     - name: Set Up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '16.x'  # Allows for patch updates (e.g., 16.17, 16.18)
+        node-version: '16.x'
 
     - name: Install Dependencies
       run: npm install
@@ -30,27 +30,22 @@ jobs:
         API_KEY: ${{ secrets.API_KEY }}
         DATABASE_URL: ${{ secrets.DATABASE_URL }}
         ENVIRONMENT: ${{ matrix.environment }}
+        ACTIONS_STEP_DEBUG: true  # Enable detailed debug logs
       run: |
         echo "Starting deployment to ${{ matrix.environment }} environment..."
         
-        if [[ ${{ matrix.environment }} == "dev" ]]; then
+        if [[ "${{ matrix.environment }}" == "dev" ]]; then
           echo "Running Development Deployment Commands"
-          echo "Using API Key: *** (masked)"
-          # Custom commands for development
-          npm run build:dev
-          npm run deploy:dev
-        elif [[ ${{ matrix.environment }} == "uat" ]]; then
+          npm run build:dev || exit 1
+          npm run deploy:dev || exit 1
+        elif [[ "${{ matrix.environment }}" == "uat" ]]; then
           echo "Running UAT Deployment Commands"
-          echo "Using API Key: *** (masked)"
-          # Custom commands for UAT
-          npm run build:uat
-          npm run deploy:uat
-        elif [[ ${{ matrix.environment }} == "main" ]]; then
+          npm run build:uat || exit 1
+          npm run deploy:uat || exit 1
+        elif [[ "${{ matrix.environment }}" == "main" ]]; then
           echo "Running Production Deployment Commands"
-          echo "Using API Key: *** (masked)"
-          # Custom commands for production
-          npm run build:prod
-          npm run deploy:prod
+          npm run build:prod || exit 1
+          npm run deploy:prod || exit 1
         fi
 
     - name: Notify Success
