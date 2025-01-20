@@ -1,5 +1,3 @@
-// File: /backend/services/authService.js
-
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { query } = require('./db');
@@ -19,6 +17,8 @@ const secretsManager = new AWS.SecretsManager({
 
 // **Redis connection for token blacklisting**
 const redisClient = Redis.createClient({ url: process.env.REDIS_URL });
+redisClient.on('error', (err) => console.error('Redis connection error:', err));
+redisClient.on('connect', () => console.log('Redis connected successfully'));
 redisClient.connect().catch(console.error);
 
 // **Helper function to retrieve secret from AWS Secrets Manager**
@@ -35,7 +35,10 @@ const getSecretValue = async (secretName) => {
 // **Get JWT Secret from AWS Secrets Manager**
 const getJWTSecret = async () => {
     const secret = await getSecretValue(process.env.JWT_SECRET_NAME || 'jwt_secret');
-    return secret.jwt_secret; // Assume the secret has the key 'jwt_secret'
+    if (!secret || !secret.jwt_secret) {
+        throw new Error('JWT secret not found in the secret value.');
+    }
+    return secret.jwt_secret;
 };
 
 // **Login function to authenticate a user**
@@ -102,10 +105,15 @@ const refreshToken = async (oldToken) => {
 // **Blacklist JWT tokens**
 const blacklistToken = async (token) => {
     const decoded = jwt.decode(token);
+    if (!decoded) {
+        throw new Error('Invalid token.');
+    }
+
     const expiresIn = decoded.exp - Math.floor(Date.now() / 1000);
-    await redisClient.set(token, 'blacklisted', 'EX', expiresIn);
+    await redisClient.set(token, JSON.stringify({ userId: decoded.userId, issuedAt: decoded.iat }), 'EX', expiresIn);
 };
 
+// **Check if a token is blacklisted**
 const isTokenBlacklisted = async (token) => {
     const result = await redisClient.get(token);
     return result !== null;
@@ -122,7 +130,8 @@ const logoutUser = async (userId, token) => {
 // **Secure route access: ensure user has permission**
 const secureRouteAccess = async (userId, requiredPermission) => {
     const role = await getRole(userId);
-    if (!role || !role.permissions.includes(requiredPermission)) {
+    const permissions = role.permissions || [];
+    if (!permissions.includes(requiredPermission)) {
         throw new Error(`You do not have permission for '${requiredPermission}' action.`);
     }
 };

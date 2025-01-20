@@ -12,7 +12,8 @@ const jwt = require('jsonwebtoken');
 const rateLimit = require('express-rate-limit');
 
 // Import API Routes
-const listWorkflows = require('./api/listWorkflows');
+const listWorkflows = require('./api/listWorkflows'); // Workflow API routes
+const sampleRoute = require('./api/sampleRoute'); // Example route
 
 // Load environment variables
 dotenv.config();
@@ -106,7 +107,6 @@ app.post('/api/files/upload', authenticate, (req, res, next) => {
             return res.status(400).send('No file provided.');
         }
 
-        // Optional: Validate file MIME type
         const allowedMimeTypes = ['image/jpeg', 'image/png', 'application/pdf'];
         if (!allowedMimeTypes.includes(file.mimetype)) {
             return res.status(400).send('Invalid file type. Allowed: JPEG, PNG, PDF.');
@@ -174,6 +174,7 @@ app.get('/api/files/list', authenticate, async (req, res, next) => {
 
 // Register API Routes
 app.use('/api/workflows', listWorkflows);
+app.use('/api/sample', sampleRoute); // Ensure sampleRoute is correctly registered
 
 // Centralized error handler
 app.use((err, req, res, next) => {

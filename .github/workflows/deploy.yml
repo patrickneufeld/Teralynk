@@ -25,35 +25,20 @@ jobs:
     - name: Install Dependencies
       run: npm install
 
+    - name: Build Project
+      run: npm run build
+
     - name: Deploy to ${{ matrix.environment }} Environment
       env:
         API_KEY: ${{ secrets.API_KEY }}
         DATABASE_URL: ${{ secrets.DATABASE_URL }}
         ENVIRONMENT: ${{ matrix.environment }}
-        ACTIONS_STEP_DEBUG: true  # Enable detailed debug logs
       run: |
-        echo "Starting deployment to ${{ matrix.environment }} environment..."
-        
-        if [[ "${{ matrix.environment }}" == "dev" ]]; then
-          echo "Running Development Deployment Commands"
-          npm run build:dev || exit 1
-          npm run deploy:dev || exit 1
-        elif [[ "${{ matrix.environment }}" == "uat" ]]; then
-          echo "Running UAT Deployment Commands"
-          npm run build:uat || exit 1
-          npm run deploy:uat || exit 1
-        elif [[ "${{ matrix.environment }}" == "main" ]]; then
-          echo "Running Production Deployment Commands"
-          npm run build:prod || exit 1
-          npm run deploy:prod || exit 1
+        echo "Deploying to ${{ matrix.environment }}..."
+        if [[ ${{ matrix.environment }} == "dev" ]]; then
+          npm run deploy:dev
+        elif [[ ${{ matrix.environment }} == "uat" ]]; then
+          npm run deploy:uat
+        elif [[ ${{ matrix.environment }} == "main" ]]; then
+          npm run deploy:prod
         fi
-
-    - name: Notify Success
-      if: success()
-      run: |
-        echo "✅ Deployment to ${{ matrix.environment }} was successful"
-
-    - name: Notify Failure
-      if: failure()
-      run: |
-        echo "❌ Deployment to ${{ matrix.environment }} failed"

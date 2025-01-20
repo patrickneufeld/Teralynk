@@ -1,3 +1,5 @@
+// File Path: backend/services/workflowService.js
+
 const { query } = require('./db'); // Assuming query function is implemented in db.js
 
 /**
@@ -9,7 +11,7 @@ const getAllWorkflows = async () => {
         const result = await query('SELECT * FROM workflows');
         return result.rows;
     } catch (error) {
-        console.error('Error fetching workflows:', error.stack);
+        console.error('Error fetching workflows:', error);
         throw new Error('Failed to fetch workflows');
     }
 };
