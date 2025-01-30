@@ -1,0 +1,75 @@
+/* File Path: frontend/src/styles/Notifications.css */
+
+/* Notifications Container */
+.notifications {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* Section Title */
+.notifications h2 {
+    font-size: 1.8rem;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Notification List */
+.notifications ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Notification Item */
+.notification-item {
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Notification Message */
+.notification-item p {
+    margin: 0;
+    font-size: 1rem;
+    color: #555;
+}
+
+/* Timestamp */
+.timestamp {
+    font-size: 0.85rem;
+    color: #888;
+    margin-left: 10px;
+}
+
+/* Error Message */
+.error-message {
+    color: #ff0000;
+    font-size: 1rem;
+    text-align: center;
+}
+
+/* Loading Message */
+.loading-message {
+    color: #007bff;
+    font-size: 1rem;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+/* No Notifications */
+.no-notifications {
+    text-align: center;
+    font-size: 1rem;
+    color: #555;
+}

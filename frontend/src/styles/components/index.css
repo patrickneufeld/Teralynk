@@ -1,0 +1,156 @@
+/* File Path: frontend/styles/index.css */
+
+/* Basic Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f5f5f5;
+  color: #333;
+  height: 100%;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Global Utility Classes */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.flex {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.center-text {
+  text-align: center;
+}
+
+/* Button Styles */
+button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+button:hover {
+  background-color: #0056b3;
+  color: white;
+}
+
+button.primary {
+  background-color: #0d6efd;
+  color: white;
+}
+
+button.secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+button.warning {
+  background-color: #ffc107;
+  color: black;
+}
+
+button.success {
+  background-color: #28a745;
+  color: white;
+}
+
+/* Link Styles */
+a {
+  color: #0d6efd;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+/* Forms */
+input, select, textarea {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: #0d6efd;
+  outline: none;
+}
+
+/* Error Messages */
+.error {
+  color: #dc3545;
+  font-size: 1rem;
+  margin-top: 10px;
+  text-align: center;
+}
+
+/* Success Messages */
+.success {
+  color: #28a745;
+  font-size: 1rem;
+  margin-top: 10px;
+  text-align: center;
+}
+
+/* Navigation Styles */
+.navbar {
+  background-color: #0d6efd;
+  padding: 15px;
+  color: white;
+}
+
+.navbar ul {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+.navbar a {
+  color: white;
+  font-size: 1rem;
+}
+
+/* Footer */
+footer {
+  background-color: #0d6efd;
+  color: white;
+  text-align: center;
+  padding: 15px 0;
+  margin-top: auto;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .navbar ul {
+      flex-direction: column;
+      gap: 10px;
+  }
+
+  .container {
+      padding: 0.5rem;
+  }
+}
