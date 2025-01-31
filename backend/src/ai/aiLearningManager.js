@@ -31,6 +31,7 @@ class AILearningManager {
       console.log(`AI interaction logged and processed for user: ${userId}`);
     } catch (error) {
       console.error('Error processing AI interaction:', error);
+      throw new Error("Error logging AI interaction");
     }
   }
 
@@ -47,6 +48,7 @@ class AILearningManager {
       console.log(`Feedback processed for user ${userId}`);
     } catch (error) {
       console.error("Error processing feedback:", error);
+      throw new Error("Error processing feedback");
     }
   }
 
@@ -59,6 +61,11 @@ class AILearningManager {
     const { query, response } = queryDetails;
 
     try {
+      // Ensure the query and response are valid
+      if (!query || !response) {
+        throw new Error('Invalid query or response in selfImprove');
+      }
+
       // Query ChatGPT for advice
       const advice = await AIIntegration.queryChatGPTForAdvice(query, response);
 
@@ -73,6 +80,7 @@ class AILearningManager {
       console.log("Self-improvement advice logged and model updated.");
     } catch (error) {
       console.error("Error during self-improvement process:", error);
+      throw new Error("Self-improvement failed");
     }
   }
 

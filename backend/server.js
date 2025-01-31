@@ -1,5 +1,3 @@
-// File Path: backend/src/server.js
-
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
@@ -9,8 +7,8 @@ const jwt = require("jsonwebtoken");
 const winston = require("winston");
 const rateLimit = require("express-rate-limit");
 const mongoose = require("mongoose");
-const { verifyToken, getUserDetailsFromCognito } = require("./config/db");
-const { getStorageClient } = require("./config/dynamicStorageManager"); // Added dynamic storage
+const { verifyToken } = require("./config/db");
+const { getStorageClient } = require("./config/dynamicStorageManager"); // Dynamically select storage provider
 const { S3Client, PutObjectCommand, GetObjectCommand, ListObjectsV2Command } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
@@ -18,11 +16,11 @@ const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const troubleshootingRoutes = require("./src/routes/troubleshootingRoutes");
 const aiRoutes = require("./src/routes/aiRoutes");
 
-// Debug: Log critical environment variables
+// Debug: Log critical environment variables (optional for debugging)
 console.log("JWT_SECRET:", process.env.JWT_SECRET);
 console.log("FRONTEND_URL:", process.env.FRONTEND_URL);
 
-// Validate critical environment variables
+// Validate critical environment variables to ensure the app works properly
 [
   "AWS_REGION",
   "BUCKET_NAME",
@@ -37,7 +35,7 @@ console.log("FRONTEND_URL:", process.env.FRONTEND_URL);
   }
 });
 
-// Initialize MongoDB
+// Initialize MongoDB connection
 mongoose
   .connect(process.env.DB_CONNECTION_STRING, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
@@ -55,7 +53,7 @@ const BUCKET_NAME = process.env.BUCKET_NAME;
 // Initialize Express App
 const app = express();
 
-// Middleware
+// Middleware Configuration
 const corsOptions = {
   origin: process.env.FRONTEND_URL || "http://localhost:3000",
   credentials: true,
@@ -65,7 +63,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// Logger setup with Winston
+// Logger setup with Winston for debugging and error logging
 const logger = winston.createLogger({
   level: process.env.DEBUG === "true" ? "debug" : "info",
   format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
@@ -82,7 +80,7 @@ if (process.env.DEBUG === "true") {
   );
 }
 
-// Rate Limiting
+// Rate Limiting Configuration
 if (process.env.ENABLE_RATE_LIMITING === "true") {
   const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
@@ -92,7 +90,7 @@ if (process.env.ENABLE_RATE_LIMITING === "true") {
   app.use(limiter);
 }
 
-// Authentication Middleware
+// Authentication Middleware to verify JWT token
 const authenticate = async (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) {

@@ -13,7 +13,7 @@ const router = express.Router();
  */
 router.post("/version", authenticate, async (req, res) => {
   const { userId } = req.user;
-  const { fileId, newContent } = req.body;
+  const { fileId, newContent, versionDescription, keywordReplacements } = req.body;
 
   if (!fileId || !newContent) {
     return res.status(400).json({ error: "File ID and new content are required." });
@@ -22,8 +22,8 @@ router.post("/version", authenticate, async (req, res) => {
   try {
     console.log(`📝 AI Auto-Versioning File: ${fileId}`);
 
-    // AI generates a new version of the file
-    const versionInfo = await aiFileVersioning.createFileVersion(userId, fileId, newContent);
+    // AI detects changes and creates a new version of the file
+    const versionInfo = await aiFileVersioning.createFileVersion(userId, fileId, newContent, versionDescription, keywordReplacements);
 
     // AI logs learning experience for self-improvement
     await aiLearningManager.logAILearning(userId, "file_versioned", { fileId, versionInfo });
@@ -133,7 +133,7 @@ router.get("/compare", authenticate, async (req, res) => {
  */
 router.post("/auto-save", authenticate, async (req, res) => {
   const { userId } = req.user;
-  const { fileId, currentContent } = req.body;
+  const { fileId, currentContent, versionDescription, keywordReplacements } = req.body;
 
   if (!fileId || !currentContent) {
     return res.status(400).json({ error: "File ID and current content are required." });
@@ -143,7 +143,7 @@ router.post("/auto-save", authenticate, async (req, res) => {
     console.log(`💾 AI Auto-Saving File: ${fileId}`);
 
     // AI auto-saves file without user intervention
-    const autoSavedVersion = await aiFileVersioning.autoSaveVersion(userId, fileId, currentContent);
+    const autoSavedVersion = await aiFileVersioning.autoSaveVersion(userId, fileId, currentContent, versionDescription, keywordReplacements);
 
     // AI logs learning to improve auto-save behavior
     await aiLearningManager.logAILearning(userId, "file_auto_saved", { fileId, autoSavedVersion });

@@ -11,6 +11,9 @@ import Settings from './components/Settings';
 import Login from './components/Login';
 import Signup from './components/Signup';
 import WorkflowPage from './pages/WorkflowPage'; // Workflow Management Page
+import FileSearch from './components/FileSearch'; // File Search Page
+import FileVersioning from './components/FileVersioning'; // File Versioning Page
+import BusinessProposal from './components/BusinessProposal'; // Business Proposal Page
 import Header from './components/Header'; // Reusable Header component
 import Footer from './components/Footer'; // Reusable Footer component
 import './styles/styles.css'; // Global styles
@@ -107,6 +110,11 @@ function App() {
                             <Route path="/profile" element={<Profile user={user} />} />
                             <Route path="/settings" element={<Settings />} />
                             <Route path="/workflows" element={<WorkflowPage />} />
+
+                            {/* New Features Routes */}
+                            <Route path="/search" element={<FileSearch />} />
+                            <Route path="/versioning" element={<FileVersioning />} />
+                            <Route path="/proposal" element={<BusinessProposal />} />
                         </>
                     )}
 
