@@ -1,8 +1,10 @@
-# /Users/patrick/Projects/Teralynk/backend/src/ai/performance_tracker.py
+# File: /Users/patrick/Projects/Teralynk/backend/src/ai/performance_tracker.py
 
 import numpy as np
-from pymongo import MongoClient
 import datetime
+import json
+import os
+from pymongo import MongoClient
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 
 class AIPerformanceTracker:
@@ -16,6 +18,7 @@ class AIPerformanceTracker:
         self.mse_history = []
         self.mae_history = []
         self.rse_history = []
+        self.rollback_path = "/Users/patrick/Projects/Teralynk/backend/src/ai/ai_model_state.json"
 
     def evaluate_predictions(self, y_true, y_pred):
         """
@@ -67,21 +70,69 @@ class AIPerformanceTracker:
 
     def check_performance_threshold(self, threshold=0.05):
         """
-        Check AI performance trends and trigger retraining if errors are too high.
+        Check AI performance trends and trigger retraining if errors exceed threshold.
         """
         recent_logs = list(self.collection.find().sort("timestamp", -1).limit(10))
         errors = [log["mse"] for log in recent_logs if "mse" in log]
 
         if errors and np.mean(errors) > threshold:
-            print("🚨 High AI error detected! Triggering AI model retraining...")
-            self.retrain_ai_model()
+            print("🚨 High AI error detected! Adjusting AI parameters & retraining...")
+            self.optimize_ai_model()
 
-    def retrain_ai_model(self):
+    def optimize_ai_model(self):
         """
-        Placeholder for AI model retraining logic.
+        Adjust AI parameters dynamically and retrain if necessary.
         """
-        print("🔄 AI Model Retraining Started... (Updating weights, learning from past errors, etc.)")
-        # Future implementation: Fetch user behavior data, fine-tune AI weights, retrain model.
+        # Save the current AI state for rollback if needed
+        self.save_ai_state()
+
+        # Simulate optimization logic (could include learning rate tuning, weight updates, etc.)
+        print("🔄 AI Model Optimization: Adjusting weights & learning patterns...")
+        new_settings = {
+            "learning_rate": 0.01,  # Example adjustment
+            "error_threshold": 0.05
+        }
+
+        # Simulating an optimization update
+        if np.random.rand() > 0.2:  # 80% chance optimization is successful
+            print(f"✅ AI Model Updated Successfully: {new_settings}")
+            self.store_ai_settings(new_settings)
+        else:
+            print("❌ AI Optimization Failed! Reverting to previous state...")
+            self.restore_previous_state()
+
+    def save_ai_state(self):
+        """
+        Save the AI's state before making changes to allow rollback.
+        """
+        ai_state = {
+            "mse_history": self.mse_history,
+            "mae_history": self.mae_history,
+            "rse_history": self.rse_history
+        }
+        with open(self.rollback_path, "w") as f:
+            json.dump(ai_state, f)
+        print("💾 AI State Saved for Rollback.")
+
+    def restore_previous_state(self):
+        """
+        Revert AI model to the last working state if an optimization fails.
+        """
+        if os.path.exists(self.rollback_path):
+            with open(self.rollback_path, "r") as f:
+                ai_state = json.load(f)
+            self.mse_history = ai_state.get("mse_history", [])
+            self.mae_history = ai_state.get("mae_history", [])
+            self.rse_history = ai_state.get("rse_history", [])
+            print("🔄 AI Model Reverted to Previous Stable State.")
+
+    def store_ai_settings(self, settings):
+        """
+        Store updated AI model settings.
+        """
+        with open(self.rollback_path.replace("ai_model_state.json", "ai_settings.json"), "w") as f:
+            json.dump(settings, f)
+        print("⚙️ AI Settings Updated.")
 
 # Example Usage
 if __name__ == "__main__":
