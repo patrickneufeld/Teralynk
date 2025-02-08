@@ -1,43 +1,39 @@
-# macOS System Files
-.DS_Store
-
-# Log files
-logs/
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Dependencies
+# Node modules
 node_modules/
-package-lock.json
-yarn.lock
 
-# Build and Output
+# Build & distribution folders
 dist/
-coverage/
-*.out
-*.exe
-*.dll
-*.pyc
-*.pyo
-*.swp
+build/
+.cache/
 
-# Secrets and Environment Files
+# Environment files
 .env
 .env.local
 .env.development
 .env.production
 .env.test
-.env.*.local
-KEYS
 
-# IDE/Editor files
-.vscode/
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+combined.log
+error.log
+
+# MacOS system files
+.DS_Store
+__MACOSX/
+
+# IDE & OS generated files
 .idea/
-*.sublime-workspace
-*.sublime-project
+.vscode/
+*.swp
+*.swo
+*.swn
 
-# Jest coverage
-jest/
+# Coverage reports
 coverage/
+
+# Jest testing output
+jest.*
