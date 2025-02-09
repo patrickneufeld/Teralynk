@@ -1,0 +1,29 @@
+{
+  "name": "teralynk-backend",
+  "version": "1.0.0",
+  "description": "Backend for Teralynk Project",
+  "main": "server.js",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.14.0",
+    "axios": "^0.21.1",
+    "bcrypt": "^5.0.1",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "formidable": "^1.2.1",
+    "json2csv": "^6.0.0-alpha.2",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.10.9",
+    "rate-limit-redis": "^2.0.0",
+    "winston": "^3.3.3"
+  },
+  "scripts": {
+    "dev": "nodemon server.js",
+    "start": "node server.js",
+    "setup-database": "node setupDatabase.js"
+  },
+  "author": "Patrick Neufeld",
+  "license": "MIT",
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}
