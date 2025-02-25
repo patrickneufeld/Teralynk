@@ -1,0 +1,40 @@
+/* File Path: frontend/src/styles/components/AiQueryPanel.css */
+
+.ai-query-panel {
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ai-query-panel h2 {
+    text-align: center;
+    font-size: 1.8rem;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.ai-query-panel button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.ai-query-panel button:hover {
+    background-color: #0056b3;
+}
+
+.response {
+    margin-top: 10px;
+    color: green;
+    font-weight: bold;
+}
+
+.error-message {
+    color: red;
+    font-size: 1rem;
+    margin-top: 10px;
+}

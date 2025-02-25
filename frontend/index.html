@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- ✅ Security Fix: Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self' https: http: data:;
+        script-src 'self' 'unsafe-inline' https: http:;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;
+        img-src 'self' data: https:;
+        connect-src 'self' https: http:;
+        upgrade-insecure-requests;
+    " />
+
+    <!-- ✅ Basic Meta Information -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#007bff" />
+    <meta name="description" content="Teralynk - Elevate teamwork with seamless cloud collaboration and AI-powered productivity." />
+    <title>Teralynk - The Future of Collaborative Cloud Storage</title>
+
+    <!-- ✅ Favicon and App Icons -->
+    <link rel="icon" type="image/png" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/logo192.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/logo512.png" />
+
+    <!-- ✅ Web App Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- ✅ Open Graph Meta Tags (Social Media Sharing) -->
+    <meta property="og:title" content="Teralynk - The Future of Collaborative Cloud Storage" />
+    <meta property="og:description" content="Elevate teamwork with seamless cloud collaboration and AI-powered productivity." />
+    <meta property="og:image" content="/logo192.png" />
+    <meta property="og:url" content="https://teralynk.com" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Teralynk" />
+
+    <!-- ✅ Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Teralynk - The Future of Collaborative Cloud Storage" />
+    <meta name="twitter:description" content="Elevate teamwork with seamless cloud collaboration and AI-powered productivity." />
+    <meta name="twitter:image" content="/logo192.png" />
+    <meta name="twitter:site" content="@Teralynk" />
+
+    <!-- ✅ SEO Optimization -->
+    <meta name="keywords" content="cloud storage, collaboration, AI-powered productivity, file sharing, teamwork, remote work" />
+    <meta name="author" content="Teralynk Team" />
+    <meta name="robots" content="index, follow" />
+    <meta name="google-site-verification" content="YOUR_GOOGLE_SITE_VERIFICATION_CODE" />
+
+    <!-- ✅ PWA & Mobile Optimization -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Teralynk" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+    <!-- ✅ Fonts (Fix for CORS issues) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin="anonymous" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+
+    <!-- ✅ Global Styles (Fixed Path for CSS) -->
+    <link rel="stylesheet" href="/src/styles/global/index.css" />
+
+    <!-- ✅ Performance Enhancements -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+
+    <!-- ✅ Entry Point for React App (Fixed Path for Vite) -->
+    <script type="module" src="/src/main.jsx" defer></script>
+  </head>
+  <body>
+    <!-- ✅ No JavaScript Fallback -->
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+
+    <!-- ✅ React App Mount Point -->
+    <div id="root"></div>
+  </body>
+</html>

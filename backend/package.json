@@ -1,0 +1,42 @@
+{
+  "name": "teralynk-backend",
+  "version": "1.0.0",
+  "description": "Backend for Teralynk Project",
+  "main": "server.js",
+  "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.749.0",
+    "@aws-sdk/client-s3": "^3.14.0",
+    "@aws-sdk/client-secrets-manager": "^3.750.0",
+    "aws-sdk": "^2.1692.0",
+    "axios": "^1.7.9",
+    "base-64": "^1.0.0",
+    "bcrypt": "^5.0.1",
+    "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
+    "crypto": "^1.0.1",
+    "dotenv": "^10.0.0",
+    "dropbox": "^10.34.0",
+    "express": "^4.21.2",
+    "formidable": "^1.2.1",
+    "fs": "^0.0.1-security",
+    "googleapis": "^144.0.0",
+    "json2csv": "^6.0.0-alpha.2",
+    "jsonwebtoken": "^9.0.2",
+    "path": "^0.12.7",
+    "pg": "^8.13.3",
+    "pg-hstore": "^2.3.4",
+    "rate-limit-redis": "^2.0.0",
+    "sequelize": "^6.37.5",
+    "winston": "^3.17.0"
+  },
+  "scripts": {
+    "dev": "nodemon server.js",
+    "start": "node server.js",
+    "setup-database": "node setupDatabase.js"
+  },
+  "author": "Patrick Neufeld",
+  "license": "MIT",
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}

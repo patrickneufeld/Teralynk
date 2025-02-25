@@ -1,0 +1,74 @@
+/* File Path: frontend/src/styles/Onboarding.css */
+
+/* Container Styling */
+.onboarding {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+}
+
+/* Content Section */
+.onboarding-content h2 {
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.onboarding-content p {
+    font-size: 1rem;
+    margin-bottom: 20px;
+    color: #555;
+}
+
+/* Actions Section */
+.onboarding-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Button Styling */
+.onboarding-actions button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.onboarding-actions button:hover {
+    background-color: #0056b3;
+}
+
+/* Progress Bar */
+.onboarding-progress {
+    width: 100%;
+    height: 10px;
+    border-radius: 5px;
+    background-color: #e6e6e6;
+    appearance: none; /* Removes default browser styles */
+
+    /* Progress Bar Fill */
+    &::-webkit-progress-bar {
+        background-color: #e6e6e6;
+        border-radius: 5px;
+    }
+
+    &::-webkit-progress-value {
+        background-color: #007bff;
+        border-radius: 5px;
+    }
+
+    &::-moz-progress-bar {
+        background-color: #007bff;
+        border-radius: 5px;
+    }
+}

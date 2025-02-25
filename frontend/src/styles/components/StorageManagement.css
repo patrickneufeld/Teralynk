@@ -1,0 +1,66 @@
+/* File Path: frontend/styles/StorageManagement.css */
+
+.storage-management {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+}
+
+.storage-management h2 {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.storage-management ul {
+    list-style: none;
+    padding: 0;
+}
+
+.storage-management li {
+    margin-bottom: 15px;
+    padding: 10px;
+    background: #f9f9f9;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.upgrade-button {
+    margin-left: 10px;
+    padding: 5px 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.upgrade-button:hover {
+    background-color: #0056b3;
+}
+
+.notification {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #ffcc00;
+    color: #333;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.error-message {
+    color: red;
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+.loading-message {
+    color: #555;
+    font-size: 16px;
+}
