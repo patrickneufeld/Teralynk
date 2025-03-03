@@ -1,5 +1,5 @@
-const OAuthCredential = require("../models/OAuthCredential");
-const RepoIntegration = require("../services/repoIntegration");
+const OAuthCredential = import OAuthCredential from '../models/OAuthCredential';
+const RepoIntegration = import repoIntegration from '../services/repoIntegration';
 
 const refreshTokens = async () => {
   const credentials = await OAuthCredential.find({ expiresAt: { $lt: Date.now() } }); // Expired tokens

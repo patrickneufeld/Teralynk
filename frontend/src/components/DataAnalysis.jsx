@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Bar } from 'react-chartjs-2';
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "../components/ui/Card";
 import '../styles/components/DataAnalysis.css';
 
 const DataAnalysis = () => {

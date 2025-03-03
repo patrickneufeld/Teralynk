@@ -1,10 +1,10 @@
-// ✅ FILE: /Users/patrick/Projects/Teralynk/backend/src/config/storageConfig.js
+import dotenv from 'dotenv';
+import { S3Client } from '@aws-sdk/client-s3';
+import { google } from 'googleapis';
+import { Dropbox } from 'dropbox';
+import fetch from 'node-fetch'; // Ensure node-fetch is available
 
-require("dotenv").config();
-const { S3Client } = require("@aws-sdk/client-s3");
-const { google } = require("googleapis");
-const Dropbox = require("dropbox").Dropbox;
-const fetch = require("node-fetch");
+dotenv.config(); // Load environment variables
 
 // ✅ AWS S3 Configuration
 const s3Client = new S3Client({
@@ -21,9 +21,10 @@ const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_DRIVE_CLIENT_SECRET,
   process.env.GOOGLE_DRIVE_REDIRECT_URI
 );
+
 oauth2Client.setCredentials({ refresh_token: process.env.GOOGLE_DRIVE_REFRESH_TOKEN });
 
-const googleDriveClient = google.drive({ version: "v3", auth: oauth2Client });
+const googleDriveClient = google.drive({ version: 'v3', auth: oauth2Client });
 
 /**
  * ✅ Refresh Google Drive Access Token (for long-running services)
@@ -123,10 +124,13 @@ const checkStorageAvailability = async (provider) => {
 
   try {
     if (provider === "s3") {
+      // Use the AWS SDK to check availability
       await s3Client.send(new ListBucketsCommand({}));
     } else if (provider === "googleDrive") {
+      // Test Google Drive API
       await googleDriveClient.files.list({ pageSize: 1 });
     } else if (provider === "dropbox") {
+      // Test Dropbox API
       await dropboxClient.filesListFolder({ path: "" });
     }
     console.log(`✅ ${provider} is available.`);
@@ -137,8 +141,4 @@ const checkStorageAvailability = async (provider) => {
   }
 };
 
-module.exports = {
-  getStorageClient,
-  listAvailableStorageProviders,
-  checkStorageAvailability,
-};
+export { getStorageClient, listAvailableStorageProviders, checkStorageAvailability };

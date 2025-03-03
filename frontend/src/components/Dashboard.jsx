@@ -18,15 +18,14 @@ function Dashboard({ user }) {
         }
 
         const fetchUserData = async () => {
-            setLoading(true);
-            setError(null);
-            
             try {
                 const token = localStorage.getItem("token");
-                if (!token) throw new Error("Missing authentication token.");
+                if (!token) {
+                    throw new Error("Missing authentication token.");
+                }
 
-                console.log(`🔍 Fetching user data: ${BACKEND_URL}/api/user-data`);
-                
+                console.log(`🔍 Fetching user data from: ${BACKEND_URL}/api/user-data`);
+
                 const response = await fetch(`${BACKEND_URL}/api/user-data`, {
                     method: "GET",
                     headers: {
@@ -37,7 +36,7 @@ function Dashboard({ user }) {
                 });
 
                 if (!response.ok) {
-                    throw new Error(`Request failed: ${response.statusText}`);
+                    throw new Error(`Request failed with status: ${response.status}`);
                 }
 
                 const data = await response.json();
@@ -51,16 +50,16 @@ function Dashboard({ user }) {
         };
 
         fetchUserData();
-    }, [user]); // ✅ Re-run if user changes
-
-    if (loading) return <div className="dashboard-loading">Loading your dashboard...</div>;
-    if (error) return <div className="dashboard-error">⚠️ {error}</div>;
+    }, [user]); // ✅ Dependency array to re-run if user changes
 
     return (
         <div className="dashboard">
             <h2>Welcome, {user?.username || "User"}! 🎉</h2>
-            
-            {userData ? (
+
+            {loading && <div className="dashboard-loading" aria-live="polite">Loading your dashboard...</div>}
+            {error && <div className="dashboard-error" role="alert">⚠️ {error}</div>}
+
+            {!loading && !error && userData ? (
                 <div className="user-details">
                     <h3>Your Profile</h3>
                     <p><strong>Name:</strong> {userData.name || "N/A"}</p>
@@ -68,7 +67,7 @@ function Dashboard({ user }) {
                     <p><strong>Member Since:</strong> {userData.memberSince ? new Date(userData.memberSince).toLocaleDateString() : "N/A"}</p>
                 </div>
             ) : (
-                <p>No user data available.</p>
+                !loading && !error && <p>No user data available.</p>
             )}
         </div>
     );

@@ -1,10 +1,8 @@
-// ✅ FILE: /Users/patrick/Projects/Teralynk/backend/src/ai/aiTroubleshooter.js
-
-const fs = require("fs");
-const path = require("path");
-const axios = require("axios");
-  const troubleshootingLogger = require('../../utils/troubleshootingLogger');
-
+import pkg from 'pg';  // Default import for the pg module
+const { Client } = pkg;  // Destructure to get the Client
+import fs from 'fs';
+import axios from 'axios';
+import troubleshootingLogger from '../../utils/troubleshootingLogger.js'; // Ensure correct import for logger
 
 // ✅ Ensure OpenAI API key is loaded
 if (!process.env.OPENAI_API_KEY) {
@@ -39,7 +37,7 @@ const getJavaScriptFiles = (dir) => {
  * @param {string} projectPath - Path to the project directory
  * @returns {Promise<object>} - Analysis results
  */
-const analyzeProjectFiles = async (projectPath) => {
+export const analyzeProjectFiles = async (projectPath) => {
   const jsFiles = getJavaScriptFiles(projectPath);
   if (jsFiles.length === 0) {
     throw new Error("No JavaScript files found in the project directory.");
@@ -77,7 +75,7 @@ const analyzeProjectFiles = async (projectPath) => {
       throw new Error("AI returned an empty response.");
     }
 
-    await logTroubleshootingResult("project_analysis", projectPath, aiResponse);
+    await troubleshootingLogger.logTroubleshooting("project_analysis", projectPath, aiResponse);
 
     return { suggestions: aiResponse, analyzedFiles: jsFiles };
   } catch (error) {
@@ -92,7 +90,7 @@ const analyzeProjectFiles = async (projectPath) => {
  * @param {string} suggestions - AI-generated fix suggestions
  * @returns {Array<string>} - List of updated files
  */
-const applyFixes = (analyzedFiles, suggestions) => {
+export const applyFixes = (analyzedFiles, suggestions) => {
   const updatedFiles = [];
 
   try {
@@ -122,5 +120,3 @@ const applyFixes = (analyzedFiles, suggestions) => {
 
   return updatedFiles;
 };
-
-module.exports = { analyzeProjectFiles, applyFixes };

@@ -1,9 +1,11 @@
-// ✅ FILE: /Users/patrick/Projects/Teralynk/backend/src/config/dynamicStorageManager.js
+// File Path: /Users/patrick/Projects/Teralynk/backend/src/config/dynamicStorageManager.js
 
-require("dotenv").config();
-const axios = require("axios");
-const { getStorageClient, listAvailableStorageProviders } = require("./storageConfig");
-const aiLearningManager = require("../ai/aiLearningManager");
+import dotenv from 'dotenv';
+import axios from 'axios';
+import { listAvailableStorageProviders } from './dynamicStorageConfig.js'; // Adjusted import for ES modules
+import { logAILearning } from "../ai/aiLearningManager.js"; // Corrected named import for aiLearningManager
+
+dotenv.config();
 
 const dynamicStorageProviders = {}; // Stores user-added storage providers
 
@@ -39,7 +41,7 @@ const registerStorageProvider = async (providerName, apiUrl, credentials = {}) =
     console.log(`🚀 New storage provider added: ${providerName}`);
 
     // ✅ Log AI learning from new storage addition
-    await aiLearningManager.logAILearning("platform", "storage_provider_added", {
+    await logAILearning("platform", "storage_provider_added", {
       providerName,
       apiUrl,
     });
@@ -85,7 +87,7 @@ const setUserStoragePreferences = async (userId, selectedProviders) => {
     }
 
     // ✅ Log the selection in AI learning manager
-    await aiLearningManager.logAILearning(userId, "storage_selection", { selectedProviders });
+    await logAILearning(userId, "storage_selection", { selectedProviders });
 
     console.log(`✅ User '${userId}' selected storage providers:`, validProviders);
     return validProviders;
@@ -138,15 +140,28 @@ const removeStorageProvider = async (providerName) => {
   delete dynamicStorageProviders[providerName];
 
   console.log(`🗑️ Storage provider '${providerName}' removed successfully.`);
-  await aiLearningManager.logAILearning("platform", "storage_provider_removed", { providerName });
+  await logAILearning("platform", "storage_provider_removed", { providerName });
 
   return { message: `✅ Storage provider '${providerName}' removed successfully.` };
 };
 
-module.exports = {
+/**
+ * ✅ Get the storage client for a given provider.
+ * @param {string} provider - The storage provider name.
+ */
+const getStorageClient = (provider) => {
+  if (!dynamicStorageProviders[provider]) {
+    throw new Error(`❌ Invalid storage provider: ${provider}`);
+  }
+  return dynamicStorageProviders[provider];
+};
+
+// Export functions to make them available to other modules
+export {
   registerStorageProvider,
   getAllStorageProviders,
   setUserStoragePreferences,
   updateTotalStorage,
   removeStorageProvider,
+  getStorageClient, // Ensure `getStorageClient` is exported
 };

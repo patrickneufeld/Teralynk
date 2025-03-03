@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Alert } from "@/components/ui/alert";
-import { Loader } from "@/components/ui/loader";
-import { Select } from "@/components/ui/select";
+import { Card, CardContent } from "../components/ui/Card";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Alert } from "../components/ui/alert";
+import { Loader } from "../components/ui/loader";
+import { Select } from "../components/ui/select";
 
 const Credentials = () => {
     const [credentials, setCredentials] = useState([]);

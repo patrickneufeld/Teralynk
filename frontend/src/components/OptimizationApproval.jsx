@@ -1,61 +1,62 @@
-// /Users/patrick/Projects/Teralynk/frontend/src/components/OptimizationApproval.jsx
-
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Card, CardContent } from "@/components/ui/card";
-import '../styles/components/OptimizationApproval.css';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { Card, CardContent } from "../components/ui/Card"; // ✅ Corrected import
+import "../styles/components/OptimizationApproval.css";
 
 const OptimizationApproval = () => {
     const [optimizations, setOptimizations] = useState([]);
-    const [error, setError] = useState('');
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        const fetchOptimizations = async () => {
-            try {
-                const response = await axios.get('/api/admin/optimizations');
+        axios.get("/api/optimizations")
+            .then((response) => {
                 setOptimizations(response.data);
-            } catch (err) {
-                setError('Failed to load optimization requests.');
-            } finally {
                 setLoading(false);
-            }
-        };
-
-        fetchOptimizations();
+            })
+            .catch((err) => {
+                setError("Failed to load optimizations.");
+                setLoading(false);
+            });
     }, []);
 
-    const handleApproval = async (id, status) => {
+    const handleApproval = async (id) => {
         try {
-            await axios.post('/api/admin/optimizations/approve', { optimization_id: id, status });
-            setOptimizations((prev) => prev.filter((opt) => opt._id !== id));
+            await axios.post(`/api/optimizations/${id}/approve`);
+            setOptimizations(optimizations.filter((opt) => opt.id !== id));
         } catch (err) {
-            setError('Failed to update optimization status.');
+            setError("Error approving optimization.");
+        }
+    };
+
+    const handleRejection = async (id) => {
+        try {
+            await axios.post(`/api/optimizations/${id}/reject`);
+            setOptimizations(optimizations.filter((opt) => opt.id !== id));
+        } catch (err) {
+            setError("Error rejecting optimization.");
         }
     };
 
     return (
-        <div className="optimization-approval">
-            <h2>Pending AI Optimizations</h2>
-            {loading ? <p>Loading...</p> : error ? <p>{error}</p> : (
-                <div className="optimizations-container">
-                    {optimizations.length === 0 ? <p>No pending optimizations.</p> : optimizations.map((opt) => (
-                        <Card key={opt._id}>
-                            <CardContent>
-                                <p><strong>Details:</strong> {opt.details}</p>
-                                <div className="approval-buttons">
-                                    <button onClick={() => handleApproval(opt._id, "Approved")} className="approve-btn">
-                                        Approve
-                                    </button>
-                                    <button onClick={() => handleApproval(opt._id, "Rejected")} className="reject-btn">
-                                        Reject
-                                    </button>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
-            )}
+        <div className="optimization-approval-container">
+            <h2>Optimization Requests</h2>
+            {loading && <p>Loading...</p>}
+            {error && <p className="error">{error}</p>}
+            {optimizations.length === 0 && !loading && <p>No pending optimizations.</p>}
+
+            {optimizations.map((opt) => (
+                <Card key={opt.id} className="optimization-card">
+                    <CardContent>
+                        <h3>{opt.title}</h3>
+                        <p>{opt.description}</p>
+                        <div className="action-buttons">
+                            <button className="approve" onClick={() => handleApproval(opt.id)}>Approve</button>
+                            <button className="reject" onClick={() => handleRejection(opt.id)}>Reject</button>
+                        </div>
+                    </CardContent>
+                </Card>
+            ))}
         </div>
     );
 };

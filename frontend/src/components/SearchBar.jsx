@@ -1,8 +1,8 @@
 // /Users/patrick/Projects/Teralynk/frontend/src/components/SearchBar.jsx
 
 import React, { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Input } from "../components/ui/input";
+import { Button } from "../components/ui/button";
 import "../styles/components/SearchBar.css";
 
 const SearchBar = ({ onSearch }) => {

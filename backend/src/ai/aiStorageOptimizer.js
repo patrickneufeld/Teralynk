@@ -1,20 +1,11 @@
-// File Path: /Users/patrick/Projects/Teralynk/backend/src/ai/aiStorageOptimizer.js
+import { logAILearning } from './aiLearningManager.js';  // Correctly import the logAILearning function
+import axios from 'axios';  // For making API calls
+import { getStorageClient } from '../config/storageConfig.js';  // Correct import to get storage clients
 
-const { getAllStorageProviders, updateTotalStorage } = require("../config/dynamicStorageManager");
-const aiLearningManager = require("./aiLearningManager");
-const axios = require("axios");
-
-/**
- * Determine the best storage provider based on AI learning and user preferences.
- * @param {string} userId - The user's ID
- * @param {number} fileSize - Size of the file in MB
- * @param {Array<string>} preferredProviders - User-selected storage providers
- * @returns {string|null} - The best provider for storing the file
- */
+// Function to determine the best storage provider for a given user and file
 const determineBestStorageProvider = async (userId, fileSize, preferredProviders) => {
-  await updateTotalStorage();
-  const storageProviders = getAllStorageProviders();
-
+  const storageProviders = getStorageClient(); // Fetch storage providers
+  
   let bestProvider = null;
   let maxAvailableSpace = 0;
 
@@ -43,25 +34,19 @@ const determineBestStorageProvider = async (userId, fileSize, preferredProviders
   console.log(`📦 AI Selected Best Storage Provider for user ${userId}: ${bestProvider}`);
   
   // Log AI learning event
-  await aiLearningManager.logAILearning(userId, "storage_selection", { bestProvider, fileSize });
+  await logAILearning(userId, "storage_selection", { bestProvider, fileSize });
 
   return bestProvider;
 };
 
-/**
- * Automatically migrate files from a full provider to an available one.
- * @param {string} userId - The user's ID
- * @param {string} fileName - Name of the file
- * @param {string} currentProvider - Current storage provider
- */
+// Function to automatically migrate files to a more available storage provider
 const migrateFileToAvailableStorage = async (userId, fileName, currentProvider) => {
-  await updateTotalStorage();
-  const storageProviders = getAllStorageProviders();
-
+  const storageProviders = getStorageClient();
+  
   for (const provider in storageProviders) {
     if (provider !== currentProvider && storageProviders[provider].totalStorage > 0) {
       console.log(`🔄 AI Migrating file '${fileName}' from ${currentProvider} to ${provider}...`);
-
+      
       try {
         await axios.post(`${storageProviders[provider].apiUrl}/migrate`, {
           userId,
@@ -71,11 +56,7 @@ const migrateFileToAvailableStorage = async (userId, fileName, currentProvider) 
         });
 
         // Log AI learning event
-        await aiLearningManager.logAILearning(userId, "storage_migration", {
-          fileName,
-          from: currentProvider,
-          to: provider,
-        });
+        await logAILearning(userId, "storage_migration", { fileName, from: currentProvider, to: provider });
 
         console.log(`✅ AI successfully migrated '${fileName}' to ${provider}.`);
         return provider;
@@ -89,14 +70,11 @@ const migrateFileToAvailableStorage = async (userId, fileName, currentProvider) 
   return null;
 };
 
-/**
- * AI-Driven Storage Optimization: Analyze storage patterns & balance usage.
- */
+// Function to analyze the efficiency of the storage and identify over/underutilized providers
 const analyzeStorageEfficiency = async () => {
   console.log("🔍 AI Analyzing Storage Efficiency...");
-  await updateTotalStorage();
-
-  const storageProviders = getAllStorageProviders();
+  
+  const storageProviders = getStorageClient();
   let underutilized = [];
   let overutilized = [];
 
@@ -112,22 +90,16 @@ const analyzeStorageEfficiency = async () => {
   console.log(`🔥 AI Found Overutilized Storage: ${overutilized}`);
 
   // Log AI learning event
-  await aiLearningManager.logAILearning("platform", "storage_efficiency_analysis", {
-    underutilized,
-    overutilized,
-  });
+  await logAILearning("platform", "storage_efficiency_analysis", { underutilized, overutilized });
 
   return { underutilized, overutilized };
 };
 
-/**
- * AI Self-Improvement: AI learns from storage decisions and optimizes future selections.
- * @returns {Promise<void>}
- */
-const improveStorageAI = async () => {
+// Function to improve storage selection AI based on its past decisions
+const improveStorageAI = async () => {  // Ensure only one definition and export
   console.log("🤖 AI Self-Improvement: Analyzing Storage Decision Patterns...");
   
-  const learningData = await aiLearningManager.getLearningData("storage_selection");
+  const learningData = await getLearningData("storage_selection");
 
   if (!learningData || learningData.length === 0) {
     console.warn("⚠ AI has no past data for storage optimization. Continuing normal operations.");
@@ -150,15 +122,51 @@ const improveStorageAI = async () => {
     console.warn("⚠ AI detected too many failed storage decisions. Adjusting logic...");
     
     // AI modifies its provider selection weightings based on real-time data
-    await aiLearningManager.modifyAIStrategy("storage_selection", { adjustThreshold: true });
+    await modifyAIStrategy("storage_selection", { adjustThreshold: true });
   }
 
   console.log(`✅ AI Self-Improvement Complete: Success Rate ${successRate}, Adjustments Made: ${failedDecisions}`);
 };
 
-module.exports = {
-  determineBestStorageProvider,
-  migrateFileToAvailableStorage,
-  analyzeStorageEfficiency,
-  improveStorageAI,
+// Helper function to get learning data for specific action types (e.g., storage decisions)
+const getLearningData = async (actionType) => {
+  try {
+    // Assuming you have a function in the database module to fetch learning data
+    const learningData = await db.getLearningData(actionType);
+    return learningData;
+  } catch (error) {
+    console.error("❌ Error fetching learning data:", error.message);
+    return [];
+  }
+};
+
+// Helper function to modify AI strategy based on learning data
+const modifyAIStrategy = async (actionType, adjustments) => {
+  try {
+    console.log(`⚙️ Modifying AI strategy for ${actionType}...`);
+
+    let currentStrategy = await db.getAIStrategy(actionType);
+
+    if (!currentStrategy) {
+      console.warn("⚠️ No current strategy found, creating new strategy.");
+      currentStrategy = {};
+    }
+
+    // Apply adjustments to strategy
+    currentStrategy = { ...currentStrategy, ...adjustments };
+    
+    // Save the new strategy to the database
+    await db.saveAIStrategy(actionType, currentStrategy);
+    console.log(`✅ AI strategy for ${actionType} updated.`);
+  } catch (error) {
+    console.error(`❌ Error modifying AI strategy for ${actionType}:`, error.message);
+  }
+};
+
+// Export all functions to be used in other files
+export { 
+  determineBestStorageProvider, 
+  migrateFileToAvailableStorage, 
+  analyzeStorageEfficiency, 
+  improveStorageAI 
 };

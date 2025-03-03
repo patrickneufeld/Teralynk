@@ -1,14 +1,20 @@
-// ✅ FILE: /Users/patrick/Projects/Teralynk/backend/src/routes/storageRoutes.js
+// File Path: /Users/patrick/Projects/Teralynk/backend/src/routes/storageRoutes.js
 
-const express = require("express");
-const formidable = require("formidable");
-const fs = require("fs");
-const { PutObjectCommand } = require("@aws-sdk/client-s3");
-const { requireAuth } = require("../middleware/authMiddleware"); // ✅ FIXED IMPORT
-const { getStorageClient, listAvailableStorageProviders } = require("../config/storageConfig");
-const aiFileManager = require("../ai/aiFileManager");
-const aiStorageOptimizer = require("../ai/aiStorageOptimizer");
-const aiLearningManager = require("../ai/aiLearningManager");
+import express from "express";
+import formidable from "formidable";
+import fs from "fs";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { requireAuth } from "../middleware/authMiddleware.js"; // Corrected import
+import { getStorageClient, listAvailableStorageProviders } from "../config/storageConfig.js"; // Corrected import
+import { analyzeFileContent } from "../ai/aiFileManager.js"; // Corrected named import
+import * as aiStorageOptimizer from "../ai/aiStorageOptimizer.js"; // Corrected named import
+import { logAILearning } from "../ai/aiLearningManager.js"; // Corrected named import
+import { 
+  determineBestStorageProvider, 
+  migrateFileToAvailableStorage, 
+  analyzeStorageEfficiency, 
+  improveStorageAI 
+} from "../ai/aiStorageOptimizer.js"; // Corrected import
 
 const router = express.Router();
 
@@ -51,10 +57,10 @@ router.post("/upload", requireAuth, async (req, res) => {
       await storageClient.client.send(new PutObjectCommand(params));
 
       // AI analyzes file content
-      const aiMetadata = await aiFileManager.analyzeFileContent(bestProvider, file.originalFilename);
+      const aiMetadata = await analyzeFileContent(bestProvider, file.originalFilename); // Corrected use of named import
 
       // Log AI learning
-      await aiLearningManager.logAILearning(userId, "file_uploaded", {
+      await logAILearning(userId, "file_uploaded", { // Corrected to use named import for logAILearning
         fileName: file.originalFilename,
         provider: bestProvider,
         aiMetadata,
@@ -101,7 +107,7 @@ router.get("/organize", requireAuth, async (req, res) => {
   try {
     const { userId } = req.user;
     const organizationResult = await aiFileManager.autoOrganizeFiles(userId);
-    await aiLearningManager.logAILearning(userId, "file_organization", { organizationResult });
+    await logAILearning(userId, "file_organization", { organizationResult });
 
     res.status(200).json({ message: "Files organized successfully", organizationResult });
   } catch (error) {
@@ -137,7 +143,7 @@ router.post("/add-provider", requireAuth, async (req, res) => {
 
     // Register new storage provider
     const result = await aiFileManager.registerNewStorageProvider(providerName, apiUrl, credentials);
-    await aiLearningManager.logAILearning("platform", "new_storage_provider_added", { providerName });
+    await logAILearning("platform", "new_storage_provider_added", { providerName });
 
     res.status(200).json({ message: "New storage provider added successfully", result });
   } catch (error) {
@@ -186,4 +192,4 @@ router.delete("/delete", requireAuth, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

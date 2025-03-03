@@ -1,153 +1,118 @@
-const AIIntegration = require('./aiIntegration');
-const db = require('../db');
+import dotenv from 'dotenv';
+import axios from 'axios';
+import fs from 'fs';
+import path from 'path';
+import { getRecentInteractions, logInteraction } from '../config/db.js'; // Adjusted import for DB functions
 
-class AILearningManager {
-  /**
-   * Log and process an AI interaction.
-   * @param {string} userId - User's unique identifier.
-   * @param {string} platform - The name of the AI platform queried.
-   * @param {Object} request - The payload sent to the AI platform.
-   * @param {Object} response - The response received from the AI platform.
-   */
-  async logAIInteraction(userId, platform, request, response) {
-    try {
-      // Log interaction to the database
-      await db.logInteraction({
-        userId,
-        platform,
-        request,
-        response,
-        timestamp: new Date(),
-      });
+dotenv.config(); // Load environment variables
 
-      // Extract learning data
-      const userData = this.extractLearningData(request, response);
-      const platformData = this.extractPlatformLearningData(request, response);
-
-      // Update learning models
-      await AIIntegration.updateUserModel(userId, userData);
-      await AIIntegration.updatePlatformModel(platformData);
-
-      console.log(`AI interaction logged and processed for user: ${userId}`);
-    } catch (error) {
-      console.error('Error processing AI interaction:', error);
-      throw new Error("Error logging AI interaction");
-    }
+/**
+ * Log AI learning progress and user interactions.
+ * This tracks AI recommendations and actual user responses to refine future suggestions.
+ * @param {string} userId - User making the request.
+ * @param {string} action - The AI action performed.
+ * @param {object} details - Additional details (e.g., suggested file name, storage choice, etc.).
+ */
+const logAILearning = async (userId, action, details) => {
+  try {
+    await logInteraction({ userId, action, details, timestamp: new Date() });
+    console.log(`✅ AI Learning Logged: ${action} - User: ${userId}`);
+  } catch (error) {
+    console.error("❌ Error logging AI learning:", error.message);
   }
+};
 
-  /**
-   * Analyze user feedback and adjust learning models.
-   * @param {string} userId - User's unique identifier.
-   * @param {Object} feedback - Feedback data.
-   */
-  async processFeedback(userId, feedback) {
-    try {
-      const userModel = await AIIntegration.getUserModel(userId);
-      const updatedModel = this.adaptModel(userModel, feedback);
-      await AIIntegration.updateUserModel(userId, updatedModel);
-      console.log(`Feedback processed for user ${userId}`);
-    } catch (error) {
-      console.error("Error processing feedback:", error);
-      throw new Error("Error processing feedback");
-    }
-  }
+/**
+ * Analyze AI performance and update its own code.
+ * AI will self-adjust based on success rates of past decisions.
+ */
+const analyzeAndUpdateAI = async () => {
+  try {
+    console.log("🚀 AI Self-Analysis Running...");
 
-  /**
-   * Self-improvement mechanism to query ChatGPT for advice.
-   * @param {string} userId - User's unique identifier.
-   * @param {Object} queryDetails - Details of the user query and AI's response.
-   */
-  async selfImprove(userId, queryDetails) {
-    const { query, response } = queryDetails;
+    // Fetch past AI interactions
+    const pastInteractions = await getRecentInteractions();
 
-    try {
-      // Ensure the query and response are valid
-      if (!query || !response) {
-        throw new Error('Invalid query or response in selfImprove');
+    // Identify patterns in successful vs. failed decisions
+    const analysisPrompt = `Analyze the following AI interactions and suggest optimizations for improving performance. 
+    Focus on reducing errors, improving predictions, and enhancing storage decisions.\n\n${JSON.stringify(pastInteractions)}`;
+
+    const response = await axios.post(
+      "https://api.openai.com/v1/completions",
+      {
+        model: "gpt-4",
+        prompt: analysisPrompt,
+        max_tokens: 800,
+        temperature: 0.3,
+      },
+      {
+        headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
       }
+    );
 
-      // Query ChatGPT for advice
-      const advice = await AIIntegration.queryChatGPTForAdvice(query, response);
+    const aiSuggestions = response.data.choices[0].text.trim();
+    console.log(`🤖 AI Self-Improvement Suggestions:\n${aiSuggestions}`);
 
-      // Log the advice and update the model
-      const userModel = await AIIntegration.getUserModel(userId);
-      const updatedModel = {
-        ...userModel,
-        improvementLogs: [...(userModel.improvementLogs || []), { query, response, advice }],
-      };
+    // Apply AI-generated optimizations (if applicable)
+    const updatePath = path.join(__dirname, "aiOptimizations.json");
+    fs.writeFileSync(updatePath, JSON.stringify({ lastUpdate: new Date(), suggestions: aiSuggestions }, null, 2));
 
-      await AIIntegration.updateUserModel(userId, updatedModel);
-      console.log("Self-improvement advice logged and model updated.");
-    } catch (error) {
-      console.error("Error during self-improvement process:", error);
-      throw new Error("Self-improvement failed");
+    return aiSuggestions;
+  } catch (error) {
+    console.error("❌ AI Self-Improvement Failed:", error.message);
+  }
+};
+
+/**
+ * Automate AI Code Updates
+ * If AI detects an inefficient approach, it will rewrite specific functions to improve its performance.
+ */
+const autoUpdateAI = async () => {
+  try {
+    console.log("🔧 AI Auto-Updating its own logic...");
+    const aiOptimizations = JSON.parse(fs.readFileSync(path.join(__dirname, "aiOptimizations.json"), "utf-8"));
+
+    if (!aiOptimizations || !aiOptimizations.suggestions) {
+      console.log("⚠️ No AI improvements detected yet.");
+      return;
     }
-  }
 
-  /**
-   * Detect if the AI requires improvement for a given response.
-   * @param {Object} response - The AI's response to analyze.
-   * @returns {boolean} - Whether self-improvement is needed.
-   */
-  needsImprovement(response) {
-    // Example: Check if the response is empty or flagged as low confidence
-    return !response || response.confidence < 0.5;
-  }
+    // Example of applying an AI-generated optimization (placeholder logic)
+    const optimizationPrompt = `Update the AI file management system based on the following improvement:\n\n${aiOptimizations.suggestions}\n\nReturn the updated JavaScript function code only.`;
 
-  /**
-   * Adjust a model based on feedback or advice.
-   * @param {Object} model - Existing model data.
-   * @param {Object} feedback - Feedback or advice data to incorporate.
-   * @returns {Object} - Updated model data.
-   */
-  adaptModel(model, feedback) {
-    // Example: Increment weights for positively rated topics
-    if (feedback.rating === "positive") {
-      model.topics[feedback.topic] = (model.topics[feedback.topic] || 0) + 1;
-    } else if (feedback.rating === "negative") {
-      model.topics[feedback.topic] = Math.max((model.topics[feedback.topic] || 1) - 1, 0);
-    }
-    return model;
-  }
+    const response = await axios.post(
+      "https://api.openai.com/v1/completions",
+      {
+        model: "gpt-4",
+        prompt: optimizationPrompt,
+        max_tokens: 1000,
+        temperature: 0.3,
+      },
+      {
+        headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
+      }
+    );
 
-  /**
-   * Extract learning data for the user-specific model.
-   * @param {Object} request - The payload sent to the AI platform.
-   * @param {Object} response - The response received from the AI platform.
-   * @returns {Object} - Data to update the user-specific model.
-   */
-  extractLearningData(request, response) {
-    return {
-      recentQuery: request.query || '',
-      responseSummary: response.summary || '',
-      preferences: this.analyzeResponse(response),
-    };
-  }
+    const updatedCode = response.data.choices[0].text.trim();
+    console.log(`🚀 AI Auto-Updated Code:\n${updatedCode}`);
 
-  /**
-   * Extract learning data for the platform-wide model.
-   * @param {Object} request - The payload sent to the AI platform.
-   * @param {Object} response - The response received from the AI platform.
-   * @returns {Object} - Data to update the platform-wide model.
-   */
-  extractPlatformLearningData(request, response) {
-    return {
-      commonQueries: [request.query],
-      commonResponses: [response.summary],
-    };
-  }
+    // (Optional) Apply the update dynamically (requires careful validation)
+    // eval(updatedCode); // ⚠️ Only enable if running in a secured environment.
 
-  /**
-   * Analyze an AI response to extract user preferences or patterns.
-   * @param {Object} response - The AI platform's response.
-   * @returns {Object} - Inferred user preferences or patterns.
-   */
-  analyzeResponse(response) {
-    if (response.keywords) {
-      return { preferredTopics: response.keywords };
-    }
-    return {};
+    return updatedCode;
+  } catch (error) {
+    console.error("❌ AI Auto-Update Failed:", error.message);
   }
-}
+};
 
-module.exports = new AILearningManager();
+/**
+ * Full AI Self-Learning Cycle
+ * Runs all AI improvement steps and applies updates where needed.
+ */
+const runAISelfImprovement = async () => {
+  console.log("\n🔍 Running Full AI Self-Learning Cycle...\n");
+  await analyzeAndUpdateAI();
+  await autoUpdateAI();
+};
+
+export { logAILearning, analyzeAndUpdateAI, autoUpdateAI, runAISelfImprovement };

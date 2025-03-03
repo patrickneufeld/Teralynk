@@ -1,6 +1,7 @@
 // ✅ FILE PATH: /Users/patrick/Projects/Teralynk/backend/src/controllers/marketplaceController.js
 
 const { Client } = require("pg");
+const logger = require("../config/logger");
 
 // ✅ Initialize PostgreSQL Client
 const dbClient = new Client({
@@ -13,7 +14,7 @@ const dbClient = new Client({
 });
 
 dbClient.connect().catch(err => {
-    console.error("❌ PostgreSQL Connection Error:", err.message);
+    logger.error("❌ PostgreSQL Connection Error:", err.message);
 });
 
 /**
@@ -23,10 +24,30 @@ dbClient.connect().catch(err => {
 const getAllAPIs = async (req, res) => {
     try {
         const result = await dbClient.query("SELECT * FROM marketplace_addons ORDER BY created_at DESC");
-        res.json(result.rows);
+        res.json({ message: "Marketplace APIs retrieved successfully", data: result.rows });
     } catch (error) {
-        console.error("❌ Error fetching APIs:", error);
-        res.status(500).json({ message: "Error fetching APIs." });
+        logger.error("❌ Error fetching APIs:", error);
+        res.status(500).json({ error: "Failed to fetch marketplace APIs" });
+    }
+};
+
+/**
+ * ✅ Fetch Single API Details
+ * @route GET /api/marketplace/addons/:id
+ */
+const getAPIById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await dbClient.query("SELECT * FROM marketplace_addons WHERE id = $1", [id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "API not found" });
+        }
+
+        res.json({ message: "API retrieved successfully", data: result.rows[0] });
+    } catch (error) {
+        logger.error("❌ Error fetching API:", error);
+        res.status(500).json({ error: "Failed to fetch API details" });
     }
 };
 
@@ -44,8 +65,8 @@ const addAPI = async (req, res) => {
         }
 
         const query = `
-            INSERT INTO marketplace_addons (name, description, type, api_url, username, password, added_by)
-            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
+            INSERT INTO marketplace_addons (name, description, type, api_url, username, password, added_by, created_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, NOW()) RETURNING *;
         `;
 
         const result = await dbClient.query(query, [
@@ -58,10 +79,58 @@ const addAPI = async (req, res) => {
             added_by
         ]);
 
-        res.status(201).json({ message: "Add-on created successfully", addon: result.rows[0] });
+        res.status(201).json({ message: "API added successfully", data: result.rows[0] });
     } catch (error) {
-        console.error("❌ Error adding API:", error);
-        res.status(500).json({ message: "Error adding API. Please try again." });
+        logger.error("❌ Error adding API:", error);
+        res.status(500).json({ error: "Failed to add API to marketplace" });
+    }
+};
+
+/**
+ * ✅ Update an API in the Marketplace
+ * @route PUT /api/marketplace/addons/:id
+ */
+const updateAPI = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, description, type, api_url, username, password } = req.body;
+        const updated_by = req.user.cognito_id;
+
+        const result = await dbClient.query(
+            `UPDATE marketplace_addons SET name = $1, description = $2, type = $3, api_url = $4, username = $5, 
+             password = $6, updated_by = $7, updated_at = NOW() WHERE id = $8 RETURNING *;`,
+            [name, description, type, api_url || null, username || null, password || null, updated_by, id]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: "API not found" });
+        }
+
+        res.json({ message: "API updated successfully", data: result.rows[0] });
+    } catch (error) {
+        logger.error("❌ Error updating API:", error);
+        res.status(500).json({ error: "Failed to update API" });
+    }
+};
+
+/**
+ * ✅ Delete an API from the Marketplace
+ * @route DELETE /api/marketplace/addons/:id
+ */
+const deleteAPI = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const result = await dbClient.query("DELETE FROM marketplace_addons WHERE id = $1 RETURNING *;", [id]);
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: "API not found" });
+        }
+
+        res.json({ message: "API deleted successfully" });
+    } catch (error) {
+        logger.error("❌ Error deleting API:", error);
+        res.status(500).json({ error: "Failed to delete API" });
     }
 };
 
@@ -75,25 +144,22 @@ const purchaseAPI = async (req, res) => {
         const user_id = req.user.cognito_id;
 
         // Check if the API exists
-        const apiExists = await dbClient.query(
-            "SELECT * FROM marketplace_addons WHERE id = $1",
-            [id]
-        );
+        const apiExists = await dbClient.query("SELECT * FROM marketplace_addons WHERE id = $1", [id]);
         if (apiExists.rows.length === 0) {
-            return res.status(404).json({ message: "API not found." });
+            return res.status(404).json({ error: "API not found" });
         }
 
         // Insert into purchases table
         const query = `
-            INSERT INTO user_purchases (user_id, addon_id)
-            VALUES ($1, $2) RETURNING *;
+            INSERT INTO user_purchases (user_id, addon_id, purchased_at)
+            VALUES ($1, $2, NOW()) RETURNING *;
         `;
         const result = await dbClient.query(query, [user_id, id]);
 
-        res.status(201).json({ message: "API purchased successfully!", purchase: result.rows[0] });
+        res.status(201).json({ message: "API purchased successfully!", data: result.rows[0] });
     } catch (error) {
-        console.error("❌ Error purchasing API:", error);
-        res.status(500).json({ message: "Error purchasing API." });
+        logger.error("❌ Error purchasing API:", error);
+        res.status(500).json({ error: "Failed to complete purchase" });
     }
 };
 
@@ -112,17 +178,25 @@ const rateAPI = async (req, res) => {
         }
 
         const query = `
-            INSERT INTO marketplace_reviews (addon_id, user_id, rating, review)
-            VALUES ($1, $2, $3, $4) RETURNING *;
+            INSERT INTO marketplace_reviews (addon_id, user_id, rating, review, created_at)
+            VALUES ($1, $2, $3, $4, NOW()) RETURNING *;
         `;
 
         const result = await dbClient.query(query, [id, user_id, rating, review || null]);
 
-        res.status(201).json({ message: "Review added successfully", review: result.rows[0] });
+        res.status(201).json({ message: "Review submitted successfully", data: result.rows[0] });
     } catch (error) {
-        console.error("❌ Error rating API:", error);
-        res.status(500).json({ message: "Error rating API." });
+        logger.error("❌ Error submitting review:", error);
+        res.status(500).json({ error: "Failed to submit review" });
     }
 };
 
-module.exports = { getAllAPIs, addAPI, purchaseAPI, rateAPI };
+module.exports = {
+    getAllAPIs,
+    getAPIById,
+    addAPI,
+    updateAPI,
+    deleteAPI,
+    purchaseAPI,
+    rateAPI
+};

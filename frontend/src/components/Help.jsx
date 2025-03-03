@@ -1,7 +1,7 @@
 // /Users/patrick/Projects/Teralynk/frontend/src/components/Help.jsx
 
 import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "..components/ui/Card";
 import { FaQuestionCircle } from "react-icons/fa";
 
 const Help = () => {

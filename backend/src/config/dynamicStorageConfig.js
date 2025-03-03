@@ -1,10 +1,13 @@
-// File Path: /Users/patrick/Projects/Teralynk/backend/src/config/dynamicStorageConfig.js
+// ✅ FILE: /Users/patrick/Projects/Teralynk/backend/src/config/dynamicStorageConfig.js
 
-require("dotenv").config();
-const { S3Client } = require("@aws-sdk/client-s3");
-const { google } = require("googleapis");
-const Dropbox = require("dropbox").Dropbox;
-const fs = require("fs");
+import dotenv from 'dotenv';
+import { S3Client } from '@aws-sdk/client-s3';
+import { google } from 'googleapis';
+import { Dropbox } from 'dropbox';
+import fs from 'fs';
+
+// Load environment variables
+dotenv.config();
 
 // Load dynamic storage providers
 const storageConfigPath = "/Users/patrick/Projects/Teralynk/backend/storageProviders.json";
@@ -99,9 +102,10 @@ const listAvailableStorageProviders = () => {
   return Object.keys(storageProviders);
 };
 
-module.exports = {
-  getStorageClient,
-  addNewStorageProvider,
-  removeStorageProvider,
-  listAvailableStorageProviders,
+// Export functions for use in other files
+export { 
+  getStorageClient, 
+  addNewStorageProvider, 
+  removeStorageProvider, 
+  listAvailableStorageProviders 
 };

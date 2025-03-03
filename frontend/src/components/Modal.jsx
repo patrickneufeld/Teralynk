@@ -1,9 +1,9 @@
 // /Users/patrick/Projects/Teralynk/frontend/src/components/LogPage.jsx
 
 import { useEffect, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "../components/ui/Card";
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "../components/ui/Select";
+import Button from "../components/ui/Button";
 import { FaDownload } from "react-icons/fa";
 
 export default function LogPage() {

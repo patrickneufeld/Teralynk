@@ -1,129 +1,161 @@
-// ✅ FILE: /Users/patrick/Projects/Teralynk/backend/src/routes/troubleshootingRoutes.js
+import express from "express"; // Import express correctly for ES modules
+import { analyzeProjectFiles, applyFixes } from "../ai/aiTroubleshooter.js"; // Correct the import for AI troubleshooter
+import troubleshootingLogger from "../../utils/troubleshootingLogger.js"; // Correct the import for logger
+import { requireAuth } from "../middleware/authMiddleware.js"; // Import requireAuth middleware correctly
+import pkg from "pg"; // Correct import for the 'pg' module (CommonJS -> ES Module compatibility)
+const { Client } = pkg; // Destructure Client from the 'pg' module
 
-const express = require("express");
-const aiTroubleshooter = require("../ai/aiTroubleshooter");
-const troubleshootingLogger = require('../../utils/troubleshootingLogger');
-const { requireAuth } = require("../middleware/authMiddleware");
-
+import { v4 as uuidv4 } from "uuid"; // Import uuid correctly for generating unique ids
 
 const router = express.Router();
 
+// ✅ Initialize PostgreSQL Client for Logging
+const dbClient = new Client({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT || 5432,
+    ssl: { rejectUnauthorized: false, require: true },
+});
+
+dbClient.connect().catch(err => {
+    console.error("❌ PostgreSQL Connection Error:", err.message);
+});
+
 /**
- * ✅ Route: POST /api/troubleshoot/project
- * Description: AI analyzes an entire project directory and identifies issues.
+ * ✅ AI Troubleshooting for Entire Project
+ * @route POST /api/troubleshoot/project
  */
 router.post("/project", requireAuth, async (req, res) => {
-  const { projectPath, description } = req.body;
+    const { projectPath, description } = req.body;
 
-  if (!projectPath) {
-    return res.status(400).json({ error: "Project path is required." });
-  }
+    if (!projectPath) {
+        return res.status(400).json({ error: "Project path is required." });
+    }
 
-  try {
-    const debugResult = await aiTroubleshooter.debugCode({ projectPath, description });
+    try {
+        const debugResult = await analyzeProjectFiles(projectPath); // Updated call
 
-    troubleshootingLogger.logTroubleshooting("Project troubleshooting completed.", {
-      projectPath,
-      debugResult,
-    });
+        // ✅ Store in PostgreSQL
+        const logId = uuidv4();
+        await dbClient.query(
+            `INSERT INTO troubleshooting_logs (id, user_id, query, response, category, created_at) VALUES ($1, $2, $3, $4, 'project', NOW())`,
+            [logId, req.user.cognito_id, projectPath, JSON.stringify(debugResult)]
+        );
 
-    res.status(200).json({ message: "Project debugging completed successfully.", result: debugResult });
-  } catch (err) {
-    troubleshootingLogger.logTroubleshootingError("Error during project debugging", { error: err.message });
-    res.status(500).json({ error: "AI debugging failed.", details: err.message });
-  }
+        res.status(200).json({ message: "Project debugging completed successfully.", result: debugResult });
+    } catch (err) {
+        troubleshootingLogger.logTroubleshootingError("Project debugging error", { error: err.message });
+        res.status(500).json({ error: "AI debugging failed.", details: err.message });
+    }
 });
 
 /**
- * ✅ Route: POST /api/troubleshoot/file
- * Description: AI analyzes and debugs a single file.
+ * ✅ AI Troubleshooting for Single File
+ * @route POST /api/troubleshoot/file
  */
 router.post("/file", requireAuth, async (req, res) => {
-  const { filePath, codeContent, description } = req.body;
+    const { filePath, codeContent, description } = req.body;
 
-  if (!filePath || !codeContent) {
-    return res.status(400).json({ error: "File path and code content are required." });
-  }
+    if (!filePath || !codeContent) {
+        return res.status(400).json({ error: "File path and code content are required." });
+    }
 
-  try {
-    const debugResult = await aiTroubleshooter.debugFile({ filePath, codeContent, description });
+    try {
+        const debugResult = await aiTroubleshooter.debugFile({ filePath, codeContent, description }); // Ensure correct function call
 
-    troubleshootingLogger.logTroubleshooting("File troubleshooting completed.", {
-      filePath,
-      debugResult,
-    });
+        // ✅ Store in PostgreSQL
+        const logId = uuidv4();
+        await dbClient.query(
+            `INSERT INTO troubleshooting_logs (id, user_id, query, response, category, created_at) VALUES ($1, $2, $3, $4, 'file', NOW())`,
+            [logId, req.user.cognito_id, filePath, JSON.stringify(debugResult)]
+        );
 
-    res.status(200).json({ message: "File debugging completed successfully.", result: debugResult });
-  } catch (err) {
-    troubleshootingLogger.logTroubleshootingError("Error during file debugging", { error: err.message });
-    res.status(500).json({ error: "AI file debugging failed.", details: err.message });
-  }
+        res.status(200).json({ message: "File debugging completed successfully.", result: debugResult });
+    } catch (err) {
+        troubleshootingLogger.logTroubleshootingError("File debugging error", { error: err.message });
+        res.status(500).json({ error: "AI file debugging failed.", details: err.message });
+    }
 });
 
 /**
- * ✅ Route: GET /api/troubleshoot/logs
- * Description: Retrieve all troubleshooting logs.
+ * ✅ Retrieve Troubleshooting Logs
+ * @route GET /api/troubleshoot/logs
  */
 router.get("/logs", requireAuth, async (req, res) => {
-  try {
-    const logs = await troubleshootingLogger.getTroubleshootingLogs();
-    res.status(200).json({ message: "Troubleshooting logs retrieved successfully.", logs });
-  } catch (err) {
-    troubleshootingLogger.logTroubleshootingError("Error retrieving logs", { error: err.message });
-    res.status(500).json({ error: "Failed to retrieve logs.", details: err.message });
-  }
+    try {
+        const result = await dbClient.query(
+            "SELECT id, query, response, category, created_at FROM troubleshooting_logs WHERE user_id = $1 ORDER BY created_at DESC LIMIT 50",
+            [req.user.cognito_id]
+        );
+        res.status(200).json({ message: "Troubleshooting logs retrieved successfully.", logs: result.rows });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to retrieve logs.", details: err.message });
+    }
 });
 
 /**
- * ✅ Route: GET /api/troubleshoot/errors
- * Description: Retrieve all troubleshooting error logs.
- */
-router.get("/errors", requireAuth, async (req, res) => {
-  try {
-    const logs = await troubleshootingLogger.getTroubleshootingErrorLogs();
-    res.status(200).json({ message: "Troubleshooting error logs retrieved successfully.", logs });
-  } catch (err) {
-    troubleshootingLogger.logTroubleshootingError("Error retrieving error logs", { error: err.message });
-    res.status(500).json({ error: "Failed to retrieve error logs.", details: err.message });
-  }
-});
-
-/**
- * ✅ Route: GET /api/troubleshoot/ai-insights
- * Description: Retrieve AI-powered insights based on past logs.
+ * ✅ Retrieve AI Insights from Logs
+ * @route GET /api/troubleshoot/ai-insights
  */
 router.get("/ai-insights", requireAuth, async (req, res) => {
-  try {
-    const logs = await troubleshootingLogger.getTroubleshootingLogs();
-    const insights = await troubleshootingLogger.getAIInsights(logs.join("\n"));
+    try {
+        const logs = await dbClient.query(
+            "SELECT response FROM troubleshooting_logs WHERE user_id = $1 ORDER BY created_at DESC LIMIT 100",
+            [req.user.cognito_id]
+        );
 
-    res.status(200).json({ message: "AI insights retrieved successfully.", insights });
-  } catch (err) {
-    troubleshootingLogger.logTroubleshootingError("Error retrieving AI insights", { error: err.message });
-    res.status(500).json({ error: "Failed to retrieve AI insights.", details: err.message });
-  }
+        const insights = await troubleshootingLogger.getAIInsights(logs.rows.map(row => row.response).join("\n"));
+
+        res.status(200).json({ message: "AI insights retrieved successfully.", insights });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to retrieve AI insights.", details: err.message });
+    }
 });
 
 /**
- * ✅ Route: DELETE /api/troubleshoot/clear
- * Description: Clears all troubleshooting logs (admin-only action).
+ * ✅ Delete Specific Troubleshooting Log
+ * @route DELETE /api/troubleshoot/logs/:id
+ */
+router.delete("/logs/:id", requireAuth, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const result = await dbClient.query(
+            "DELETE FROM troubleshooting_logs WHERE id = $1 AND user_id = $2 RETURNING *",
+            [id, req.user.cognito_id]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: "Log not found." });
+        }
+
+        res.json({ message: "Troubleshooting log deleted successfully." });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to delete log.", details: err.message });
+    }
+});
+
+/**
+ * ✅ Clear All Troubleshooting Logs (Admin Only)
+ * @route DELETE /api/troubleshoot/clear
  */
 router.delete("/clear", requireAuth, async (req, res) => {
-  try {
-    troubleshootingLogger.clearLogs();
-    res.status(200).json({ message: "All troubleshooting logs cleared successfully." });
-  } catch (err) {
-    troubleshootingLogger.logTroubleshootingError("Error clearing logs", { error: err.message });
-    res.status(500).json({ error: "Failed to clear logs.", details: err.message });
-  }
+    try {
+        await dbClient.query("DELETE FROM troubleshooting_logs WHERE user_id = $1", [req.user.cognito_id]);
+        res.status(200).json({ message: "All troubleshooting logs cleared successfully." });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to clear logs.", details: err.message });
+    }
 });
 
 /**
- * ✅ Route: GET /api/troubleshoot/test
- * Description: Simple test route to ensure troubleshooting API is working.
+ * ✅ Troubleshooting API Health Check
+ * @route GET /api/troubleshoot/test
  */
 router.get("/test", (req, res) => {
-  res.status(200).json({ message: "✅ Troubleshooting API is working correctly!" });
+    res.status(200).json({ message: "✅ Troubleshooting API is working correctly!" });
 });
 
-module.exports = router;
+export default router;  // Use export default instead of module.exports

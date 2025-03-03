@@ -1,9 +1,10 @@
-// ✅ FILE PATH: frontend/src/components/AdminDashboard.jsx
+// ✅ FILE PATH: /Users/patrick/Projects/Teralynk/frontend/src/components/AdminDashboard.jsx
 
 import { useEffect, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Alert } from "@/components/ui/alert";
+import { Card, CardContent } from "../components/ui/Card";
+import Button from "../components/ui/Button";
+import Alert from "../components/ui/Alert";
+import Spinner from "../components/ui/Spinner"; // Assuming you have a Spinner component for loading indication
 
 export default function AdminDashboard() {
   const [optimizations, setOptimizations] = useState([]);
@@ -68,7 +69,9 @@ export default function AdminDashboard() {
       {error && <Alert className="mb-4 text-red-500">{error}</Alert>}
 
       {loading ? (
-        <p className="text-center text-gray-500">Loading optimizations...</p>
+        <div className="flex justify-center items-center">
+          <Spinner /> {/* Loading spinner component */}
+        </div>
       ) : optimizations.length === 0 ? (
         <p className="text-center text-gray-600">No pending optimizations.</p>
       ) : (

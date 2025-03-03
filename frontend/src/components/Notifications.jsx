@@ -1,9 +1,11 @@
-// /Users/patrick/Projects/Teralynk/frontend/src/components/Notifications.jsx
+// ✅ FILE: /Users/patrick/Projects/Teralynk/frontend/src/components/Notifications.jsx
 
 import React, { useEffect, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Select, SelectItem } from "@/components/ui/select";
+import { Card, CardContent } from "../components/ui/Card"; // ✅ Ensure this is capitalized
+import Button from "../components/ui/Button"; // ✅ Correct
+// File Path: /Users/patrick/Projects/Teralynk/frontend/src/components/Notifications.jsx
+
+import Select from "../components/ui/Select";
 import "../styles/components/Notifications.css";
 
 export default function Notifications() {
@@ -34,7 +36,7 @@ export default function Notifications() {
 
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
-            setNotifications(data.notifications);
+            setNotifications((prev) => [...data.notifications, ...prev]);
         };
 
         return () => ws.close();
@@ -44,7 +46,10 @@ export default function Notifications() {
         try {
             await fetch("/api/admin/optimizations/approve", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`,
+                },
                 body: JSON.stringify({ optimization_id: id, status }),
             });
 

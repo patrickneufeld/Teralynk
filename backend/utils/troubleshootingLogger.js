@@ -1,9 +1,12 @@
-// File Path: /Users/patrick/Projects/Teralynk/backend/utils/troubleshootingLogger.js
+import fs from 'fs';
+import path from 'path';
+import winston from 'winston';
+import axios from 'axios';
+import { fileURLToPath } from "url";
 
-const fs = require("fs");
-const path = require("path");
-const winston = require("winston");
-const axios = require("axios");
+// Get the current directory from the module's URL
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ✅ Define Log Directory
 const logDir = path.join(__dirname, "../logs");
@@ -120,8 +123,8 @@ const clearLogs = () => {
     }
 };
 
-// ✅ Export All Functions for Use in Other Modules
-module.exports = {
+// ✅ Export the Logger as the Default Export
+export default {
     logTroubleshooting,
     logTroubleshootingError,
     getTroubleshootingLogs,

@@ -1,0 +1,11 @@
+/* Marketplace.css */
+.marketplace-container {
+    padding: 20px;
+    background-color: #f5f5f5;
+}
+
+.marketplace-item {
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 15px;
+}

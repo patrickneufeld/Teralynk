@@ -1,8 +1,9 @@
 // ✅ FILE: /Users/patrick/Projects/Teralynk/backend/src/routes/marketplace.js
 
-const express = require("express");
-const { Pool } = require("pg");
-const { requireAuth } = require("../middleware/authMiddleware"); // ✅ Updated authentication function
+import express from "express";
+import pkg from 'pg';
+const { Pool } = pkg;
+import { requireAuth } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -125,4 +126,4 @@ router.delete("/addons/:id", requireAuth, async (req, res) => {
     }
 });
 
-module.exports = router;
+export default router;

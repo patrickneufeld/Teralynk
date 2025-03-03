@@ -6,11 +6,11 @@ import {
     updateFolderPermissions,
     createFolderPermission,
 } from "../services/folderPermissionsService";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Alert } from "@/components/ui/alert";
-import { Loader } from "@/components/ui/loader";
+import { Card, CardContent } from "..components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Alert } from "@/components/ui/Alert";
+import { Loader } from "@/components/ui/Loader";
 
 const FolderPermissions = () => {
     const [permissions, setPermissions] = useState([]);

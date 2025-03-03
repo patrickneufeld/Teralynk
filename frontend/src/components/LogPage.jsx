@@ -1,9 +1,9 @@
 // /Users/patrick/Projects/Teralynk/frontend/src/components/LogPage.jsx
 
 import { useEffect, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Select, SelectItem } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "..components/ui/Card";
+import { Select, SelectItem } from "../components/ui/Select";
+import Button from "../components/ui/Button";
 
 export default function LogPage() {
   const [logs, setLogs] = useState([]);

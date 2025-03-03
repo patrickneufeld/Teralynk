@@ -3,10 +3,10 @@
 import React, { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import axios from "axios";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Alert } from "@/components/ui/alert";
-import { Loader } from "@/components/ui/loader";
+import { Card, CardContent } from "../components/ui/Card";
+import Button from "../components/ui/Button";
+import { Alert } from "../components/ui/Alert";
+import { Loader } from "../components/ui/Loader";
 
 const FileUpload = () => {
     const [error, setError] = useState("");

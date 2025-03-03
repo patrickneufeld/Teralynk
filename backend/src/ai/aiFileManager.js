@@ -1,129 +1,161 @@
-// File Path: /Users/patrick/Projects/Teralynk/backend/src/ai/aiLearningManager.js
+import { getStorageClient } from "../config/storageConfig.js";  // Correctly importing storage configuration
 
-require("dotenv").config();
-const axios = require("axios");
-const fs = require("fs");
-const path = require("path");
-const db = require("../config/db.js"); // ✅ FIXED IMPORT
-
-/**
- * Log AI learning progress and user interactions.
- * This tracks AI recommendations and actual user responses to refine future suggestions.
- * @param {string} userId - User making the request.
- * @param {string} action - The AI action performed.
- * @param {object} details - Additional details (e.g., suggested file name, storage choice, etc.).
- */
-const logAILearning = async (userId, action, details) => {
+// Function to analyze the content of a file in the given storage provider
+const analyzeFileContent = async (provider, fileName) => {
   try {
-    await db.logInteraction({
+    // Get the storage client based on the provider (e.g., S3, GoogleDrive, Dropbox)
+    const storageClient = getStorageClient(provider);
+    console.log(`Analyzing file: ${fileName} on provider: ${provider}`);
+    
+    // Simulate file analysis (this is a placeholder for actual logic)
+    const analysisResult = {
+      provider,
+      fileName,
+      analysis: "File analysis successful",
+    };
+    
+    console.log(`File analysis complete:`, analysisResult);
+
+    // Return the analysis result
+    return analysisResult;
+  } catch (error) {
+    console.error("❌ Error analyzing file content:", error.message);
+    return null;
+  }
+};
+
+// Function to auto-organize files based on user preferences
+const autoOrganizeFiles = async (userId) => {
+  try {
+    console.log(`Organizing files for user: ${userId}`);
+
+    const organizationResult = {
       userId,
-      action,
-      details,
-      timestamp: new Date(),
+      organizedFiles: ["file1", "file2", "file3"],  // This is an example result
+    };
+
+    console.log(`Files organized successfully:`, organizationResult);
+
+    return organizationResult; // Return the organization result
+  } catch (error) {
+    console.error("❌ Error organizing files:", error.message);
+    return null;
+  }
+};
+
+// Function to register a new storage provider (dynamically add new storage options)
+const registerNewStorageProvider = async (providerName, apiUrl, credentials) => {
+  try {
+    console.log(`Registering new storage provider: ${providerName}`);
+
+    const newProvider = {
+      providerName,
+      apiUrl,
+      credentials,
+    };
+
+    console.log(`New storage provider registered: ${JSON.stringify(newProvider)}`);
+    
+    return newProvider; // Return the newly registered provider information
+  } catch (error) {
+    console.error("❌ Error registering new storage provider:", error.message);
+    return null;
+  }
+};
+
+// Function to delete a file from a provider
+const deleteFile = async (userId, fileName, provider) => {
+  try {
+    const storageClient = getStorageClient(provider);
+
+    console.log(`Deleting file: ${fileName} from provider: ${provider}`);
+    
+    const deleteResult = await storageClient.client.send({
+      Bucket: storageClient.bucket,
+      Key: `users/${userId}/${fileName}`,
     });
 
-    console.log(`✅ AI Learning Logged: ${action} - User: ${userId}`);
+    console.log(`File '${fileName}' deleted successfully from ${provider}`);
+    
+    return { success: true, deleteResult };
   } catch (error) {
-    console.error("❌ Error logging AI learning:", error.message);
+    console.error("❌ Error deleting file:", error.message);
+    return { success: false };
   }
 };
 
-/**
- * Analyze AI performance and update its own code.
- * AI will self-adjust based on success rates of past decisions.
- */
-const analyzeAndUpdateAI = async () => {
+// Function to get user-specific files across all providers
+const getUserFiles = async (userId) => {
   try {
-    console.log("🚀 AI Self-Analysis Running...");
+    console.log(`Fetching files for user: ${userId}`);
 
-    // Fetch past AI interactions
-    const pastInteractions = await db.getRecentInteractions();
-
-    // Identify patterns in successful vs. failed decisions
-    const analysisPrompt = `Analyze the following AI interactions and suggest optimizations for improving performance. 
-    Focus on reducing errors, improving predictions, and enhancing storage decisions.\n\n${JSON.stringify(pastInteractions)}`;
-
-    const response = await axios.post(
-      "https://api.openai.com/v1/completions",
-      {
-        model: "gpt-4",
-        prompt: analysisPrompt,
-        max_tokens: 800,
-        temperature: 0.3,
-      },
-      {
-        headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
-      }
-    );
-
-    const aiSuggestions = response.data.choices[0].text.trim();
-    console.log(`🤖 AI Self-Improvement Suggestions:\n${aiSuggestions}`);
-
-    // Apply AI-generated optimizations (if applicable)
-    const updatePath = path.join(__dirname, "aiOptimizations.json");
-    fs.writeFileSync(updatePath, JSON.stringify({ lastUpdate: new Date(), suggestions: aiSuggestions }, null, 2));
-
-    return aiSuggestions;
-  } catch (error) {
-    console.error("❌ AI Self-Improvement Failed:", error.message);
-  }
-};
-
-/**
- * Automate AI Code Updates
- * If AI detects an inefficient approach, it will rewrite specific functions to improve its performance.
- */
-const autoUpdateAI = async () => {
-  try {
-    console.log("🔧 AI Auto-Updating its own logic...");
-    const aiOptimizations = JSON.parse(fs.readFileSync(path.join(__dirname, "aiOptimizations.json"), "utf-8"));
-
-    if (!aiOptimizations || !aiOptimizations.suggestions) {
-      console.log("⚠️ No AI improvements detected yet.");
-      return;
+    const userFiles = [];
+    
+    for (const provider of ["s3", "googleDrive", "dropbox"]) {
+      const storageClient = getStorageClient(provider);
+      const files = await storageClient.client.send({
+        Bucket: storageClient.bucket,
+        Key: `users/${userId}/`,
+      });
+      userFiles.push(...files); // Aggregate files from all providers
     }
 
-    // Example of applying an AI-generated optimization (placeholder logic)
-    const optimizationPrompt = `Update the AI file management system based on the following improvement:\n\n${aiOptimizations.suggestions}\n\nReturn the updated JavaScript function code only.`;
-
-    const response = await axios.post(
-      "https://api.openai.com/v1/completions",
-      {
-        model: "gpt-4",
-        prompt: optimizationPrompt,
-        max_tokens: 1000,
-        temperature: 0.3,
-      },
-      {
-        headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
-      }
-    );
-
-    const updatedCode = response.data.choices[0].text.trim();
-    console.log(`🚀 AI Auto-Updated Code:\n${updatedCode}`);
-
-    // (Optional) Apply the update dynamically (requires careful validation)
-    // eval(updatedCode); // ⚠️ Only enable if running in a secured environment.
-
-    return updatedCode;
+    console.log(`Fetched files for user ${userId}:`, userFiles);
+    return userFiles;
   } catch (error) {
-    console.error("❌ AI Auto-Update Failed:", error.message);
+    console.error("❌ Error fetching user files:", error.message);
+    return [];
   }
 };
 
-/**
- * Full AI Self-Learning Cycle
- * Runs all AI improvement steps and applies updates where needed.
- */
-const runAISelfImprovement = async () => {
-  console.log("\n🔍 Running Full AI Self-Learning Cycle...\n");
-  await analyzeAndUpdateAI();
-  await autoUpdateAI();
+// Function to list all available storage providers
+const listAvailableProviders = () => {
+  try {
+    console.log("Listing available storage providers...");
+
+    const availableProviders = ["s3", "googleDrive", "dropbox"];
+    
+    console.log(`Available storage providers:`, availableProviders);
+    return availableProviders; 
+  } catch (error) {
+    console.error("❌ Error listing storage providers:", error.message);
+    return [];
+  }
 };
 
-module.exports = {
-  logAILearning,
-  analyzeAndUpdateAI,
-  autoUpdateAI,
-  runAISelfImprovement,
+// Function to monitor usage of each provider
+const monitorStorageUsage = async () => {
+  try {
+    console.log("Monitoring storage usage across providers...");
+
+    const providerUsageStats = [];
+
+    for (const provider of ["s3", "googleDrive", "dropbox"]) {
+      const storageClient = getStorageClient(provider);
+      
+      const usageStats = await storageClient.client.send({
+        Bucket: storageClient.bucket,
+      });
+
+      providerUsageStats.push({ provider, stats: usageStats });
+    }
+
+    console.log("Storage usage stats:", providerUsageStats);
+    return providerUsageStats; 
+  } catch (error) {
+    console.error("❌ Error monitoring storage usage:", error.message);
+    return [];
+  }
+};
+
+// Export all functions to be used in other files
+// Ensure that `monitorStorageUsage` is exported only once
+export { 
+  analyzeFileContent,
+  autoOrganizeFiles,
+  registerNewStorageProvider,
+  deleteFile,
+  getUserFiles,
+  listAvailableProviders,
+  monitorStorageUsage
 };

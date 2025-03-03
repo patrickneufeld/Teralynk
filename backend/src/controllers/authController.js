@@ -1,19 +1,20 @@
-// ✅ FILE: /Users/patrick/Projects/Teralynk/backend/src/controllers/authController.js
-
-const AWS = require("aws-sdk");
-const dotenv = require("dotenv");
-const jwt = require("jsonwebtoken");
-const { Client } = require("pg");
-const bcrypt = require("bcryptjs");
-const { promisify } = require("util");
+import AWS from "aws-sdk";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { v4 as uuidv4 } from "uuid";
+import pkg from 'pg'; // Import pg as CommonJS module
+const { Client } = pkg; // Destructure Client from 'pg'
+import rateLimit from "express-rate-limit";
+import dotenv from "dotenv";
 
 dotenv.config();
 
+// ✅ AWS Cognito Setup
 const cognito = new AWS.CognitoIdentityServiceProvider({
     region: process.env.COGNITO_REGION,
 });
 
-// ✅ Initialize PostgreSQL Client
+// ✅ PostgreSQL Initialization
 const dbClient = new Client({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -27,15 +28,28 @@ dbClient.connect().catch(err => {
     console.error("❌ PostgreSQL Connection Error:", err.message);
 });
 
-// ✅ SIGNUP - Register User (Cognito + PostgreSQL)
-const signup = async (req, res) => {
-    try {
-        const { username, password, email } = req.body;
-        if (!username || !password || !email) {
-            return res.status(400).json({ error: "All fields are required" });
-        }
+// ✅ Rate Limiting (Prevents Brute-Force Attacks)
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // Limit each IP to 10 login attempts per windowMs
+    message: "Too many login attempts. Please try again later.",
+});
 
-        // ✅ Check if user already exists in Cognito
+// ✅ Token Blacklist (For Revocation)
+const tokenBlacklist = new Set();
+
+// ✅ SIGNUP (Cognito + PostgreSQL Transaction)
+const signup = async (req, res) => {
+    const { username, password, email } = req.body;
+    if (!username || !password || !email) {
+        return res.status(400).json({ error: "All fields are required" });
+    }
+
+    const client = await dbClient.connect();
+
+    try {
+        await client.query("BEGIN");
+
         const existingUsers = await cognito.listUsers({
             UserPoolId: process.env.COGNITO_USER_POOL_ID,
             Filter: `email = "${email}"`,
@@ -45,46 +59,46 @@ const signup = async (req, res) => {
             return res.status(400).json({ error: "User already exists" });
         }
 
-        // ✅ Register User in Cognito
-        const params = {
+        const cognitoResponse = await cognito.signUp({
             ClientId: process.env.COGNITO_CLIENT_ID,
             Username: username,
             Password: password,
             UserAttributes: [{ Name: "email", Value: email }],
-        };
+        }).promise();
 
-        const cognitoResponse = await cognito.signUp(params).promise();
-        const cognitoId = cognitoResponse.UserSub; // ✅ Extract Cognito User ID
-
-        // ✅ Insert into PostgreSQL Database
+        const cognitoId = cognitoResponse.UserSub;
         const hashedPassword = await bcrypt.hash(password, 10);
+
         const query = `
-            INSERT INTO users (cognito_id, email, name, password_hash)
-            VALUES ($1, $2, $3, $4)
+            INSERT INTO users (cognito_id, email, name, password_hash, created_at)
+            VALUES ($1, $2, $3, $4, NOW())
             RETURNING id, email, name, created_at;
         `;
 
-        const result = await dbClient.query(query, [cognitoId, email, username, hashedPassword]);
+        const result = await client.query(query, [cognitoId, email, username, hashedPassword]);
+        await client.query("COMMIT");
 
         res.json({
-            message: "Signup successful. Please check your email to verify your account.",
+            message: "Signup successful. Please verify your email.",
             user: result.rows[0],
         });
-
     } catch (error) {
+        await client.query("ROLLBACK");
         console.error("❌ Signup Error:", error);
-        res.status(400).json({ error: error.message });
+        res.status(500).json({ error: "Signup failed. Please try again." });
+    } finally {
+        client.release();
     }
 };
 
 // ✅ LOGIN - Authenticate User (Cognito)
 const login = async (req, res) => {
-    try {
-        const { username, password } = req.body;
-        if (!username || !password) {
-            return res.status(400).json({ error: "Username and password are required" });
-        }
+    const { username, password } = req.body;
+    if (!username || !password) {
+        return res.status(400).json({ error: "Username and password required" });
+    }
 
+    try {
         const params = {
             AuthFlow: "USER_PASSWORD_AUTH",
             ClientId: process.env.COGNITO_CLIENT_ID,
@@ -100,7 +114,7 @@ const login = async (req, res) => {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "Strict",
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days expiration
+            maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
         res.json({
@@ -118,23 +132,17 @@ const login = async (req, res) => {
 const refresh = async (req, res) => {
     try {
         const refreshToken = req.cookies.refreshToken;
-        if (!refreshToken) {
-            return res.status(401).json({ error: "No refresh token provided" });
+        if (!refreshToken || tokenBlacklist.has(refreshToken)) {
+            return res.status(401).json({ error: "Invalid or revoked refresh token" });
         }
 
-        const params = {
+        const response = await cognito.initiateAuth({
             AuthFlow: "REFRESH_TOKEN_AUTH",
             ClientId: process.env.COGNITO_CLIENT_ID,
-            AuthParameters: {
-                REFRESH_TOKEN: refreshToken,
-            },
-        };
+            AuthParameters: { REFRESH_TOKEN: refreshToken },
+        }).promise();
 
-        const response = await cognito.initiateAuth(params).promise();
-
-        res.json({
-            accessToken: response.AuthenticationResult.AccessToken,
-        });
+        res.json({ accessToken: response.AuthenticationResult.AccessToken });
     } catch (error) {
         console.error("❌ Refresh Token Error:", error);
         res.clearCookie("refreshToken");
@@ -142,104 +150,59 @@ const refresh = async (req, res) => {
     }
 };
 
-// ✅ LOGOUT - Clear Refresh Token
+// ✅ LOGOUT - Revoke Refresh Token
 const logout = async (req, res) => {
-    try {
-        res.clearCookie("refreshToken", {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "Strict",
-        });
-
-        res.status(200).json({ message: "Logout successful" });
-    } catch (error) {
-        console.error("❌ Logout Error:", error);
-        res.status(500).json({ error: "Logout failed" });
-    }
+    const refreshToken = req.cookies.refreshToken;
+    if (refreshToken) tokenBlacklist.add(refreshToken); // Revoke token
+    res.clearCookie("refreshToken");
+    res.json({ message: "Logout successful" });
 };
 
-// ✅ CHECK AUTH STATUS
-const status = async (req, res) => {
-    try {
-        const token = req.headers.authorization?.split(" ")[1];
-        if (!token) {
-            return res.status(401).json({ error: "No token provided" });
-        }
-
-        const decoded = jwt.decode(token);
-        res.json({ message: "Authenticated", user: decoded });
-    } catch (error) {
-        console.error("❌ Status Check Error:", error);
-        res.status(500).json({ error: "Authentication check failed" });
-    }
-};
-
-// ✅ PASSWORD RESET REQUEST
-const forgotPassword = async (req, res) => {
-    try {
-        const { email } = req.body;
-        if (!email) {
-            return res.status(400).json({ error: "Email is required" });
-        }
-
-        const params = {
-            ClientId: process.env.COGNITO_CLIENT_ID,
-            Username: email,
-        };
-
-        await cognito.forgotPassword(params).promise();
-        res.json({ message: "Password reset instructions sent to email" });
-
-    } catch (error) {
-        console.error("❌ Forgot Password Error:", error);
-        res.status(500).json({ error: "Failed to initiate password reset" });
-    }
-};
-
-// ✅ PASSWORD RESET CONFIRMATION
-const resetPassword = async (req, res) => {
-    try {
-        const { email, code, newPassword } = req.body;
-        if (!email || !code || !newPassword) {
-            return res.status(400).json({ error: "Email, code, and new password are required" });
-        }
-
-        const params = {
-            ClientId: process.env.COGNITO_CLIENT_ID,
-            Username: email,
-            ConfirmationCode: code,
-            Password: newPassword,
-        };
-
-        await cognito.confirmForgotPassword(params).promise();
-        res.json({ message: "Password reset successful. You can now login with your new password." });
-
-    } catch (error) {
-        console.error("❌ Reset Password Error:", error);
-        res.status(500).json({ error: "Password reset failed" });
-    }
-};
-
-// ✅ DELETE USER
+// ✅ DELETE USER (With Transaction)
 const deleteUser = async (req, res) => {
+    const { username } = req.body;
+    if (!username) return res.status(400).json({ error: "Username required" });
+
+    const client = await dbClient.connect();
+
     try {
-        const { username } = req.body;
-        if (!username) {
-            return res.status(400).json({ error: "Username is required" });
-        }
+        await client.query("BEGIN");
 
         await cognito.adminDeleteUser({
             UserPoolId: process.env.COGNITO_USER_POOL_ID,
             Username: username,
         }).promise();
 
-        await dbClient.query("DELETE FROM users WHERE name = $1", [username]);
+        await client.query("DELETE FROM users WHERE name = $1", [username]);
+        await client.query("COMMIT");
 
         res.json({ message: "User deleted successfully" });
     } catch (error) {
+        await client.query("ROLLBACK");
         console.error("❌ Delete User Error:", error);
         res.status(500).json({ error: "Failed to delete user" });
+    } finally {
+        client.release();
     }
 };
 
-module.exports = { signup, login, refresh, logout, status, forgotPassword, resetPassword, deleteUser };
+// ✅ STATUS (New Endpoint to Check Authentication Status)
+const status = async (req, res) => {
+    try {
+        const user = req.user;
+        res.json({ status: "Authenticated", user: user });
+    } catch (error) {
+        console.error("❌ Status Check Error:", error);
+        res.status(500).json({ error: "Failed to fetch status" });
+    }
+};
+
+export {
+    signup,
+    login,
+    refresh,
+    logout,
+    deleteUser,
+    status,  // Add status to the exports
+    authLimiter,
+};

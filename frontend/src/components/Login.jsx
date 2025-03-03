@@ -1,49 +1,92 @@
-// ✅ FILE: frontend/src/components/Login.jsx
+// ✅ FILE: /Users/patrick/Projects/Teralynk/frontend/src/components/Login.jsx
 
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import { useNavigate } from 'react-router-dom';
-import '../styles/components/Login.css'; // Importing the CSS for Login component
-
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001';
+import React, { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import { useNavigate } from "react-router-dom";
+import { cognitoClient, secretsClient } from "../utils/awsConfig";
+import { GetSecretValueCommand } from "@aws-sdk/client-secrets-manager";
+import { InitiateAuthCommand } from "@aws-sdk/client-cognito-identity-provider";
+import "../styles/components/Login.css";
 
 const Login = ({ onLogin }) => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+    const [userPoolClientId, setUserPoolClientId] = useState(null);
     const navigate = useNavigate();
 
+    // ✅ Fetch Cognito App Client ID from Secrets Manager
+    useEffect(() => {
+        const fetchSecret = async () => {
+            try {
+                console.log("🔍 Retrieving Cognito App Client ID...");
+                const command = new GetSecretValueCommand({ SecretId: "Teralynk_Cognito" });
+                const response = await secretsClient.send(command);
+                const secretData = response.SecretString ? JSON.parse(response.SecretString) : null;
+
+                if (!secretData || !secretData.userPoolClientId) {
+                    throw new Error("❌ Missing Cognito App Client ID in secrets.");
+                }
+
+                setUserPoolClientId(secretData.userPoolClientId);
+                console.log("✅ Cognito App Client ID Loaded:", secretData.userPoolClientId);
+            } catch (err) {
+                console.error("❌ Failed to retrieve Cognito App Client ID:", err);
+                setError("Failed to load authentication settings. Check AWS credentials.");
+            }
+        };
+
+        fetchSecret();
+    }, []);
+
+    // ✅ Handle Login
     const handleSubmit = async (event) => {
         event.preventDefault();
-        setError('');
+        setError("");
         setLoading(true);
 
+        // 🔍 Validate Inputs
+        if (!email || !password) {
+            setError("⚠️ Please enter both email and password.");
+            setLoading(false);
+            return;
+        }
+
+        if (!userPoolClientId) {
+            setError("Cognito App Client ID is missing. Cannot proceed.");
+            setLoading(false);
+            return;
+        }
+
         try {
-            const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
+            const command = new InitiateAuthCommand({
+                AuthFlow: "USER_PASSWORD_AUTH",
+                ClientId: userPoolClientId,
+                AuthParameters: {
+                    USERNAME: email,
+                    PASSWORD: password,
                 },
-                body: JSON.stringify({ username: email, password }),
-                credentials: 'include', // To include cookies if needed
             });
 
-            const data = await response.json();
-            if (!response.ok) {
-                throw new Error(data.error || 'Login failed.');
+            const response = await cognitoClient.send(command);
+
+            if (!response.AuthenticationResult) {
+                throw new Error("Invalid credentials or authentication failed.");
             }
 
-            // ✅ Store authentication tokens in localStorage
-            localStorage.setItem('accessToken', data.accessToken);
-            localStorage.setItem('idToken', data.idToken);
-            localStorage.setItem('refreshToken', data.refreshToken);
+            // ✅ Securely Store Authentication Tokens in HttpOnly Cookies
+            document.cookie = `idToken=${response.AuthenticationResult.IdToken}; Secure; HttpOnly; SameSite=Strict; Path=/`;
+            document.cookie = `accessToken=${response.AuthenticationResult.AccessToken}; Secure; HttpOnly; SameSite=Strict; Path=/`;
+            document.cookie = `refreshToken=${response.AuthenticationResult.RefreshToken}; Secure; HttpOnly; SameSite=Strict; Path=/`;
 
-            onLogin(); // Invoke onLogin callback from parent component
-            navigate('/dashboard'); // Redirect user to dashboard
+            console.log("✅ Authentication Successful:", response.AuthenticationResult);
+
+            onLogin(response.AuthenticationResult); // Pass user data to parent
+            navigate("/dashboard"); // Redirect to dashboard
         } catch (err) {
-            console.error('❌ Login Error:', err);
-            setError(err.message);
+            console.error("❌ Cognito Login Error:", err);
+            setError(err.message || "⚠️ Login failed. Please check your credentials and try again.");
         } finally {
             setLoading(false);
         }
@@ -74,8 +117,8 @@ const Login = ({ onLogin }) => {
                         required
                     />
                 </div>
-                <button type="submit" className="login-button" disabled={loading}>
-                    {loading ? 'Logging in...' : 'Login'}
+                <button type="submit" className="login-button" disabled={loading || !userPoolClientId}>
+                    {loading ? "Logging in..." : "Login"}
                 </button>
             </form>
         </div>
@@ -83,7 +126,7 @@ const Login = ({ onLogin }) => {
 };
 
 Login.propTypes = {
-    onLogin: PropTypes.func.isRequired, // Function to run after login is successful
+    onLogin: PropTypes.func.isRequired,
 };
 
 export default Login;

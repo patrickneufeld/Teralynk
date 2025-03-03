@@ -1,8 +1,8 @@
 // File: /Users/patrick/Projects/Teralynk/backend/src/ai/aiIntegration.js
 
-const axios = require('axios');
-const db = require('../db'); // Assuming database module is in /src/db
-const AILearningManager = require('./aiLearningManager'); // Learning manager module
+import axios from 'axios';  // Import axios using ES module syntax
+import db from '../config/db.js';  // Correct import for db using ES module syntax
+import AILearningManager from './aiLearningManager.js';  // Import AILearningManager with ES module syntax
 
 /**
  * AI Integration Module
@@ -19,8 +19,8 @@ class AIIntegration {
    */
   async initializePlatformModel() {
     try {
-      const modelData = await db.getPlatformModel();
-      this.platformModel = modelData || {};
+      const modelData = await db.query('SELECT * FROM platform_model');
+      this.platformModel = modelData.rows[0] || {};
     } catch (error) {
       console.error('Error initializing platform model:', error);
     }
@@ -33,8 +33,8 @@ class AIIntegration {
   async getUserModel(userId) {
     if (!this.userModels.has(userId)) {
       try {
-        const userModel = await db.getUserModel(userId);
-        this.userModels.set(userId, userModel || {});
+        const userModel = await db.query('SELECT * FROM user_models WHERE user_id = $1', [userId]);
+        this.userModels.set(userId, userModel.rows[0] || {});
       } catch (error) {
         console.error(`Error fetching model for user ${userId}:`, error);
         this.userModels.set(userId, {});
@@ -51,8 +51,8 @@ class AIIntegration {
   async updateUserModel(userId, data) {
     try {
       const userModel = await this.getUserModel(userId);
-      const updatedModel = { ...userModel, ...data }; // Merge new data into the model
-      await db.updateUserModel(userId, updatedModel);
+      const updatedModel = { ...userModel, ...data };
+      await db.query('UPDATE user_models SET data = $1 WHERE user_id = $2', [updatedModel, userId]);
       this.userModels.set(userId, updatedModel);
     } catch (error) {
       console.error(`Error updating model for user ${userId}:`, error);
@@ -66,7 +66,7 @@ class AIIntegration {
   async updatePlatformModel(data) {
     try {
       this.platformModel = { ...this.platformModel, ...data };
-      await db.updatePlatformModel(this.platformModel);
+      await db.query('UPDATE platform_model SET data = $1 WHERE id = 1', [this.platformModel]);
     } catch (error) {
       console.error('Error updating platform model:', error);
     }
@@ -103,4 +103,9 @@ class AIIntegration {
   }
 }
 
-module.exports = new AIIntegration();
+// Named exports for functions
+export const getUserModel = (userId) => new AIIntegration().getUserModel(userId);
+export const updateUserModel = (userId, data) => new AIIntegration().updateUserModel(userId, data);
+export const updatePlatformModel = (data) => new AIIntegration().updatePlatformModel(data);
+export const queryAIPlatforms = (userId, queries) => new AIIntegration().queryAIPlatforms(userId, queries);
+export default new AIIntegration();

@@ -1,11 +1,15 @@
 // /Users/patrick/Projects/Teralynk/frontend/src/components/AITools.jsx
 
+// File Path: /Users/patrick/Projects/Teralynk/frontend/src/components/AITools.jsx
+
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Alert } from "@/components/ui/alert";
-import { Loader } from "@/components/ui/loader";
+import { Card, CardContent } from "../components/ui/Card"; // ✅ Fixed path
+import Button from "../components/ui/Button";
+import Alert from "../components/ui/Alert";
+import Loader from "../components/ui/Loader";
+
+
 
 const AITools = () => {
     const [tools, setTools] = useState([]);

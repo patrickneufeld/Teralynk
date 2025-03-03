@@ -2,11 +2,11 @@
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Alert } from "@/components/ui/alert";
-import { Input } from "@/components/ui/input";
-import { Loader } from "@/components/ui/loader";
+import { Card, CardContent } from "../components/ui/Card";
+import { Button } from "../components/ui/button";
+import { Alert } from "../components/ui/alert";
+import { Input } from "../components/ui/input";
+import { Loader } from "../components/ui/loader";
 
 const AdminReview = () => {
   const [pendingPlatforms, setPendingPlatforms] = useState([]);

@@ -1,19 +1,34 @@
-// File Path: /Users/patrick/Projects/Teralynk/frontend/src/components/PerformanceDashboard.jsx
+// ✅ File Path: /Users/patrick/Projects/Teralynk/frontend/src/components/PerformanceDashboard.jsx
 
 import { useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
-import { Card, CardContent } from "@/components/ui/card";
+import Card from "../ui/Card";
+import CardContent from "../ui/Card";
 import "../styles/components/PerformanceDashboard.css";
 
 export default function PerformanceDashboard() {
-  const [performanceData, setPerformanceData] = useState({ mse: [], mae: [], rse: [], timestamps: [] });
+  const [performanceData, setPerformanceData] = useState({
+    mse: [],
+    mae: [],
+    rse: [],
+    timestamps: [],
+  });
 
   useEffect(() => {
     const ws = new WebSocket("ws://localhost:8001/ws/performance");
 
     ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      setPerformanceData(data);
+      try {
+        const data = JSON.parse(event.data);
+        setPerformanceData((prevData) => ({
+          mse: [...prevData.mse, data.mse].slice(-20),
+          mae: [...prevData.mae, data.mae].slice(-20),
+          rse: [...prevData.rse, data.rse].slice(-20),
+          timestamps: [...prevData.timestamps, new Date().toLocaleTimeString()].slice(-20),
+        }));
+      } catch (error) {
+        console.error("❌ Error parsing WebSocket data:", error);
+      }
     };
 
     return () => ws.close();

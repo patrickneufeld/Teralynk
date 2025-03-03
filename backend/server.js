@@ -1,79 +1,73 @@
 // ✅ FILE: /Users/patrick/Projects/Teralynk/backend/server.js
 
-require("dotenv").config({ path: require("path").resolve(__dirname, "../.env") });
+import express from "express"; // Use import for express
+import dotenv from "dotenv"; // Use dotenv to load environment variables
+import cors from "cors"; // Use cors for enabling cross-origin requests
+import cookieParser from "cookie-parser"; // Use cookie-parser for handling cookies
+import helmet from "helmet"; // Use helmet for basic security
+import morgan from "morgan"; // Use morgan for logging requests
+import formidable from "formidable"; // Use formidable for file uploads
+import fs from "fs"; // Use fs to work with files
+import { SecretsManagerClient, GetSecretValueCommand } from "@aws-sdk/client-secrets-manager"; // Use AWS Secrets Manager to manage secrets
+import { CognitoIdentityProviderClient } from "@aws-sdk/client-cognito-identity-provider"; // Use AWS Cognito
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3"; // Use AWS S3 for file uploads
+import pkg from 'pg'; const { Client } = pkg;
+import rateLimit from "express-rate-limit"; // Use express-rate-limit for rate limiting
+import { requireAuth } from "./src/middleware/authMiddleware.js"; // Corrected import for requireAuth middleware
+import { getStorageClient } from "./src/config/dynamicStorageManager.js"; // Correct import for dynamicStorageManager
 
-const express = require("express");
-const cors = require("cors");
-const morgan = require("morgan");
-const helmet = require("helmet");
-const winston = require("winston");
-const cookieParser = require("cookie-parser");
-const formidable = require("formidable");
-const fs = require("fs");
-const rateLimit = require("express-rate-limit");
+dotenv.config(); // Load environment variables from .env file
 
-const { SecretsManagerClient, GetSecretValueCommand } = require("@aws-sdk/client-secrets-manager");
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
-const { CognitoIdentityProviderClient } = require("@aws-sdk/client-cognito-identity-provider");
-const { Client } = require("pg");
-const path = require("path");
-const { requireAuth } = require("./src/middleware/authMiddleware");
-const { getStorageClient } = require("./src/config/dynamicStorageManager");
-
-// ✅ Initialize Express App
 const app = express();
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5001; // Set port to the value in .env or fallback to 5001
 
-// ✅ Load AWS Secrets Manager Configuration
-const secretsManagerClient = new SecretsManagerClient({ region: "us-east-1" });
+// Load Secrets from AWS Secrets Manager
+const secretsManagerClient = new SecretsManagerClient({ region: process.env.AWS_REGION });
 
 async function loadSecrets() {
     try {
-        const data = await secretsManagerClient.send(new GetSecretValueCommand({ SecretId: "teralynk/env" }));
-        const secrets = JSON.parse(data.SecretString);
-        process.env = { ...process.env, ...secrets };
+        const secretResponse = await secretsManagerClient.send(
+            new GetSecretValueCommand({ SecretId: process.env.SECRET_NAME })
+        );
+        const secrets = JSON.parse(secretResponse.SecretString);
+        Object.assign(process.env, secrets); // Assign secrets to process.env
         console.log("✅ Secrets Loaded from AWS Secrets Manager.");
-    } catch (err) {
-        console.error("❌ ERROR: Failed to load secrets from AWS Secrets Manager.", err);
+    } catch (error) {
+        console.error("❌ AWS Secrets Manager Error:", error);
         process.exit(1);
     }
 }
 
-// ✅ Ensure secrets are loaded before starting the app
 (async () => {
     await loadSecrets();
-
-    // ✅ Validate Required Environment Variables
     console.log("✅ ENV Variables Loaded in Server.js");
 
+    // ✅ Check required ENV variables
     const requiredEnvVars = [
         "AWS_REGION",
-        "BUCKET_NAME",
+        "S3_BUCKET_NAME",
         "JWT_SECRET",
-        "PORT",
-        "FRONTEND_URL",
+        "COGNITO_USER_POOL_ID",
+        "COGNITO_CLIENT_ID",
         "DB_HOST",
         "DB_USER",
         "DB_PASSWORD",
         "DB_NAME",
-        "COGNITO_USER_POOL_ID",
-        "COGNITO_CLIENT_ID",
-        "COGNITO_CLIENT_SECRET",
     ];
 
     requiredEnvVars.forEach((key) => {
         if (!process.env[key]) {
-            console.error(`❌ ERROR: Missing required environment variable: ${key}`);
+            console.error(`❌ Missing ENV Variable: ${key}`);
             process.exit(1);
         }
     });
 
-    // ✅ Initialize AWS Services
-    const s3Client = new S3Client({ region: process.env.AWS_REGION });
+    // ✅ AWS Cognito and S3 initialization
     const cognito = new CognitoIdentityProviderClient({ region: process.env.AWS_REGION });
+    const s3Client = new S3Client({ region: process.env.AWS_REGION });
     console.log("✅ AWS Cognito and S3 initialized successfully.");
 
-    // ✅ Initialize PostgreSQL Connection
+    // ✅ PostgreSQL Database connection
     const dbClient = new Client({
         host: process.env.DB_HOST,
         user: process.env.DB_USER,
@@ -83,125 +77,98 @@ async function loadSecrets() {
         ssl: { rejectUnauthorized: false, require: true },
     });
 
-    dbClient.connect()
+    await dbClient.connect()
         .then(() => console.log(`✅ PostgreSQL Connected Successfully at: ${new Date().toISOString()}`))
         .catch((err) => {
             console.error("❌ PostgreSQL Connection Failed:", err.message);
             process.exit(1);
         });
 
-    // ✅ Middleware
+    // ✅ Middleware configuration
     app.use(cors({
         origin: process.env.FRONTEND_URL || "http://localhost:3000",
         credentials: true,
-        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        allowedHeaders: ["Content-Type", "Authorization"]
     }));
-
     app.use(express.json());
+    app.use(cookieParser());
     app.use(morgan("dev"));
     app.use(helmet());
-    app.use(cookieParser()); // ✅ Ensure cookie parser is used
 
-    // ✅ Set Up Logging with Winston
-    const logger = winston.createLogger({
-        level: process.env.DEBUG === "true" ? "debug" : "info",
-        format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
-        transports: [
-            new winston.transports.File({ filename: "error.log", level: "error" }),
-            new winston.transports.File({ filename: "combined.log" }),
-        ],
-    });
+    // ✅ Route Files
+    const { default: authRoutes } = await import("./src/routes/auth.js");
+    const { default: aiRoutes } = await import("./src/routes/ai.js");
+    const { default: adminRoutes } = await import("./src/routes/adminRoutes.js");
+    const { default: troubleshootingRoutes } = await import("./src/routes/troubleshooting.js");
+    const { default: marketplaceRoutes } = await import("./src/routes/marketplace.js");
+    const { default: storageRoutes } = await import("./src/routes/storageRoutes.js");
 
-    if (process.env.DEBUG === "true") {
-        logger.add(new winston.transports.Console({ format: winston.format.simple() }));
-    }
-
-    // ✅ Rate Limiting Middleware
-    if (process.env.ENABLE_RATE_LIMITING === "true") {
-        app.use(
-            rateLimit({
-                windowMs: 15 * 60 * 1000,
-                max: 100,
-                message: "Too many requests, please try again later.",
-            })
-        );
-    }
-
-    // ✅ Import API Routes
-    const authRoutes = require("./src/routes/auth");
-    const aiRoutes = require("./src/routes/ai");
-    const adminRoutes = require("./src/routes/admin");
-    const troubleshootingRoutes = require("./src/routes/troubleshootingRoutes");
-    const storageRoutes = require("./src/routes/storage");
-    const marketplaceRoutes = require("./src/routes/marketplace");
-
-    // ✅ Register API Endpoints
+    // ✅ Routes
     app.use("/api/auth", authRoutes);
     app.use("/api/ai", requireAuth, aiRoutes);
     app.use("/api/admin", requireAuth, adminRoutes);
     app.use("/api/troubleshoot", requireAuth, troubleshootingRoutes);
-    app.use("/api/storage", requireAuth, storageRoutes);
+    app.use("/api/storage", requireAuth, storageRoutes); // Updated to use storageRoutes
     app.use("/api/marketplace", requireAuth, marketplaceRoutes);
 
-    console.log("✅ Routes Loaded: [ Auth, AI, Admin, Troubleshooting, Storage, Marketplace ]");
+    console.log("✅ Routes Loaded: [Auth, AI, Admin, Troubleshooting, Storage, Marketplace]");
 
-    // ✅ File Upload Endpoint
-    app.post("/api/files/upload", requireAuth, (req, res, next) => {
+    // ✅ File Upload Route
+    app.post("/api/files/upload", requireAuth, (req, res) => {
         const form = new formidable.IncomingForm();
-        form.parse(req, (err, fields, files) => {
+        form.parse(req, async (err, fields, files) => {
             if (err) {
-                logger.error("File upload error:", err);
-                return res.status(400).send("Error parsing upload form.");
+                console.error("❌ Form Parsing Error:", err);
+                return res.status(400).json({ error: "Form parsing error." });
             }
 
-            const file = files.file;
-            if (!file) return res.status(400).send("No file provided.");
-
-            const allowedMimeTypes = ["image/jpeg", "image/png", "application/pdf"];
-            if (!allowedMimeTypes.includes(file.mimetype)) {
-                return res.status(400).send("Invalid file type.");
-            }
-
-            const storageClient = getStorageClient(fields.provider || "s3");
-            const params = {
-                Bucket: process.env.BUCKET_NAME,
-                Key: `users/${req.user.userId}/${file.originalFilename}`,
-                Body: fs.createReadStream(file.filepath),
+            const file = files.file[0];
+            const fileStream = fs.createReadStream(file.filepath);
+            const uploadParams = {
+                Bucket: process.env.S3_BUCKET_NAME,
+                Key: file.originalFilename,
+                Body: fileStream,
                 ContentType: file.mimetype,
             };
 
-            storageClient.client
-                .send(new PutObjectCommand(params))
-                .then(() => res.send({ message: "File uploaded successfully" }))
-                .catch((error) => {
-                    logger.error("File upload error:", error);
-                    next(error);
-                });
+            try {
+                await s3Client.send(new PutObjectCommand(uploadParams));
+                res.status(200).json({ message: "File uploaded successfully." });
+            } catch (error) {
+                console.error("❌ File upload failed:", error);
+                res.status(500).json({ error: "File upload failed." });
+            }
         });
     });
 
-    // ✅ Health Check Endpoint
+    // ✅ Basic Health Check Route
     app.get("/", (req, res) => {
-        res.status(200).json({ message: "Teralynk Backend is Running 🚀" });
+        res.status(200).json({ message: "🚀 Teralynk Backend Running Successfully!" });
     });
 
-    // ✅ Catch-All for Unhandled Routes
+    // ✅ 404 handler
     app.use((req, res) => {
-        console.error(`❌ 404 ERROR: Route not found - ${req.method} ${req.url}`);
-        res.status(404).json({ message: "Endpoint not found" });
+        res.status(404).json({ error: "Endpoint not found" });
     });
 
     // ✅ Global Error Handler
     app.use((err, req, res, next) => {
-        logger.error(`Error on ${req.method} ${req.originalUrl}: ${err.message}`, { stack: err.stack });
-        res.status(err.status || 500).json({ error: "An unexpected error occurred" });
+        console.error(`❌ Unexpected Error: ${err.message}`, { stack: err.stack });
+        res.status(500).json({ error: "An unexpected server error occurred." });
     });
 
-    // ✅ Start Server
-    app.listen(PORT, () => {
-        logger.info(`🚀 Server running on http://localhost:${PORT}`);
+    // ✅ Server Initialization
+    app.listen(process.env.PORT, () => {
+        console.log(`🚀 Server running on ${process.env.FRONTEND_URL}`);
     });
 
-    module.exports = app;
+    // ✅ PostgreSQL connection verification
+    try {
+        await dbClient.query('SELECT NOW()');
+        console.log("✅ PostgreSQL Connected and Verified Successfully");
+    } catch (error) {
+        console.error("❌ PostgreSQL Verification Error:", error);
+        process.exit(1);
+    }
 })();
+
+export default app; // Use ES module export for app
