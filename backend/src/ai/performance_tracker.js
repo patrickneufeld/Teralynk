@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 const { mean, sqrt } = require("mathjs");
 
 // MongoDB connection setup

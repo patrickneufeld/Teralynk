@@ -1,8 +1,11 @@
-import pkg from 'pg';  // Default import for the pg module
-const { Client } = pkg;  // Destructure to get the Client
-import fs from 'fs';
-import axios from 'axios';
-import troubleshootingLogger from '../../utils/troubleshootingLogger.js'; // Ensure correct import for logger
+import fs from "fs";
+import path from "path";
+import axios from "axios";
+import { fileURLToPath } from "url"; // Ensure ES module compatibility
+import troubleshootingLogger from "../../utils/troubleshootingLogger.js"; // Ensure correct import
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ✅ Ensure OpenAI API key is loaded
 if (!process.env.OPENAI_API_KEY) {
@@ -11,7 +14,7 @@ if (!process.env.OPENAI_API_KEY) {
 }
 
 /**
- * Recursively retrieve all JavaScript files in a directory
+ * ✅ Recursively retrieve all JavaScript files in a directory.
  * @param {string} dir - Directory path
  * @returns {Array<string>} - List of JavaScript file paths
  */
@@ -33,7 +36,7 @@ const getJavaScriptFiles = (dir) => {
 };
 
 /**
- * Analyze project files using AI for errors & improvements
+ * ✅ Analyze project files using AI for errors & improvements.
  * @param {string} projectPath - Path to the project directory
  * @returns {Promise<object>} - Analysis results
  */
@@ -85,7 +88,33 @@ export const analyzeProjectFiles = async (projectPath) => {
 };
 
 /**
- * Apply AI-suggested fixes to project files
+ * ✅ Debug an individual file by running syntax analysis.
+ * @param {string} filePath - Path to the file to debug.
+ * @returns {Promise<object>} - Debugging results.
+ */
+export const debugFile = async (filePath) => {
+  try {
+    console.log(`🔍 Debugging file: ${filePath}`);
+
+    const fullPath = path.join(__dirname, "../../", filePath);
+    if (!fs.existsSync(fullPath)) {
+      console.warn(`⚠️ File not found: ${filePath}`);
+      return { success: false, message: "File not found", filePath };
+    }
+
+    // Read the file and check for syntax issues
+    const fileContent = fs.readFileSync(fullPath, "utf-8");
+    const syntaxErrors = await analyzeProjectFiles(fullPath);
+
+    return { success: true, filePath, syntaxErrors };
+  } catch (error) {
+    console.error("❌ Error debugging file:", error);
+    return { success: false, message: "Error during file debugging", error: error.message };
+  }
+};
+
+/**
+ * ✅ Apply AI-suggested fixes to project files.
  * @param {Array<object>} analyzedFiles - Original code snippets
  * @param {string} suggestions - AI-generated fix suggestions
  * @returns {Array<string>} - List of updated files
@@ -119,4 +148,50 @@ export const applyFixes = (analyzedFiles, suggestions) => {
   }
 
   return updatedFiles;
+};
+
+/**
+ * ✅ Retrieve the latest error logs.
+ * @returns {string} - Last 50 error logs.
+ */
+export const fetchRecentLogs = () => {
+  try {
+    const logPath = path.join(__dirname, "../../logs/error.log");
+    if (!fs.existsSync(logPath)) {
+      console.warn("⚠️ No error log found.");
+      return "No error logs available.";
+    }
+
+    const logData = fs.readFileSync(logPath, "utf-8").split("\n");
+    return logData.slice(-50).join("\n");
+  } catch (error) {
+    console.error("❌ Error retrieving logs:", error.message);
+    return "Error fetching logs.";
+  }
+};
+
+/**
+ * ✅ Log debugging activities into the troubleshooting database.
+ * @param {string} userId - User performing the debugging
+ * @param {string} filePath - File being analyzed
+ * @param {string} issueSummary - Summary of the detected issues
+ */
+export const logDebuggingAction = async (userId, filePath, issueSummary) => {
+  try {
+    await troubleshootingLogger.logTroubleshooting(userId, filePath, issueSummary);
+    console.log(`✅ Logged debugging action for ${filePath}`);
+  } catch (error) {
+    console.error("❌ Error logging debugging action:", error.message);
+  }
+};
+
+/**
+ * ✅ Exporting for use in troubleshooting routes.
+ */
+export default {
+  analyzeProjectFiles,
+  debugFile,
+  applyFixes,
+  fetchRecentLogs,
+  logDebuggingAction,
 };

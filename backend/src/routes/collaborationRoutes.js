@@ -1,9 +1,9 @@
 // File Path: /Users/patrick/Projects/Teralynk/backend/src/routes/collaborationRoutes.js
 
-const express = require("express");
+import express from "express";
 const { authenticate } = require("../middleware/authMiddleware");
-const aiCollaboration = require("../ai/aiCollaboration");
-const aiLearningManager = require("../ai/aiLearningManager");
+import aiCollaboration from "../ai/aiCollaboration";
+import aiLearningManager from "../ai/aiLearningManager";
 
 const router = express.Router();
 

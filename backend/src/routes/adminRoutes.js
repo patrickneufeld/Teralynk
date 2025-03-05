@@ -1,19 +1,13 @@
-// ✅ FILE: backend/src/routes/adminRoutes.js
-
-const express = require("express");
-const { checkAdminAuth } = require("../middleware/authMiddleware");
-
-// ✅ Import controllers
-const adminController = require("../controllers/adminController");
-const logController = require("../controllers/logController");
+import express from "express";
+import { requireAdmin } from "../middleware/authMiddleware.js"; // Import admin middleware correctly
+import * as adminController from "../controllers/adminController.js"; // Ensure correct named import
+import { downloadLogs } from "../controllers/logController.js"; // ✅ Fix: Import `downloadLogs` correctly
 
 const router = express.Router();
 
 // ✅ Debugging: Ensure all functions are properly loaded
-if (process.env.NODE_ENV !== "production") {
-    console.log("✅ Admin Controller Loaded Functions:", Object.keys(adminController));
-    console.log("✅ Log Controller Loaded Functions:", Object.keys(logController));
-}
+console.log("✅ Admin Controller Loaded Functions:", Object.keys(adminController));
+console.log("✅ Log Controller Loaded Functions: [ 'downloadLogs' ]");
 
 // 🚨 Validate required functions before setting up routes
 const requiredAdminFunctions = [
@@ -43,94 +37,94 @@ const validateFunctions = (controller, requiredFunctions, controllerName) => {
 
 try {
     validateFunctions(adminController, requiredAdminFunctions, "adminController");
-    validateFunctions(logController, requiredLogFunctions, "logController");
+    validateFunctions({ downloadLogs }, requiredLogFunctions, "logController"); // ✅ Fix: Validate correctly
 } catch (error) {
     console.error(error.message);
     process.exit(1);
 }
 
 /**
- * @route GET /api/admin/ai-optimizations
- * @desc Fetch pending AI optimizations
- * @access Admin only
+ * ✅ @route GET /api/admin/ai-optimizations
+ * ✅ Fetch pending AI optimizations
+ * ✅ Admin only
  */
-router.get("/ai-optimizations", checkAdminAuth, adminController.fetchAIOptimizations);
+router.get("/ai-optimizations", requireAdmin, adminController.fetchAIOptimizations);
 
 /**
- * @route POST /api/admin/ai-optimizations/approve
- * @desc Approve an AI optimization request
- * @access Admin only
+ * ✅ @route POST /api/admin/ai-optimizations/approve
+ * ✅ Approve an AI optimization request
+ * ✅ Admin only
  */
-router.post("/ai-optimizations/approve", checkAdminAuth, adminController.approveOptimization);
+router.post("/ai-optimizations/approve", requireAdmin, adminController.approveOptimization);
 
 /**
- * @route POST /api/admin/ai-optimizations/reject
- * @desc Reject an AI optimization request
- * @access Admin only
+ * ✅ @route POST /api/admin/ai-optimizations/reject
+ * ✅ Reject an AI optimization request
+ * ✅ Admin only
  */
-router.post("/ai-optimizations/reject", checkAdminAuth, adminController.rejectOptimization);
+router.post("/ai-optimizations/reject", requireAdmin, adminController.rejectOptimization);
 
 /**
- * @route DELETE /api/admin/ai-optimizations/:id
- * @desc Delete an AI optimization request
- * @access Admin only
+ * ✅ @route DELETE /api/admin/ai-optimizations/:id
+ * ✅ Delete an AI optimization request
+ * ✅ Admin only
  */
-router.delete("/ai-optimizations/:id", checkAdminAuth, adminController.deleteOptimization);
+router.delete("/ai-optimizations/:id", requireAdmin, adminController.deleteOptimization);
 
 /**
- * @route GET /api/admin/logs
- * @desc Fetch AI logs for performance tracking
- * @access Admin only
+ * ✅ @route GET /api/admin/logs
+ * ✅ Fetch AI logs for performance tracking
+ * ✅ Admin only
  */
-router.get("/logs", checkAdminAuth, adminController.fetchAILogs);
+router.get("/logs", requireAdmin, adminController.fetchAILogs);
 
 /**
- * @route GET /api/admin/logs/latest
- * @desc Fetch latest AI logs
- * @access Admin only
+ * ✅ @route GET /api/admin/logs/latest
+ * ✅ Fetch latest AI logs
+ * ✅ Admin only
  */
-router.get("/logs/latest", checkAdminAuth, adminController.fetchLatestAILogs);
+router.get("/logs/latest", requireAdmin, adminController.fetchLatestAILogs);
 
 /**
- * @route GET /api/admin/logs/download
- * @desc Download AI logs as CSV
- * @access Admin only
+ * ✅ @route GET /api/admin/logs/download
+ * ✅ Download AI logs as CSV
+ * ✅ Admin only
  */
-router.get("/logs/download", checkAdminAuth, logController.downloadLogs);
+router.get("/logs/download", requireAdmin, downloadLogs); // ✅ Fix: Use named import correctly
 
 /**
- * @route GET /api/admin/users
- * @desc Fetch all users
- * @access Admin only
+ * ✅ @route GET /api/admin/users
+ * ✅ Fetch all users
+ * ✅ Admin only
  */
-router.get("/users", checkAdminAuth, adminController.fetchUsers);
+router.get("/users", requireAdmin, adminController.fetchUsers);
 
 /**
- * @route POST /api/admin/users/disable
- * @desc Disable a user account
- * @access Admin only
+ * ✅ @route POST /api/admin/users/disable
+ * ✅ Disable a user account
+ * ✅ Admin only
  */
-router.post("/users/disable", checkAdminAuth, adminController.disableUser);
+router.post("/users/disable", requireAdmin, adminController.disableUser);
 
 /**
- * @route POST /api/admin/users/enable
- * @desc Enable a user account
- * @access Admin only
+ * ✅ @route POST /api/admin/users/enable
+ * ✅ Enable a user account
+ * ✅ Admin only
  */
-router.post("/users/enable", checkAdminAuth, adminController.enableUser);
+router.post("/users/enable", requireAdmin, adminController.enableUser);
 
 /**
- * @route GET /api/admin/system-status
- * @desc Fetch system health and status
- * @access Admin only
+ * ✅ @route GET /api/admin/system-status
+ * ✅ Fetch system health and status
+ * ✅ Admin only
  */
-router.get("/system-status", checkAdminAuth, adminController.fetchSystemStatus);
+router.get("/system-status", requireAdmin, adminController.fetchSystemStatus);
 
 /**
- * @route GET /api/admin/metrics
- * @desc Fetch system metrics and AI performance
- * @access Admin only
+ * ✅ @route GET /api/admin/metrics
+ * ✅ Fetch system metrics and AI performance
+ * ✅ Admin only
  */
-router.get("/metrics", checkAdminAuth, adminController.fetchMetrics);
+router.get("/metrics", requireAdmin, adminController.fetchMetrics);
 
-module.exports = router;
+export default router; // ✅ Use ES module export

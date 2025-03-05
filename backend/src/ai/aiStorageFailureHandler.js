@@ -1,8 +1,8 @@
 // File Path: /Users/patrick/Projects/Teralynk/backend/src/ai/aiStorageFailureHandler.js
 
 const { getAllStorageProviders, updateTotalStorage } = require("../config/dynamicStorageManager");
-const aiLearningManager = require("./aiLearningManager");
-const axios = require("axios");
+import aiLearningManager from "./aiLearningManager";
+import axios from "axios";
 
 /**
  * Detects storage failures and retries failed operations.

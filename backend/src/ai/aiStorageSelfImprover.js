@@ -1,8 +1,8 @@
 // File Path: /Users/patrick/Projects/Teralynk/backend/src/ai/aiStorageSelfImprover.js
 
 const { getAllStorageProviders, updateTotalStorage, registerStorageProvider } = require("../config/dynamicStorageManager");
-const aiLearningManager = require("./aiLearningManager");
-const axios = require("axios");
+import aiLearningManager from "./aiLearningManager";
+import axios from "axios";
 
 /**
  * AI-driven self-improvement for storage decision-making.

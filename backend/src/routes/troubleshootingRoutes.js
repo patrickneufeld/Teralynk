@@ -1,11 +1,11 @@
 import express from "express"; // Import express correctly for ES modules
-import { analyzeProjectFiles, applyFixes } from "../ai/aiTroubleshooter.js"; // Correct the import for AI troubleshooter
-import troubleshootingLogger from "../../utils/troubleshootingLogger.js"; // Correct the import for logger
+import { analyzeProjectFiles, debugFile } from "../ai/aiTroubleshooter.js"; // Fix import
+import troubleshootingLogger from "../../utils/troubleshootingLogger.js"; // Ensure logger import is correct
 import { requireAuth } from "../middleware/authMiddleware.js"; // Import requireAuth middleware correctly
-import pkg from "pg"; // Correct import for the 'pg' module (CommonJS -> ES Module compatibility)
+import pkg from "pg"; // Import PostgreSQL package correctly for ES modules
 const { Client } = pkg; // Destructure Client from the 'pg' module
 
-import { v4 as uuidv4 } from "uuid"; // Import uuid correctly for generating unique ids
+import { v4 as uuidv4 } from "uuid"; // Import uuid for generating unique ids
 
 const router = express.Router();
 
@@ -19,9 +19,9 @@ const dbClient = new Client({
     ssl: { rejectUnauthorized: false, require: true },
 });
 
-dbClient.connect().catch(err => {
-    console.error("❌ PostgreSQL Connection Error:", err.message);
-});
+dbClient.connect()
+    .then(() => console.log("✅ PostgreSQL Connected Successfully for Troubleshooting Logs"))
+    .catch(err => console.error("❌ PostgreSQL Connection Error:", err.message));
 
 /**
  * ✅ AI Troubleshooting for Entire Project
@@ -35,13 +35,13 @@ router.post("/project", requireAuth, async (req, res) => {
     }
 
     try {
-        const debugResult = await analyzeProjectFiles(projectPath); // Updated call
+        const debugResult = await analyzeProjectFiles(projectPath); // Updated function call
 
         // ✅ Store in PostgreSQL
         const logId = uuidv4();
         await dbClient.query(
             `INSERT INTO troubleshooting_logs (id, user_id, query, response, category, created_at) VALUES ($1, $2, $3, $4, 'project', NOW())`,
-            [logId, req.user.cognito_id, projectPath, JSON.stringify(debugResult)]
+            [logId, req.user.id, projectPath, JSON.stringify(debugResult)]
         );
 
         res.status(200).json({ message: "Project debugging completed successfully.", result: debugResult });
@@ -63,13 +63,13 @@ router.post("/file", requireAuth, async (req, res) => {
     }
 
     try {
-        const debugResult = await aiTroubleshooter.debugFile({ filePath, codeContent, description }); // Ensure correct function call
+        const debugResult = await debugFile({ filePath, codeContent, description }); // Corrected function call
 
         // ✅ Store in PostgreSQL
         const logId = uuidv4();
         await dbClient.query(
             `INSERT INTO troubleshooting_logs (id, user_id, query, response, category, created_at) VALUES ($1, $2, $3, $4, 'file', NOW())`,
-            [logId, req.user.cognito_id, filePath, JSON.stringify(debugResult)]
+            [logId, req.user.id, filePath, JSON.stringify(debugResult)]
         );
 
         res.status(200).json({ message: "File debugging completed successfully.", result: debugResult });
@@ -87,7 +87,7 @@ router.get("/logs", requireAuth, async (req, res) => {
     try {
         const result = await dbClient.query(
             "SELECT id, query, response, category, created_at FROM troubleshooting_logs WHERE user_id = $1 ORDER BY created_at DESC LIMIT 50",
-            [req.user.cognito_id]
+            [req.user.id]
         );
         res.status(200).json({ message: "Troubleshooting logs retrieved successfully.", logs: result.rows });
     } catch (err) {
@@ -103,7 +103,7 @@ router.get("/ai-insights", requireAuth, async (req, res) => {
     try {
         const logs = await dbClient.query(
             "SELECT response FROM troubleshooting_logs WHERE user_id = $1 ORDER BY created_at DESC LIMIT 100",
-            [req.user.cognito_id]
+            [req.user.id]
         );
 
         const insights = await troubleshootingLogger.getAIInsights(logs.rows.map(row => row.response).join("\n"));
@@ -124,7 +124,7 @@ router.delete("/logs/:id", requireAuth, async (req, res) => {
 
         const result = await dbClient.query(
             "DELETE FROM troubleshooting_logs WHERE id = $1 AND user_id = $2 RETURNING *",
-            [id, req.user.cognito_id]
+            [id, req.user.id]
         );
 
         if (result.rowCount === 0) {
@@ -143,7 +143,7 @@ router.delete("/logs/:id", requireAuth, async (req, res) => {
  */
 router.delete("/clear", requireAuth, async (req, res) => {
     try {
-        await dbClient.query("DELETE FROM troubleshooting_logs WHERE user_id = $1", [req.user.cognito_id]);
+        await dbClient.query("DELETE FROM troubleshooting_logs WHERE user_id = $1", [req.user.id]);
         res.status(200).json({ message: "All troubleshooting logs cleared successfully." });
     } catch (err) {
         res.status(500).json({ error: "Failed to clear logs.", details: err.message });

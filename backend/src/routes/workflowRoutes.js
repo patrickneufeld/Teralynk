@@ -1,9 +1,9 @@
 // File Path: /Users/patrick/Projects/Teralynk/backend/src/routes/workflowRoutes.js
 
-const express = require("express");
+import express from "express";
 const { authenticate } = require("../middleware/authMiddleware");
-const aiWorkflowManager = require("../ai/aiWorkflowManager");
-const aiLearningManager = require("../ai/aiLearningManager");
+import aiWorkflowManager from "../ai/aiWorkflowManager";
+import aiLearningManager from "../ai/aiLearningManager";
 
 const router = express.Router();
 

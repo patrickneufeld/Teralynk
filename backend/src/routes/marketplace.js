@@ -1,9 +1,9 @@
-// ✅ FILE: /Users/patrick/Projects/Teralynk/backend/src/routes/marketplace.js
+// ✅ FILE: /Users/patrick/Projects/Teralynk/backend/src/routes/marketplaceRoutes.js
 
 import express from "express";
-import pkg from 'pg';
-const { Pool } = pkg;
+import { Pool } from "pg";
 import { requireAuth } from "../middleware/authMiddleware.js";
+import { validateAdmin } from "../middleware/adminMiddleware.js";
 
 const router = express.Router();
 
@@ -17,7 +17,7 @@ const dbPool = new Pool({
     ssl: { rejectUnauthorized: false, require: true },
 });
 
-// ✅ Middleware: Validate Database Connection
+// ✅ Ensure DB Connection
 dbPool.connect()
     .then(() => console.log("✅ PostgreSQL Connected (Marketplace Routes)"))
     .catch(err => {
@@ -25,7 +25,9 @@ dbPool.connect()
         process.exit(1);
     });
 
-// ✅ GET: Fetch All Marketplace Add-ons
+/**
+ * ✅ GET: Fetch All Marketplace Add-ons
+ */
 router.get("/addons", async (req, res) => {
     try {
         const result = await dbPool.query("SELECT * FROM marketplace_addons ORDER BY created_at DESC");
@@ -36,7 +38,9 @@ router.get("/addons", async (req, res) => {
     }
 });
 
-// ✅ POST: Add a New Marketplace Add-on (Authenticated)
+/**
+ * ✅ POST: Add a New Marketplace Add-on (Authenticated)
+ */
 router.post("/addons", requireAuth, async (req, res) => {
     try {
         const { name, description, type, api_url, username, password } = req.body;
@@ -59,10 +63,31 @@ router.post("/addons", requireAuth, async (req, res) => {
     }
 });
 
-// ✅ GET: Fetch Reviews for a Specific Add-on
-router.get("/addons/:id/reviews", async (req, res) => {
-    const { id } = req.params;
+/**
+ * ✅ GET: Fetch a Single Add-on by ID
+ */
+router.get("/addons/:id", async (req, res) => {
     try {
+        const { id } = req.params;
+        const result = await dbPool.query("SELECT * FROM marketplace_addons WHERE id = $1", [id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "Add-on not found." });
+        }
+
+        res.status(200).json(result.rows[0]);
+    } catch (error) {
+        console.error("❌ Error fetching add-on:", error);
+        res.status(500).json({ error: "Failed to retrieve add-on." });
+    }
+});
+
+/**
+ * ✅ GET: Fetch Reviews for a Specific Add-on
+ */
+router.get("/addons/:id/reviews", async (req, res) => {
+    try {
+        const { id } = req.params;
         const result = await dbPool.query(
             "SELECT * FROM marketplace_reviews WHERE addon_id = $1 ORDER BY created_at DESC",
             [id]
@@ -74,7 +99,9 @@ router.get("/addons/:id/reviews", async (req, res) => {
     }
 });
 
-// ✅ GET: Fetch All Reviews for All Add-ons (New Feature)
+/**
+ * ✅ GET: Fetch All Reviews for All Add-ons
+ */
 router.get("/reviews", async (req, res) => {
     try {
         const result = await dbPool.query("SELECT * FROM marketplace_reviews ORDER BY created_at DESC");
@@ -85,7 +112,9 @@ router.get("/reviews", async (req, res) => {
     }
 });
 
-// ✅ POST: Submit a Review for an Add-on (Authenticated)
+/**
+ * ✅ POST: Submit a Review for an Add-on (Authenticated)
+ */
 router.post("/addons/:id/reviews", requireAuth, async (req, res) => {
     try {
         const { id } = req.params;
@@ -109,20 +138,43 @@ router.post("/addons/:id/reviews", requireAuth, async (req, res) => {
     }
 });
 
-// ✅ DELETE: Remove an Add-on (Admin Only)
-router.delete("/addons/:id", requireAuth, async (req, res) => {
+/**
+ * ✅ DELETE: Remove an Add-on (Admin Only)
+ */
+router.delete("/addons/:id", requireAuth, validateAdmin, async (req, res) => {
     try {
         const { id } = req.params;
 
-        if (req.user.role !== "admin") {
-            return res.status(403).json({ error: "Unauthorized. Admin access required." });
+        const result = await dbPool.query("DELETE FROM marketplace_addons WHERE id = $1 RETURNING *", [id]);
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: "Add-on not found." });
         }
 
-        await dbPool.query("DELETE FROM marketplace_addons WHERE id = $1", [id]);
         res.status(200).json({ message: "Add-on removed successfully." });
     } catch (error) {
         console.error("❌ Error deleting add-on:", error);
         res.status(500).json({ error: "Failed to delete add-on." });
+    }
+});
+
+/**
+ * ✅ DELETE: Remove a Review (Admin Only)
+ */
+router.delete("/reviews/:id", requireAuth, validateAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const result = await dbPool.query("DELETE FROM marketplace_reviews WHERE id = $1 RETURNING *", [id]);
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: "Review not found." });
+        }
+
+        res.status(200).json({ message: "Review deleted successfully." });
+    } catch (error) {
+        console.error("❌ Error deleting review:", error);
+        res.status(500).json({ error: "Failed to delete review." });
     }
 });
 

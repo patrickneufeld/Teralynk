@@ -1,19 +1,26 @@
-// ✅ FILE: /Users/patrick/Projects/Teralynk/backend/src/routes/aiRoutes.js
-
-const express = require("express");
-const fs = require("fs");
-const path = require("path");
-const axios = require("axios");
-const AIIntegration = require("../ai/aiIntegration");
-const AILearningManager = require("../ai/aiLearningManager");
-const AICodeUpdater = require("../ai/aiCodeUpdater");
-const db = require("../db");
+import express from "express";
+import fs from "fs";
+import path from "path";
+import axios from "axios";
+import { fileURLToPath } from "url";
+import AIIntegration, { queryAIPlatforms } from "../ai/aiIntegration.js";
+import { logAILearning, runAISelfImprovement } from "../ai/aiLearningManager.js";
+import db from "../config/db.js";
 
 const router = express.Router();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// ✅ Ensure Secrets are Loaded from AWS Secrets Manager
+const { OPENAI_API_KEY, SUNO_API_KEY, X_AI_API_KEY } = process.env;
+
+if (!OPENAI_API_KEY || !SUNO_API_KEY || !X_AI_API_KEY) {
+  console.error("❌ ERROR: Missing API keys from AWS Secrets Manager.");
+  process.exit(1);
+}
 
 /**
  * ✅ Route: POST /api/ai/query
- * Description: Handle AI queries and return responses from connected platforms.
+ * Description: Handles AI queries and retrieves responses from multiple AI platforms.
  */
 router.post("/query", async (req, res) => {
   const { userId, query } = req.body;
@@ -23,26 +30,15 @@ router.post("/query", async (req, res) => {
   }
 
   try {
-    // Define queries for multiple AI platforms
     const aiQueries = [
-      {
-        platform: "openai",
-        payload: { query },
-        apiKey: process.env.OPENAI_API_KEY,
-      },
-      {
-        platform: "suno",
-        payload: { query },
-        apiKey: process.env.SUNO_API_KEY,
-      },
+      { platform: "openai", payload: { query }, apiKey: OPENAI_API_KEY },
+      { platform: "suno", payload: { query }, apiKey: SUNO_API_KEY },
     ];
 
-    // Query AI platforms using AIIntegration module
-    const responses = await AIIntegration.queryAIPlatforms(userId, aiQueries);
+    const responses = await queryAIPlatforms(userId, aiQueries);
 
-    // Format responses
     const formattedResponses = responses.map((response, index) => ({
-      id: `${userId}-${index}`, // Unique response ID
+      id: `${userId}-${index}`,
       platform: aiQueries[index].platform,
       result: response.result || "No result provided.",
     }));
@@ -56,7 +52,7 @@ router.post("/query", async (req, res) => {
 
 /**
  * ✅ Route: POST /api/ai/feedback
- * Description: Accept and store user feedback for AI responses.
+ * Description: Accepts and stores user feedback for AI responses.
  */
 router.post("/feedback", async (req, res) => {
   const { responseId, feedback } = req.body;
@@ -66,14 +62,10 @@ router.post("/feedback", async (req, res) => {
   }
 
   try {
-    // Store feedback in the database
-    await db.logInteraction({
-      userId: responseId.split("-")[0], // Extract userId from responseId
-      platform: null,
-      request: null,
-      response: { feedback },
-      timestamp: new Date(),
-    });
+    await db.query("INSERT INTO ai_feedback (response_id, feedback, timestamp) VALUES ($1, $2, NOW())", [
+      responseId,
+      feedback,
+    ]);
 
     res.status(200).json({ message: "Feedback submitted successfully." });
   } catch (error) {
@@ -84,37 +76,59 @@ router.post("/feedback", async (req, res) => {
 
 /**
  * ✅ Route: POST /api/ai/self-update
- * Description: Trigger AI self-updating mechanism.
+ * Description: Triggers AI self-updating mechanisms.
  */
 router.post("/self-update", async (req, res) => {
-  const { filePath, context } = req.body;
-
-  if (!filePath || !context) {
-    return res.status(400).json({ error: "File path and context are required." });
-  }
-
   try {
-    // Query ChatGPT for code improvements
-    const suggestions = await AICodeUpdater.queryChatGPTForCode(context);
-    console.log("✅ Received suggestions:", suggestions);
-
-    // Apply suggested improvements
-    const success = await AICodeUpdater.applyCodeUpdate(filePath, suggestions);
-
-    if (success) {
-      res.status(200).json({ message: "Self-update applied successfully.", suggestions });
-    } else {
-      res.status(500).json({ error: "Failed to apply the self-update." });
-    }
+    await runAISelfImprovement();
+    res.status(200).json({ message: "AI Self-Improvement triggered." });
   } catch (error) {
-    console.error("❌ Error during self-update:", error);
-    res.status(500).json({ error: "An error occurred during self-update." });
+    console.error("❌ Error during AI self-update:", error);
+    res.status(500).json({ error: "An error occurred during AI self-update." });
+  }
+});
+
+/**
+ * ✅ Route: POST /api/ai/train
+ * Description: Triggers AI model training based on user interactions.
+ */
+router.post("/train", async (req, res) => {
+  try {
+    console.log("🚀 Training AI model based on recent interactions...");
+
+    const interactions = await db.query("SELECT * FROM ai_logs ORDER BY timestamp DESC LIMIT 50");
+
+    if (!interactions.rows.length) {
+      return res.status(400).json({ message: "No training data available." });
+    }
+
+    const trainingData = interactions.rows.map((row) => ({
+      user: row.user_id,
+      action: row.action,
+      details: JSON.parse(row.details),
+    }));
+
+    const trainingResponse = await axios.post(
+      "https://api.openai.com/v1/finetuning",
+      {
+        model: "gpt-4",
+        data: trainingData,
+      },
+      {
+        headers: { Authorization: `Bearer ${OPENAI_API_KEY}` },
+      }
+    );
+
+    res.status(200).json({ message: "AI training started.", data: trainingResponse.data });
+  } catch (error) {
+    console.error("❌ AI Training Failed:", error.message);
+    res.status(500).json({ error: "Failed to train AI." });
   }
 });
 
 /**
  * ✅ Route: POST /api/ai/analyze-code
- * Description: Analyze code using x.ai and return issues found.
+ * Description: Uses an AI system to analyze code for optimizations.
  */
 router.post("/analyze-code", async (req, res) => {
   const { filePath } = req.body;
@@ -137,7 +151,7 @@ router.post("/analyze-code", async (req, res) => {
       { code },
       {
         headers: {
-          Authorization: `Bearer ${process.env.X_AI_API_KEY}`,
+          Authorization: `Bearer ${X_AI_API_KEY}`,
           "Content-Type": "application/json",
         },
       }
@@ -150,4 +164,36 @@ router.post("/analyze-code", async (req, res) => {
   }
 });
 
-module.exports = router;
+/**
+ * ✅ Route: GET /api/ai/status
+ * Description: Fetches the status of AI integrations and learning progress.
+ */
+router.get("/status", async (req, res) => {
+  try {
+    const lastTraining = await db.query("SELECT * FROM ai_logs ORDER BY timestamp DESC LIMIT 1");
+
+    res.status(200).json({
+      status: "AI systems are operational.",
+      lastTraining: lastTraining.rows[0] || "No training logs available.",
+    });
+  } catch (error) {
+    console.error("❌ Error fetching AI status:", error.message);
+    res.status(500).json({ error: "Failed to retrieve AI status." });
+  }
+});
+
+/**
+ * ✅ Route: POST /api/ai/clear-logs
+ * Description: Clears AI logs for debugging and testing purposes.
+ */
+router.post("/clear-logs", async (req, res) => {
+  try {
+    await db.query("DELETE FROM ai_logs");
+    res.status(200).json({ message: "AI logs cleared." });
+  } catch (error) {
+    console.error("❌ Error clearing logs:", error.message);
+    res.status(500).json({ error: "Failed to clear AI logs." });
+  }
+});
+
+export default router;

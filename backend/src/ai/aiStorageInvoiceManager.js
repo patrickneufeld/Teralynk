@@ -1,6 +1,6 @@
 const { calculateStorageBilling } = require("./aiStorageBilling");
-const aiLearningManager = require("./aiLearningManager");
-const axios = require("axios");
+import aiLearningManager from "./aiLearningManager";
+import axios from "axios";
 
 /**
  * Generates an AI-driven invoice for storage usage.

@@ -1,6 +1,6 @@
 // ✅ FILE PATH: backend/src/models/MarketplaceAPI.js
 
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const MarketplaceAPISchema = new mongoose.Schema({
     name: { type: String, required: true },

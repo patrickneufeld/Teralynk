@@ -1,9 +1,9 @@
 // File: /Users/patrick/Projects/Teralynk/backend/src/api/rollback_manager.js
 
-const express = require("express");
+import express from "express";
 const { MongoClient } = require("mongodb");
-const fs = require("fs");
-const path = require("path");
+import fs from "fs";
+import path from "path";
 
 const router = express.Router();
 const mongoUri = process.env.MONGO_URI || "mongodb://localhost:27017";

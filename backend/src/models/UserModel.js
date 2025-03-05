@@ -1,6 +1,6 @@
 // /Users/patrick/Projects/Teralynk/backend/src/models/UserModel.js
 
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const UserSchema = new mongoose.Schema({
     name: { type: String, required: true },

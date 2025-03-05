@@ -1,9 +1,9 @@
 // File Path: /Users/patrick/Projects/Teralynk/backend/src/routes/fileRelationshipRoutes.js
 
-const express = require("express");
+import express from "express";
 const { authenticate } = require("../middleware/authMiddleware");
-const aiFileRelationship = require("../ai/aiFileRelationship");
-const aiLearningManager = require("../ai/aiLearningManager");
+import aiFileRelationship from "../ai/aiFileRelationship";
+import aiLearningManager from "../ai/aiLearningManager";
 
 const router = express.Router();
 

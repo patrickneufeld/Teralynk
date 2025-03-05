@@ -1,6 +1,6 @@
 /* File Path: backend/src/ai/aiNotificationManager.js */
 
-const EventEmitter = require('events');
+import EventEmitter from "events";
 class NotificationManager extends EventEmitter {}
 const aiNotifier = new NotificationManager();
 

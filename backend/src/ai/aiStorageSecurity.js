@@ -1,8 +1,8 @@
 // File Path: /Users/patrick/Projects/Teralynk/backend/src/ai/aiStorageSecurity.js
 
 const { getAllStorageProviders } = require("../config/dynamicStorageManager");
-const aiLearningManager = require("./aiLearningManager");
-const axios = require("axios");
+import aiLearningManager from "./aiLearningManager";
+import axios from "axios";
 
 /**
  * AI-driven security enforcement across all storage providers.

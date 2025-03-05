@@ -1,6 +1,6 @@
 // ✅ FILE PATH: backend/src/models/Service.js
 
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const ServiceSchema = new mongoose.Schema({
     platform: { type: String, required: true, unique: true },

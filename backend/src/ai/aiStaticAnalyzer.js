@@ -1,9 +1,9 @@
 // File: /Users/patrick/Projects/Teralynk/backend/src/ai/aiStaticAnalyzer.js
 
 console.log("OPENAI_API_KEY:", process.env.OPENAI_API_KEY);
-const fs = require("fs");
-const path = require("path");
-const axios = require("axios");
+import fs from "fs";
+import path from "path";
+import axios from "axios";
 const { MongoClient } = require("mongodb");
 
 class AIStaticAnalyzer {

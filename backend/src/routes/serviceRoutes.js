@@ -1,6 +1,6 @@
 // ✅ FILE PATH: backend/src/routes/serviceRoutes.js
 
-const express = require("express");
+import express from "express";
 const router = express.Router();
 const { addUserService, getAvailableServices } = require("../controllers/serviceController");
 

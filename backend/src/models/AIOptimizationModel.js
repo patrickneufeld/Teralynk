@@ -1,6 +1,6 @@
 // /Users/patrick/Projects/Teralynk/backend/src/models/AIOptimizationModel.js
 
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 // Define the schema for AI optimization tracking
 const AIOptimizationSchema = new mongoose.Schema({

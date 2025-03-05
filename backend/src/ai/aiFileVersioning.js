@@ -1,8 +1,8 @@
 // File Path: /Users/patrick/Projects/Teralynk/backend/src/ai/aiFileVersioning.js
 
-const fs = require("fs");
-const axios = require("axios");
-const aiLearningManager = require("./aiLearningManager");
+import fs from "fs";
+import axios from "axios";
+import aiLearningManager from "./aiLearningManager";
 
 /**
  * Creates a new version of a file when changes are detected.

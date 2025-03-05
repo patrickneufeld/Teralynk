@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const OAuthCredentialSchema = new mongoose.Schema({
   userId: { type: String, required: true }, // Unique user identifier

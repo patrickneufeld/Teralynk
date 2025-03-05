@@ -1,4 +1,4 @@
-const db = require('../db'); // Assuming db for fetching and saving files
+import db from "../db"; // Assuming db for fetching and saving files
 
 class AIFileSearchReplace {
   /**

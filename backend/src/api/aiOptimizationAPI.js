@@ -1,6 +1,6 @@
 // File Path: backend/src/api/aiOptimizationAPI.js
 
-const express = require("express");
+import express from "express";
 const { optimizeAI } = require("../ai/aiAutoOptimizer");
 const router = express.Router();
 

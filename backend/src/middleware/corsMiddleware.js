@@ -1,4 +1,4 @@
-const cors = require('cors');
+import cors from "cors";
 
 const corsMiddleware = cors({
     origin: process.env.CORS_ALLOWED_ORIGINS?.split(',') || '*', // Allow multiple origins via environment variable

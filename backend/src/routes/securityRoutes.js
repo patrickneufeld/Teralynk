@@ -1,9 +1,9 @@
 // File Path: /Users/patrick/Projects/Teralynk/backend/src/routes/securityRoutes.js
 
-const express = require("express");
+import express from "express";
 const { authenticate } = require("../middleware/authMiddleware");
-const aiSecurityManager = require("../ai/aiSecurityManager");
-const aiLearningManager = require("../ai/aiLearningManager");
+import aiSecurityManager from "../ai/aiSecurityManager";
+import aiLearningManager from "../ai/aiLearningManager";
 
 const router = express.Router();
 

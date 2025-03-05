@@ -1,8 +1,8 @@
 // File Path: /Users/patrick/Projects/Teralynk/backend/src/ai/aiFileInsights.js
 
 const { getAllStorageProviders, updateTotalStorage } = require("../config/dynamicStorageManager");
-const aiLearningManager = require("./aiLearningManager");
-const axios = require("axios");
+import aiLearningManager from "./aiLearningManager";
+import axios from "axios";
 
 /**
  * Analyze file usage patterns and recommend cleanup actions.

@@ -1,6 +1,6 @@
 // ✅ FILE PATH: backend/src/routes/userRoutes.js
 
-const express = require("express");
+import express from "express";
 const router = express.Router();
 const { storeUserService } = require("../controllers/userController");
 

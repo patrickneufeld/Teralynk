@@ -1,9 +1,9 @@
 // File Path: /Users/patrick/Projects/Teralynk/backend/src/routes/fileVersioningRoutes.js
 
-const express = require("express");
+import express from "express";
 const { authenticate } = require("../middleware/authMiddleware");
-const aiFileVersioning = require("../ai/aiFileVersioning");
-const aiLearningManager = require("../ai/aiLearningManager");
+import aiFileVersioning from "../ai/aiFileVersioning";
+import aiLearningManager from "../ai/aiLearningManager";
 
 const router = express.Router();
 

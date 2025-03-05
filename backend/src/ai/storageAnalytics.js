@@ -1,8 +1,8 @@
 // File Path: /Users/patrick/Projects/Teralynk/backend/src/ai/storageAnalytics.js
 
 const { getAllStorageProviders, updateTotalStorage } = require("../config/dynamicStorageManager");
-const aiLearningManager = require("./aiLearningManager");
-const axios = require("axios");
+import aiLearningManager from "./aiLearningManager";
+import axios from "axios";
 
 /**
  * Analyzes user storage patterns and identifies optimization opportunities.

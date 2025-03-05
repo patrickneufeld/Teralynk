@@ -1,21 +1,28 @@
-import dotenv from 'dotenv';
-import axios from 'axios';
-import fs from 'fs';
-import path from 'path';
-import { getRecentInteractions, logInteraction } from '../config/db.js'; // Adjusted import for DB functions
+import dotenv from "dotenv";
+import axios from "axios";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import db from "../config/db.js";
 
-dotenv.config(); // Load environment variables
+dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
- * Log AI learning progress and user interactions.
- * This tracks AI recommendations and actual user responses to refine future suggestions.
+ * ✅ Log AI learning progress and user interactions.
  * @param {string} userId - User making the request.
  * @param {string} action - The AI action performed.
  * @param {object} details - Additional details (e.g., suggested file name, storage choice, etc.).
  */
-const logAILearning = async (userId, action, details) => {
+export const logAILearning = async (userId, action, details) => {
   try {
-    await logInteraction({ userId, action, details, timestamp: new Date() });
+    await db.query("INSERT INTO ai_logs (user_id, action, details, timestamp) VALUES ($1, $2, $3, NOW())", [
+      userId,
+      action,
+      JSON.stringify(details),
+    ]);
     console.log(`✅ AI Learning Logged: ${action} - User: ${userId}`);
   } catch (error) {
     console.error("❌ Error logging AI learning:", error.message);
@@ -23,19 +30,25 @@ const logAILearning = async (userId, action, details) => {
 };
 
 /**
- * Analyze AI performance and update its own code.
- * AI will self-adjust based on success rates of past decisions.
+ * ✅ Analyze AI performance and update its own code.
  */
-const analyzeAndUpdateAI = async () => {
+export const analyzeAndUpdateAI = async () => {
   try {
     console.log("🚀 AI Self-Analysis Running...");
 
     // Fetch past AI interactions
-    const pastInteractions = await getRecentInteractions();
+    const pastInteractions = await db.query(
+      "SELECT * FROM ai_logs ORDER BY timestamp DESC LIMIT 10"
+    );
 
-    // Identify patterns in successful vs. failed decisions
-    const analysisPrompt = `Analyze the following AI interactions and suggest optimizations for improving performance. 
-    Focus on reducing errors, improving predictions, and enhancing storage decisions.\n\n${JSON.stringify(pastInteractions)}`;
+    if (!pastInteractions.rows.length) {
+      console.log("⚠️ No past interactions found for AI analysis.");
+      return;
+    }
+
+    const analysisPrompt = `Analyze the following AI interactions and suggest optimizations:\n\n${JSON.stringify(
+      pastInteractions.rows
+    )}`;
 
     const response = await axios.post(
       "https://api.openai.com/v1/completions",
@@ -50,10 +63,10 @@ const analyzeAndUpdateAI = async () => {
       }
     );
 
-    const aiSuggestions = response.data.choices[0].text.trim();
+    const aiSuggestions = response.data?.choices?.[0]?.text?.trim() || "No valid suggestions returned.";
     console.log(`🤖 AI Self-Improvement Suggestions:\n${aiSuggestions}`);
 
-    // Apply AI-generated optimizations (if applicable)
+    // ✅ Store AI-generated optimizations
     const updatePath = path.join(__dirname, "aiOptimizations.json");
     fs.writeFileSync(updatePath, JSON.stringify({ lastUpdate: new Date(), suggestions: aiSuggestions }, null, 2));
 
@@ -64,21 +77,26 @@ const analyzeAndUpdateAI = async () => {
 };
 
 /**
- * Automate AI Code Updates
- * If AI detects an inefficient approach, it will rewrite specific functions to improve its performance.
+ * ✅ Automate AI Code Updates
  */
-const autoUpdateAI = async () => {
+export const autoUpdateAI = async () => {
   try {
     console.log("🔧 AI Auto-Updating its own logic...");
-    const aiOptimizations = JSON.parse(fs.readFileSync(path.join(__dirname, "aiOptimizations.json"), "utf-8"));
 
-    if (!aiOptimizations || !aiOptimizations.suggestions) {
+    const updatePath = path.join(__dirname, "aiOptimizations.json");
+    if (!fs.existsSync(updatePath)) {
+      console.log("⚠️ No AI optimizations file found.");
+      return;
+    }
+
+    const aiOptimizations = JSON.parse(fs.readFileSync(updatePath, "utf-8"));
+
+    if (!aiOptimizations.suggestions) {
       console.log("⚠️ No AI improvements detected yet.");
       return;
     }
 
-    // Example of applying an AI-generated optimization (placeholder logic)
-    const optimizationPrompt = `Update the AI file management system based on the following improvement:\n\n${aiOptimizations.suggestions}\n\nReturn the updated JavaScript function code only.`;
+    const optimizationPrompt = `Update the AI system based on the following improvement:\n\n${aiOptimizations.suggestions}`;
 
     const response = await axios.post(
       "https://api.openai.com/v1/completions",
@@ -93,11 +111,8 @@ const autoUpdateAI = async () => {
       }
     );
 
-    const updatedCode = response.data.choices[0].text.trim();
+    const updatedCode = response.data?.choices?.[0]?.text?.trim() || "No valid updates returned.";
     console.log(`🚀 AI Auto-Updated Code:\n${updatedCode}`);
-
-    // (Optional) Apply the update dynamically (requires careful validation)
-    // eval(updatedCode); // ⚠️ Only enable if running in a secured environment.
 
     return updatedCode;
   } catch (error) {
@@ -106,13 +121,10 @@ const autoUpdateAI = async () => {
 };
 
 /**
- * Full AI Self-Learning Cycle
- * Runs all AI improvement steps and applies updates where needed.
+ * ✅ Full AI Self-Learning Cycle
  */
-const runAISelfImprovement = async () => {
+export const runAISelfImprovement = async () => {
   console.log("\n🔍 Running Full AI Self-Learning Cycle...\n");
   await analyzeAndUpdateAI();
   await autoUpdateAI();
 };
-
-export { logAILearning, analyzeAndUpdateAI, autoUpdateAI, runAISelfImprovement };

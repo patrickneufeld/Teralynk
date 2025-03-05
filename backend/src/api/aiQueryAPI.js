@@ -5,7 +5,7 @@
  * Handles API calls for querying AI models.
  */
 
-const express = require('express');
+import express from "express";
 const router = express.Router();
 const { logUsage } = require('../ai/aiUsageLogger');
 

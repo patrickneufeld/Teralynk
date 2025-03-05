@@ -1,7 +1,7 @@
 // Import necessary modules
 const { getFileContent } = require("../config/dynamicStorageManager"); // To retrieve file content
 const { analyzeFileContent, extractKeyData } = require("../utils/fileAnalysisUtils"); // Utility functions for file analysis
-const aiLearningManager = require("./aiLearningManager"); // AI Learning manager to log insights
+import aiLearningManager from "./aiLearningManager"; // AI Learning manager to log insights
 
 // Function to analyze file content and categorize it
 const analyzeFile = async (userId, fileId) => {

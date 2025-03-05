@@ -1,10 +1,10 @@
 // File Path: /Users/patrick/Projects/Teralynk/backend/src/routes/editRoutes.js
 
-const express = require("express");
+import express from "express";
 const { authenticate } = require("../middleware/authMiddleware");
 const { getStorageClient } = require("../config/storageConfig");
-const aiFileEditor = require("../ai/aiFileEditor");
-const aiLearningManager = require("../ai/aiLearningManager");
+import aiFileEditor from "../ai/aiFileEditor";
+import aiLearningManager from "../ai/aiLearningManager";
 
 const router = express.Router();
 

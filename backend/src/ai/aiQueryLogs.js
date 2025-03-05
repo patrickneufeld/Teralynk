@@ -1,7 +1,7 @@
 /* File Path: backend/src/ai/aiQueryLogs.js */
 
-const fs = require('fs');
-const path = require('path');
+import fs from "fs";
+import path from "path";
 
 const LOG_FILE = path.join(__dirname, 'ai_query_logs.json');
 

@@ -1,9 +1,9 @@
 // File Path: /Users/patrick/Projects/Teralynk/backend/src/ai/aiStorageCompliance.js
 
 const { getAllStorageProviders } = require("../config/dynamicStorageManager");
-const aiLearningManager = require("./aiLearningManager");
-const axios = require("axios");
-const crypto = require("crypto");
+import aiLearningManager from "./aiLearningManager";
+import axios from "axios";
+import crypto from "crypto";
 
 // Compliance settings
 const complianceStandards = ["ISO 27001", "SOC 2", "GDPR", "HIPAA"]; // Default security standards

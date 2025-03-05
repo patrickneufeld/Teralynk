@@ -1,6 +1,6 @@
 // /Users/patrick/Projects/Teralynk/backend/src/models/MetricsModel.js
 
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 const MetricsSchema = new mongoose.Schema({
     metricName: { type: String, required: true },

@@ -5,7 +5,7 @@
  * Logs all AI queries and tracks usage patterns for analysis.
  */
 
-const fs = require('fs');
+import fs from "fs";
 const logFile = "ai_usage.log";
 
 function logUsage(userId, query, response) {

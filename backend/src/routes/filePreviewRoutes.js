@@ -1,9 +1,9 @@
 // File Path: /Users/patrick/Projects/Teralynk/backend/src/routes/filePreviewRoutes.js
 
-const express = require("express");
+import express from "express";
 const { authenticate } = require("../middleware/authMiddleware");
-const aiFilePreview = require("../ai/aiFilePreview");
-const aiLearningManager = require("../ai/aiLearningManager");
+import aiFilePreview from "../ai/aiFilePreview";
+import aiLearningManager from "../ai/aiLearningManager";
 
 const router = express.Router();
 

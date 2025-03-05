@@ -22,5 +22,8 @@ export default defineConfig({
     },
     host: "localhost",
     port: 5173,
+    hmr: {
+      overlay: false, // ✅ Disable overlay for import analysis errors
+    },
   },
 });

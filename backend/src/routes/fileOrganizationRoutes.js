@@ -1,8 +1,8 @@
-const express = require("express");
+import express from "express";
 const { authenticate } = require("../middleware/authMiddleware");
-const aiFileOrganization = require("../ai/aiFileOrganization");
-const aiLearningManager = require("../ai/aiLearningManager");
-const fs = require("fs");
+import aiFileOrganization from "../ai/aiFileOrganization";
+import aiLearningManager from "../ai/aiLearningManager";
+import fs from "fs";
 const { getStorageClient } = require("../config/dynamicStorageManager"); // Added dynamic storage
 const { S3Client, PutObjectCommand, GetObjectCommand, ListObjectsV2Command } = require("@aws-sdk/client-s3");
 

@@ -3,9 +3,9 @@
 const { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
 const { Client } = require("pg");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
-const fs = require("fs");
-const path = require("path");
-const logger = require("../config/logger");
+import fs from "fs";
+import path from "path";
+import logger from "../config/logger";
 
 // ✅ Initialize PostgreSQL Client
 const dbClient = new Client({

@@ -1,4 +1,4 @@
-const axios = require("axios");
+import axios from "axios";
 
 const AI_PERFORMANCE_API = "http://127.0.0.1:8000"; // Localhost API
 

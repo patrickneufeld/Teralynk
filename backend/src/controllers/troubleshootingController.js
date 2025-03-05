@@ -1,8 +1,8 @@
 // ✅ FILE: /Users/patrick/Projects/Teralynk/backend/src/controllers/troubleshootingController.js
 
 const { Client } = require("pg");
-const axios = require("axios");
-const logger = require("../config/logger");
+import axios from "axios";
+import logger from "../config/logger";
 const { v4: uuidv4 } = require("uuid");
 
 // ✅ Initialize PostgreSQL Client

@@ -1,4 +1,4 @@
-const jwt = require('jsonwebtoken');
+import jwt from "jsonwebtoken";
 
 /**
  * Middleware to authenticate the user by verifying the JWT token

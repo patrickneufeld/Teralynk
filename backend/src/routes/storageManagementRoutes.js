@@ -1,9 +1,9 @@
 // File Path: /Users/patrick/Projects/Teralynk/backend/src/routes/storageManagementRoutes.js
 
-const express = require("express");
+import express from "express";
 const { authenticate } = require("../middleware/authMiddleware");
-const aiStorageBalancer = require("../ai/aiStorageBalancer");
-const aiLearningManager = require("../ai/aiLearningManager");
+import aiStorageBalancer from "../ai/aiStorageBalancer";
+import aiLearningManager from "../ai/aiLearningManager";
 
 const router = express.Router();
 

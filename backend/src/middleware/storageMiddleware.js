@@ -1,7 +1,7 @@
 // File Path: /Users/patrick/Projects/Teralynk/backend/src/middleware/storageMiddleware.js
 
 const { getAllStorageProviders } = require("../config/dynamicStorageManager");
-const aiLearningManager = require("../ai/aiLearningManager");
+import aiLearningManager from "../ai/aiLearningManager";
 
 /**
  * Middleware to validate if a selected storage provider is available and allowed

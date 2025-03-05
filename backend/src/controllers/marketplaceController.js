@@ -1,7 +1,8 @@
 // ✅ FILE PATH: /Users/patrick/Projects/Teralynk/backend/src/controllers/marketplaceController.js
 
-const { Client } = require("pg");
-const logger = require("../config/logger");
+import pkg from "pg";
+const { Client } = pkg;
+import logger from "../config/logger.js";
 
 // ✅ Initialize PostgreSQL Client
 const dbClient = new Client({
@@ -21,7 +22,7 @@ dbClient.connect().catch(err => {
  * ✅ Fetch All APIs Available in the Marketplace
  * @route GET /api/marketplace/addons
  */
-const getAllAPIs = async (req, res) => {
+export const getAllAPIs = async (req, res) => {
     try {
         const result = await dbClient.query("SELECT * FROM marketplace_addons ORDER BY created_at DESC");
         res.json({ message: "Marketplace APIs retrieved successfully", data: result.rows });
@@ -35,7 +36,7 @@ const getAllAPIs = async (req, res) => {
  * ✅ Fetch Single API Details
  * @route GET /api/marketplace/addons/:id
  */
-const getAPIById = async (req, res) => {
+export const getAPIById = async (req, res) => {
     try {
         const { id } = req.params;
         const result = await dbClient.query("SELECT * FROM marketplace_addons WHERE id = $1", [id]);
@@ -55,7 +56,7 @@ const getAPIById = async (req, res) => {
  * ✅ Add a New API to the Marketplace
  * @route POST /api/marketplace/addons
  */
-const addAPI = async (req, res) => {
+export const addAPI = async (req, res) => {
     try {
         const { name, description, type, api_url, username, password } = req.body;
         const added_by = req.user.cognito_id;
@@ -90,7 +91,7 @@ const addAPI = async (req, res) => {
  * ✅ Update an API in the Marketplace
  * @route PUT /api/marketplace/addons/:id
  */
-const updateAPI = async (req, res) => {
+export const updateAPI = async (req, res) => {
     try {
         const { id } = req.params;
         const { name, description, type, api_url, username, password } = req.body;
@@ -117,7 +118,7 @@ const updateAPI = async (req, res) => {
  * ✅ Delete an API from the Marketplace
  * @route DELETE /api/marketplace/addons/:id
  */
-const deleteAPI = async (req, res) => {
+export const deleteAPI = async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -138,7 +139,7 @@ const deleteAPI = async (req, res) => {
  * ✅ Purchase an API
  * @route POST /api/marketplace/addons/:id/purchase
  */
-const purchaseAPI = async (req, res) => {
+export const purchaseAPI = async (req, res) => {
     try {
         const { id } = req.params;
         const user_id = req.user.cognito_id;
@@ -167,7 +168,7 @@ const purchaseAPI = async (req, res) => {
  * ✅ Rate an API
  * @route POST /api/marketplace/addons/:id/review
  */
-const rateAPI = async (req, res) => {
+export const rateAPI = async (req, res) => {
     try {
         const { id } = req.params;
         const { rating, review } = req.body;
@@ -189,14 +190,4 @@ const rateAPI = async (req, res) => {
         logger.error("❌ Error submitting review:", error);
         res.status(500).json({ error: "Failed to submit review" });
     }
-};
-
-module.exports = {
-    getAllAPIs,
-    getAPIById,
-    addAPI,
-    updateAPI,
-    deleteAPI,
-    purchaseAPI,
-    rateAPI
 };

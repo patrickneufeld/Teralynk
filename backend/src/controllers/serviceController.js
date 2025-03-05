@@ -1,7 +1,7 @@
 // ✅ FILE PATH: backend/src/controllers/serviceController.js
 
-const Service = require("../models/Service"); // New DB model for services
-const UserService = require("../models/UserService"); // Track user-added services
+import Service from "../models/Service"; // New DB model for services
+import UserService from "../models/UserService"; // Track user-added services
 
 // ✅ Add AI/Storage Service & Register Globally
 const addUserService = async (req, res) => {

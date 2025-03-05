@@ -1,7 +1,7 @@
 // File Path: backend/src/ai/aiPerformanceTracker.js
 
-const fs = require("fs");
-const path = require("path");
+import fs from "fs";
+import path from "path";
 
 const logFilePath = path.join(__dirname, "ai_performance_log.json");
 

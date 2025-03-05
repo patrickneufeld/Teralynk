@@ -1,9 +1,12 @@
-// File: /Users/patrick/Projects/Teralynk/backend/src/ai/aiCodeUpdater.js
+import { exec } from "child_process";
+import fs from "fs";
+import path from "path";
+import axios from "axios";
+import { fileURLToPath } from "url"; // ✅ Required for ES module support
 
-const { exec } = require("child_process");
-const fs = require("fs");
-const path = require("path");
-const axios = require("axios");
+// ✅ Fix for __dirname in ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 class AICodeUpdater {
   constructor() {
@@ -11,23 +14,24 @@ class AICodeUpdater {
     this.backupDir = path.join(this.repoPath, "backups");
     this.logsPath = path.join(this.repoPath, "logs", "combined.log");
 
-    // Ensure backup directory exists
+    // ✅ Ensure backup directory exists
     if (!fs.existsSync(this.backupDir)) {
       fs.mkdirSync(this.backupDir, { recursive: true });
     }
   }
 
   /**
-   * Diagnose inefficiencies in the system and identify areas for improvement.
+   * ✅ Diagnose inefficiencies and identify areas for improvement.
    * @returns {Object} - Diagnostic report.
    */
   async diagnoseSystem() {
     try {
       const logs = fs.readFileSync(this.logsPath, "utf-8");
       const errorCount = (logs.match(/error/gi) || []).length;
-      const suggestions = errorCount > 10
-        ? "System has high error occurrences. Consider optimizing inefficient code paths."
-        : "System performance is acceptable.";
+      const suggestions =
+        errorCount > 10
+          ? "⚠️ System has high error occurrences. Consider optimizing inefficient code paths."
+          : "✅ System performance is acceptable.";
 
       return { errorCount, suggestions };
     } catch (error) {
@@ -37,9 +41,9 @@ class AICodeUpdater {
   }
 
   /**
-   * Query ChatGPT for code improvement suggestions.
-   * @param {string} context - Context of the inefficiency or specific code section.
-   * @returns {string} - Suggested improvements.
+   * ✅ Query OpenAI for code improvement suggestions.
+   * @param {string} context - Context of inefficiency or code needing improvement.
+   * @returns {Promise<string>} - Suggested improvements.
    */
   async queryChatGPTForCode(context) {
     const payload = {
@@ -63,7 +67,7 @@ class AICodeUpdater {
   }
 
   /**
-   * Create a backup of the original file before modifying.
+   * ✅ Create a backup before modifying code.
    * @param {string} filePath - Path to the file to back up.
    */
   createBackup(filePath) {
@@ -79,8 +83,8 @@ class AICodeUpdater {
   }
 
   /**
-   * Restore the last backup if an update fails.
-   * @param {string} filePath - Path to the file to restore.
+   * ✅ Restore backup if update fails.
+   * @param {string} filePath - Path to restore.
    */
   restoreBackup(filePath) {
     try {
@@ -99,22 +103,22 @@ class AICodeUpdater {
   }
 
   /**
-   * Apply AI-suggested improvements to the codebase.
-   * @param {string} filePath - Path to the file to update.
-   * @param {string} updatedCode - New code to replace the existing one.
-   * @returns {boolean} - Whether the update was successful.
+   * ✅ Apply AI-suggested improvements.
+   * @param {string} filePath - File to update.
+   * @param {string} updatedCode - AI-optimized code.
+   * @returns {Promise<boolean>} - Success status.
    */
   async applyCodeUpdate(filePath, updatedCode) {
     try {
       const fullPath = path.resolve(this.repoPath, filePath);
 
-      // Create a backup before modifying
+      // ✅ Create a backup
       this.createBackup(filePath);
 
       fs.writeFileSync(fullPath, updatedCode, "utf-8");
       console.log(`✅ Successfully applied AI-suggested updates to ${filePath}`);
 
-      // Verify that the updated code is error-free before committing
+      // ✅ Verify syntax before committing changes
       if (await this.verifyCodeSyntax(filePath)) {
         await this.commitChanges(filePath, "Applied AI-suggested improvements.");
         return true;
@@ -130,9 +134,9 @@ class AICodeUpdater {
   }
 
   /**
-   * Check if the updated JavaScript file has syntax errors.
-   * @param {string} filePath - Path to the JavaScript file.
-   * @returns {boolean} - Returns true if the code is valid, otherwise false.
+   * ✅ Verify that the updated JavaScript file has no syntax errors.
+   * @param {string} filePath - File path to check.
+   * @returns {Promise<boolean>} - Whether the code is valid.
    */
   async verifyCodeSyntax(filePath) {
     return new Promise((resolve) => {
@@ -149,8 +153,8 @@ class AICodeUpdater {
   }
 
   /**
-   * Commit changes to version control.
-   * @param {string} filePath - File path of the updated file.
+   * ✅ Commit changes to Git.
+   * @param {string} filePath - Updated file path.
    * @param {string} message - Commit message.
    */
   async commitChanges(filePath, message) {
@@ -172,4 +176,5 @@ class AICodeUpdater {
   }
 }
 
-module.exports = new AICodeUpdater();
+// ✅ Fix: Use ES Module Export
+export default new AICodeUpdater();

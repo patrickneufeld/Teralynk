@@ -1,9 +1,9 @@
 // File Path: /Users/patrick/Projects/Teralynk/backend/src/routes/integrationRoutes.js
 
-const express = require("express");
+import express from "express";
 const { authenticate } = require("../middleware/authMiddleware");
-const aiIntegrationManager = require("../ai/aiIntegrationManager");
-const aiLearningManager = require("../ai/aiLearningManager");
+import aiIntegrationManager from "../ai/aiIntegrationManager";
+import aiLearningManager from "../ai/aiLearningManager";
 
 const router = express.Router();
 

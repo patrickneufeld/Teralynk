@@ -1,4 +1,4 @@
-const AWS = require("aws-sdk");
+import AWS from "aws-sdk";
 
 // Initialize AWS Secrets Manager Client
 const secretsManager = new AWS.SecretsManager({

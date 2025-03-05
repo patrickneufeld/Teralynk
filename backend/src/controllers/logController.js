@@ -1,11 +1,11 @@
-const Log = require("../models/LogModel");
-const logger = require("../config/logger");
-const { Parser } = require("json2csv");
+import logger from "../config/logger.js";
+import { Parser } from "json2csv";
+import Log from "../models/LogModel.js"; // ✅ Ensure LogModel is imported correctly
 
 /**
- * Download AI Logs as CSV
+ * ✅ Download AI Logs as CSV
  */
-const downloadLogs = async (req, res) => {
+export const downloadLogs = async (req, res) => {
     try {
         const logs = await Log.find({});
         if (!logs || logs.length === 0) {
@@ -25,5 +25,5 @@ const downloadLogs = async (req, res) => {
     }
 };
 
-// ✅ Ensure function is exported
-module.exports = { downloadLogs };
+// ✅ Ensure function is exported properly
+export default { downloadLogs };

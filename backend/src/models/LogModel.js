@@ -1,12 +1,11 @@
-// /Users/patrick/Projects/Teralynk/backend/src/models/LogModel.js
+import mongoose from "mongoose";
 
-const mongoose = require("mongoose");
-
-const LogSchema = new mongoose.Schema({
-    timestamp: { type: Date, default: Date.now },
-    level: { type: String, enum: ["info", "warning", "error"], required: true },
-    message: { type: String, required: true },
-    meta: { type: Object, default: {} } // Optional metadata for additional logging info
+const logSchema = new mongoose.Schema({
+  message: String,
+  level: String,
+  timestamp: Date,
 });
 
-module.exports = mongoose.model("Log", LogSchema);
+const Log = mongoose.model("Log", logSchema);
+
+export default Log; // ✅ Corrected for ES module

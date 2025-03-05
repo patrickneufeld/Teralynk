@@ -1,34 +1,50 @@
-// ✅ FILE: backend/src/routes/authRoutes.js
+// ✅ FILE: /Users/patrick/Projects/Teralynk/backend/src/routes/authRoutes.js
 
-const express = require("express");
-const {
+import express from "express";
+import {
   CognitoIdentityProviderClient,
   InitiateAuthCommand,
   AdminCreateUserCommand,
   AdminSetUserPasswordCommand,
-} = require("@aws-sdk/client-cognito-identity-provider");
-const crypto = require("crypto");
-const base64 = require("base-64");
+} from "@aws-sdk/client-cognito-identity-provider";
+import crypto from "crypto";
+import base64 from "base-64";
+import { SecretsManagerClient, GetSecretValueCommand } from "@aws-sdk/client-secrets-manager";
 
+// ✅ Express Router
 const router = express.Router();
 
-// ✅ Ensure Required Environment Variables are Set
-const requiredEnvVars = [
-  "AWS_REGION",
-  "COGNITO_CLIENT_ID",
-  "COGNITO_CLIENT_SECRET",
-  "COGNITO_USER_POOL_ID",
-];
+// ✅ AWS Secrets Manager Client
+const secretsManagerClient = new SecretsManagerClient({ region: "us-east-1" });
 
-requiredEnvVars.forEach((key) => {
-  if (!process.env[key]) {
-    console.error(`❌ ERROR: Missing critical environment variable: ${key}`);
+/**
+ * ✅ Load Cognito Secrets from AWS Secrets Manager
+ */
+async function loadCognitoSecrets() {
+  try {
+    console.log("🔍 Fetching Cognito secrets from AWS...");
+    const secretResponse = await secretsManagerClient.send(
+      new GetSecretValueCommand({ SecretId: "cognito_credentials" })
+    );
+
+    const secrets = JSON.parse(secretResponse.SecretString);
+    console.log("✅ Cognito Secrets Loaded Successfully.");
+
+    return {
+      AWS_REGION: secrets.AWS_REGION,
+      COGNITO_USER_POOL_ID: secrets.COGNITO_USER_POOL_ID,
+      COGNITO_CLIENT_ID: secrets.COGNITO_CLIENT_ID,
+      COGNITO_CLIENT_SECRET: secrets.COGNITO_CLIENT_SECRET,
+    };
+  } catch (error) {
+    console.error("❌ AWS Secrets Manager Error:", error);
     process.exit(1);
   }
-});
+}
 
-// ✅ Initialize Cognito Client
-const cognito = new CognitoIdentityProviderClient({ region: process.env.AWS_REGION });
+// ✅ Load Secrets and Initialize Cognito Client
+const cognitoSecrets = await loadCognitoSecrets();
+const cognito = new CognitoIdentityProviderClient({ region: cognitoSecrets.AWS_REGION });
 
 /**
  * ✅ Generate the secret hash required for Cognito authentication
@@ -36,8 +52,8 @@ const cognito = new CognitoIdentityProviderClient({ region: process.env.AWS_REGI
  * @returns {string} - The computed secret hash
  */
 function generateSecretHash(username) {
-  const secretKey = process.env.COGNITO_CLIENT_SECRET;
-  const clientId = process.env.COGNITO_CLIENT_ID;
+  const secretKey = cognitoSecrets.COGNITO_CLIENT_SECRET;
+  const clientId = cognitoSecrets.COGNITO_CLIENT_ID;
 
   if (!secretKey || !clientId) {
     throw new Error("Cognito client secret or client ID is missing");
@@ -62,24 +78,19 @@ router.post("/login", async (req, res) => {
     return res.status(400).json({ error: "Username and password are required" });
   }
 
-  console.log("🔹 Received login request:", { username });
-
   try {
     const params = {
       AuthFlow: "USER_PASSWORD_AUTH",
-      ClientId: process.env.COGNITO_CLIENT_ID,
+      ClientId: cognitoSecrets.COGNITO_CLIENT_ID,
       AuthParameters: {
         USERNAME: username,
         PASSWORD: password,
+        SECRET_HASH: generateSecretHash(username), // ✅ Add secret hash for enhanced security
       },
     };
 
-    console.log("🔹 Cognito Auth Request Params:", params);
-
     const command = new InitiateAuthCommand(params);
     const authResult = await cognito.send(command);
-
-    console.log("✅ Cognito Response:", JSON.stringify(authResult, null, 2));
 
     return res.status(200).json({
       message: "Login successful",
@@ -90,8 +101,6 @@ router.post("/login", async (req, res) => {
 
   } catch (error) {
     console.error("❌ Authentication Error:", error);
-    console.error("🔹 AWS Error Response:", JSON.stringify(error, null, 2));
-
     return res.status(401).json({ error: "Authentication failed", details: error.message });
   }
 });
@@ -111,7 +120,7 @@ router.post("/register", async (req, res) => {
   try {
     // ✅ Step 1: Create user in Cognito
     const createUserCommand = new AdminCreateUserCommand({
-      UserPoolId: process.env.COGNITO_USER_POOL_ID,
+      UserPoolId: cognitoSecrets.COGNITO_USER_POOL_ID,
       Username: username,
       UserAttributes: [
         { Name: "email", Value: email },
@@ -124,7 +133,7 @@ router.post("/register", async (req, res) => {
 
     // ✅ Step 2: Set the user's permanent password
     const setPasswordCommand = new AdminSetUserPasswordCommand({
-      UserPoolId: process.env.COGNITO_USER_POOL_ID,
+      UserPoolId: cognitoSecrets.COGNITO_USER_POOL_ID,
       Username: username,
       Password: password,
       Permanent: true,
@@ -178,4 +187,5 @@ router.get("/status", async (req, res) => {
   }
 });
 
-module.exports = router;
+// ✅ Export Router
+export default router;

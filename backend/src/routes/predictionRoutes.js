@@ -1,9 +1,9 @@
 // File Path: /Users/patrick/Projects/Teralynk/backend/src/routes/predictionRoutes.js
 
-const express = require("express");
+import express from "express";
 const { authenticate } = require("../middleware/authMiddleware");
-const aiPredictionManager = require("../ai/aiPredictionManager");
-const aiLearningManager = require("../ai/aiLearningManager");
+import aiPredictionManager from "../ai/aiPredictionManager";
+import aiLearningManager from "../ai/aiLearningManager";
 
 const router = express.Router();
 

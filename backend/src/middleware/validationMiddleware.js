@@ -1,4 +1,4 @@
-const Joi = require('joi');
+import Joi from "joi";
 
 // Validation for starting a session
 const validateSessionStart = (req, res, next) => {

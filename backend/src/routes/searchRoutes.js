@@ -1,10 +1,10 @@
 // File Path: /Users/patrick/Projects/Teralynk/backend/src/routes/searchRoutes.js
 
-const express = require("express");
+import express from "express";
 const { authenticate } = require("../middleware/authMiddleware");
 const { getStorageClient } = require("../config/storageConfig");
-const aiFileManager = require("../ai/aiFileManager");
-const aiLearningManager = require("../ai/aiLearningManager");
+import aiFileManager from "../ai/aiFileManager";
+import aiLearningManager from "../ai/aiLearningManager";
 
 const router = express.Router();
 

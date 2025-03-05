@@ -23,7 +23,7 @@ module.exports = validateRequest;
 
 // File Path: backend/middleware/csrfMiddleware.js
 
-const csurf = require('csurf');
+import csurf from "csurf";
 
 /**
  * Middleware for protecting against CSRF attacks.
@@ -35,9 +35,9 @@ module.exports = csrfProtection;
 
 // File Path: backend/api/sampleRoute.js
 
-const express = require('express');
-const validateRequest = require('../middleware/inputValidationMiddleware');
-const csrfProtection = require('../middleware/csrfMiddleware');
+import express from "express";
+import validateRequest from "../middleware/inputValidationMiddleware";
+import csrfProtection from "../middleware/csrfMiddleware";
 const { body } = require('express-validator');
 
 const router = express.Router();

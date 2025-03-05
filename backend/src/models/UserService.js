@@ -1,6 +1,6 @@
 // ✅ FILE PATH: backend/src/models/UserService.js
 
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const UserServiceSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },

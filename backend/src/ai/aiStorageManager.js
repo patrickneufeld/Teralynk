@@ -1,8 +1,8 @@
 // File Path: /Users/patrick/Projects/Teralynk/backend/src/ai/aiStorageManager.js
 
 const { getStorageClient, listAvailableStorageProviders, addNewStorageProvider } = require("../config/storageConfig");
-const aiLearningManager = require("./aiLearningManager");
-const axios = require("axios");
+import aiLearningManager from "./aiLearningManager";
+import axios from "axios";
 
 /**
  * Allow users to select a preferred storage provider.

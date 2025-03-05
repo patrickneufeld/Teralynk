@@ -1,6 +1,6 @@
-const express = require('express');
+import express from "express";
 const { authenticate } = require('../middleware/authMiddleware');
-const aiFileSearchReplace = require('../ai/aiFileSearchReplace'); // Assuming AI integration for search-replace functionality
+import aiFileSearchReplace from "../ai/aiFileSearchReplace"; // Assuming AI integration for search-replace functionality
 const router = express.Router();
 
 /**

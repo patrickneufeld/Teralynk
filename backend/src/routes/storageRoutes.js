@@ -1,5 +1,3 @@
-// File Path: /Users/patrick/Projects/Teralynk/backend/src/routes/storageRoutes.js
-
 import express from "express";
 import formidable from "formidable";
 import fs from "fs";
@@ -7,14 +5,13 @@ import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { requireAuth } from "../middleware/authMiddleware.js"; // Corrected import
 import { getStorageClient, listAvailableStorageProviders } from "../config/storageConfig.js"; // Corrected import
 import { analyzeFileContent } from "../ai/aiFileManager.js"; // Corrected named import
-import aiStorageOptimizer from "../ai/aiStorageOptimizer.js"; // Corrected import
-import { logAILearning } from "../ai/aiLearningManager.js"; // Corrected named import
 import { 
   determineBestStorageProvider, 
   migrateFileToAvailableStorage, 
   analyzeStorageEfficiency, 
   improveStorageAI 
 } from "../ai/aiStorageOptimizer.js"; // Corrected import
+import { logAILearning } from "../ai/aiLearningManager.js"; // Corrected named import
 
 const router = express.Router();
 
@@ -41,7 +38,7 @@ router.post("/upload", requireAuth, async (req, res) => {
       }
 
       // AI determines the best provider
-      const bestProvider = await aiStorageOptimizer.determineBestStorageProvider(userId, file.size, preferredProviders);
+      const bestProvider = await determineBestStorageProvider(userId, file.size, preferredProviders);
       if (!bestProvider) {
         return res.status(500).json({ error: "No storage provider available with enough space." });
       }
@@ -87,7 +84,7 @@ router.post("/migrate", requireAuth, async (req, res) => {
       return res.status(400).json({ error: "File name and current provider are required." });
     }
 
-    const newProvider = await aiStorageOptimizer.migrateFileToAvailableStorage(userId, fileName, currentProvider);
+    const newProvider = await migrateFileToAvailableStorage(userId, fileName, currentProvider);
     if (!newProvider) {
       return res.status(500).json({ error: "No available storage provider to migrate to." });
     }
@@ -189,6 +186,20 @@ router.delete("/delete", requireAuth, async (req, res) => {
   } catch (error) {
     console.error("Error deleting file:", error);
     res.status(500).json({ error: "Failed to delete file." });
+  }
+});
+
+/**
+ * Route: POST /api/storage/improve
+ * Description: Improve storage selection AI based on its past decisions.
+ */
+router.post("/improve", requireAuth, async (req, res) => {
+  try {
+    await improveStorageAI();
+    res.status(200).json({ message: "AI storage optimization improved successfully." });
+  } catch (error) {
+    console.error("Error improving storage AI:", error);
+    res.status(500).json({ error: "Failed to improve storage AI." });
   }
 });
 

@@ -1,25 +1,20 @@
 // ✅ FILE PATH: backend/src/routes/marketplaceRoutes.js
 
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const {
-    getAllAPIs,
-    addAPI,
-    purchaseAPI,
-    rateAPI,
-} = require("../controllers/marketplaceController");
-const authMiddleware = require("../middleware/authMiddleware");
+import { getAllAPIs, addAPI, purchaseAPI, rateAPI } from "../controllers/marketplaceController.js";
+import { requireAuth } from "../middleware/authMiddleware.js";
 
 // ✅ Route to Get All APIs Listed in the Marketplace
 router.get("/list", getAllAPIs);
 
 // ✅ Route to Add a New API (Requires Authentication)
-router.post("/add", authMiddleware, addAPI);
+router.post("/add", requireAuth, addAPI);
 
 // ✅ Route to Purchase an API (Requires Authentication)
-router.post("/purchase/:apiId", authMiddleware, purchaseAPI);
+router.post("/purchase/:apiId", requireAuth, purchaseAPI);
 
 // ✅ Route to Rate an API
-router.post("/rate/:apiId", authMiddleware, rateAPI);
+router.post("/rate/:apiId", requireAuth, rateAPI);
 
-module.exports = router;
+export default router;

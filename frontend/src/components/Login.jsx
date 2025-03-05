@@ -3,10 +3,12 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
-import { cognitoClient, secretsClient } from "../utils/awsConfig";
+import awsConfig from "../utils/awsConfig";
 import { GetSecretValueCommand } from "@aws-sdk/client-secrets-manager";
 import { InitiateAuthCommand } from "@aws-sdk/client-cognito-identity-provider";
 import "../styles/components/Login.css";
+
+const { cognitoClient, secretsClient } = awsConfig;
 
 const Login = ({ onLogin }) => {
     const [email, setEmail] = useState("");
