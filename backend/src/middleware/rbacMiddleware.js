@@ -1,54 +1,70 @@
-// File Path: backend/middleware/rbacMiddleware.js
+// ✅ FILE: /Users/patrick/Projects/Teralynk/backend/src/middleware/rbacMiddleware.js
 
-const { hasPermission, getRole } = require('../services/rbacService');
-const { logAuditEvent } = require('../services/auditLogService');
+import { hasPermission, getRole } from "../services/rbacService.js";
+import { logAuditEvent } from "../services/auditLogService.js";
 
 /**
- * Middleware to enforce Role-Based Access Control (RBAC)
+ * ✅ Middleware to Enforce Role-Based Access Control (RBAC)
+ * @param {string[]} requiredPermissions - List of required permissions for the route.
+ * @param {string[]} allowedRoles - List of roles explicitly allowed.
  */
-const rbacMiddleware = (requiredPermissions = [], allowedRoles = []) => {
-    return async (req, res, next) => {
-        try {
-            const userId = req.user?.id;
-            const userRole = req.user?.role;
+export const rbacMiddleware = (requiredPermissions = [], allowedRoles = []) => {
+  return async (req, res, next) => {
+    try {
+      const userId = req.user?.id;
+      const userRole = req.user?.role;
 
-            if (!userId || !userRole) {
-                logAuditEvent('MISSING_USER_DATA', { userId: null, route: req.originalUrl });
-                return res.status(401).json({ error: 'Unauthorized: User ID or role missing.' });
-            }
+      if (!userId || !userRole) {
+        logAuditEvent("MISSING_USER_DATA", { userId: null, route: req.originalUrl });
+        return res.status(401).json({ error: "Unauthorized: User ID or role missing." });
+      }
 
-            if (userRole.toLowerCase() === 'admin') {
-                return next();
-            }
+      // ✅ Admins Automatically Bypass RBAC
+      if (userRole.toLowerCase() === "admin") {
+        return next();
+      }
 
-            if (allowedRoles.length > 0 && !allowedRoles.includes(userRole)) {
-                logAuditEvent('ACCESS_DENIED', { userId, role: userRole, route: req.originalUrl });
-                return res.status(403).json({ error: `Role '${userRole}' not authorized for this route.` });
-            }
+      // ✅ Role-Based Access Check
+      if (allowedRoles.length > 0 && !allowedRoles.includes(userRole)) {
+        logAuditEvent("ACCESS_DENIED", { userId, role: userRole, route: req.originalUrl });
+        return res.status(403).json({ error: `Role '${userRole}' not authorized for this route.` });
+      }
 
-            const permissions = Array.isArray(requiredPermissions) ? requiredPermissions : [requiredPermissions];
-            const permissionResults = await Promise.all(
-                permissions.map((permission) => hasPermission(userId, permission))
-            );
+      // ✅ Permission-Based Access Check
+      const permissions = Array.isArray(requiredPermissions) ? requiredPermissions : [requiredPermissions];
+      const permissionResults = await Promise.all(
+        permissions.map((permission) => hasPermission(userId, permission))
+      );
 
-            const missingPermissions = permissions.filter((_, index) => !permissionResults[index]);
+      const missingPermissions = permissions.filter((_, index) => !permissionResults[index]);
 
-            if (missingPermissions.length > 0) {
-                logAuditEvent('ACCESS_DENIED', {
-                    userId,
-                    role: userRole,
-                    route: req.originalUrl,
-                    missingPermissions,
-                });
-                return res.status(403).json({ error: `Missing permissions: ${missingPermissions.join(', ')}` });
-            }
+      if (missingPermissions.length > 0) {
+        logAuditEvent("ACCESS_DENIED", {
+          userId,
+          role: userRole,
+          route: req.originalUrl,
+          missingPermissions,
+        });
+        return res.status(403).json({ error: `Missing permissions: ${missingPermissions.join(", ")}` });
+      }
 
-            next();
-        } catch (error) {
-            console.error('RBAC Middleware Error:', error);
-            next(error);
-        }
-    };
+      next();
+    } catch (error) {
+      console.error("❌ RBAC Middleware Error:", error);
+      next(error);
+    }
+  };
 };
 
-module.exports = rbacMiddleware;
+/**
+ * ✅ Require a Specific Role for Route Access
+ * @param {string} role - The required role (e.g., "admin", "editor", "viewer").
+ */
+export const requireRole = (role) => {
+  return (req, res, next) => {
+    if (req.user && req.user.role === role) {
+      return next();
+    }
+    return res.status(403).json({ error: "Forbidden: Insufficient permissions" });
+  };
+};

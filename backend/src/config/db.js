@@ -1,78 +1,76 @@
+// 📌 File: /Users/patrick/Projects/Teralynk/backend/src/config/db.js
+
 import pkg from "pg";
-const { Client } = pkg;
+import dotenv from "dotenv";
 import { SecretsManagerClient, GetSecretValueCommand } from "@aws-sdk/client-secrets-manager";
 
-// ✅ Create a Secrets Manager Client
-const secretsManager = new SecretsManagerClient({ region: "us-east-1" });
+dotenv.config();
 
-// ✅ Function to fetch the database credentials from AWS Secrets Manager
+const { Client } = pkg;
+
+// ✅ Create an AWS Secrets Manager Client
+const secretsManager = new SecretsManagerClient({ region: process.env.AWS_REGION || "us-east-1" });
+
+// ✅ Fetch database credentials from AWS Secrets Manager
 const getDbCredentials = async () => {
-    const secretName = "postgres"; // Ensure this matches your AWS secret name
+  const secretName = process.env.SECRETS_MANAGER_NAME || "teralynk/env"; // Ensure correct secret name
 
-    try {
-        console.log("🔍 Fetching database credentials from AWS Secrets Manager...");
-        const secretResponse = await secretsManager.send(new GetSecretValueCommand({ SecretId: secretName }));
+  try {
+    console.log("🔍 Fetching database credentials from AWS Secrets Manager...");
+    const secretResponse = await secretsManager.send(new GetSecretValueCommand({ SecretId: secretName }));
 
-        if (!secretResponse.SecretString) {
-            throw new Error("❌ No secret string found in AWS Secrets Manager response");
-        }
-
-        const credentials = JSON.parse(secretResponse.SecretString);
-        console.log("✅ Database credentials loaded successfully.");
-        return credentials;
-    } catch (error) {
-        console.error("❌ Error fetching database credentials:", error.message);
-        process.exit(1);
+    if (!secretResponse.SecretString) {
+      throw new Error("❌ No secret string found in AWS Secrets Manager response");
     }
+
+    const secrets = JSON.parse(secretResponse.SecretString);
+    console.log("✅ Database credentials loaded successfully.");
+    
+    return {
+      user: secrets.DB_USER || process.env.DB_USER,
+      host: secrets.DB_HOST || process.env.DB_HOST,
+      database: secrets.DB_NAME || process.env.DB_NAME,
+      password: secrets.DB_PASSWORD || process.env.DB_PASSWORD,
+      port: secrets.DB_PORT ? parseInt(secrets.DB_PORT, 10) : (process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 5432),
+      ssl: { rejectUnauthorized: false }, // Enforce SSL in secure environments
+    };
+  } catch (error) {
+    console.error("❌ Error fetching database credentials:", error.message);
+    console.warn("⚠️ Falling back to local .env values...");
+
+    return {
+      user: process.env.DB_USER,
+      host: process.env.DB_HOST,
+      database: process.env.DB_NAME,
+      password: process.env.DB_PASSWORD,
+      port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 5432,
+      ssl: { rejectUnauthorized: false },
+    };
+  }
 };
 
-// ✅ Initialize PostgreSQL client with AWS Secrets Manager credentials
+// ✅ Singleton PostgreSQL client
+let dbClient = null; // Make sure this is only declared once
+
 const initializeDbConnection = async () => {
+  if (!dbClient) {
     const credentials = await getDbCredentials();
 
-    const client = new Client({
-        user: credentials.username,
-        host: credentials.host,
-        database: credentials.dbInstanceIdentifier, // ✅ Use the correct database identifier
-        password: credentials.password,
-        port: credentials.port || 5432, // Default PostgreSQL port
-        ssl: { rejectUnauthorized: false }, // Allow SSL connection
-    });
+    dbClient = new Client(credentials);
 
     try {
-        await client.connect();
-        console.log("✅ PostgreSQL Connected Successfully at:", new Date().toISOString());
+      await dbClient.connect();
+      console.log("✅ PostgreSQL Connected Successfully at:", new Date().toISOString());
     } catch (error) {
-        console.error("❌ PostgreSQL Connection Failed:", error.message);
-        process.exit(1);
+      console.error("❌ PostgreSQL Connection Failed:", error.message);
+      process.exit(1); // Terminate only if the database connection is critical
     }
+  }
 
-    return client;
+  return dbClient;
 };
 
-// ✅ Persistent PostgreSQL Client
-export const db = await initializeDbConnection();
-
-// ✅ Example Query Function: Get Recent Interactions
-export const getRecentInteractions = async () => {
-    try {
-        const result = await db.query("SELECT * FROM interactions ORDER BY timestamp DESC LIMIT 10");
-        return result.rows;
-    } catch (error) {
-        console.error("❌ Error fetching recent interactions:", error.message);
-        return [];
-    }
-};
-
-// ✅ Example Function: Log User Interactions
-export const logInteraction = async ({ userId, action, details, timestamp }) => {
-    try {
-        const query = "INSERT INTO interactions (user_id, action, details, timestamp) VALUES ($1, $2, $3, $4)";
-        await db.query(query, [userId, action, JSON.stringify(details), timestamp]);
-    } catch (error) {
-        console.error("❌ Error logging interaction:", error.message);
-    }
-};
-
-// ✅ Export the Database Client for Use in Other Files
-export default db;
+// ✅ Ensure we only export once
+const dbInstance = await initializeDbConnection();
+export { dbInstance as dbClient };
+export default dbInstance;

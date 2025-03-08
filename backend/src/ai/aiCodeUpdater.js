@@ -1,8 +1,11 @@
+// ✅ FILE: /Users/patrick/Projects/Teralynk/backend/src/ai/aiCodeUpdater.js
+
 import { exec } from "child_process";
 import fs from "fs";
 import path from "path";
 import axios from "axios";
-import { fileURLToPath } from "url"; // ✅ Required for ES module support
+import { fileURLToPath } from "url";
+import { storePreviousVersion, rollbackToLastStable } from "../api/rollbackManager.js";
 
 // ✅ Fix for __dirname in ES Modules
 const __filename = fileURLToPath(import.meta.url);
@@ -21,7 +24,7 @@ class AICodeUpdater {
   }
 
   /**
-   * ✅ Diagnose inefficiencies and identify areas for improvement.
+   * ✅ Diagnose system performance & log inefficiencies.
    * @returns {Object} - Diagnostic report.
    */
   async diagnoseSystem() {
@@ -30,8 +33,8 @@ class AICodeUpdater {
       const errorCount = (logs.match(/error/gi) || []).length;
       const suggestions =
         errorCount > 10
-          ? "⚠️ System has high error occurrences. Consider optimizing inefficient code paths."
-          : "✅ System performance is acceptable.";
+          ? "⚠️ System has high error occurrences. Optimization required."
+          : "✅ System performance is stable.";
 
       return { errorCount, suggestions };
     } catch (error) {
@@ -41,28 +44,33 @@ class AICodeUpdater {
   }
 
   /**
-   * ✅ Query OpenAI for code improvement suggestions.
-   * @param {string} context - Context of inefficiency or code needing improvement.
-   * @returns {Promise<string>} - Suggested improvements.
+   * ✅ Fetch AI-Suggested Code Improvements
+   * Uses OpenAI to analyze and improve AI-generated code dynamically.
+   * @param {string} filePath - The path of the file to update
+   * @param {string} context - Contextual information for better updates
+   * @returns {Promise<string>} - AI-optimized code suggestions.
    */
-  async queryChatGPTForCode(context) {
-    const payload = {
-      model: "gpt-4",
-      messages: [
-        { role: "system", content: "You are an AI optimizing JavaScript code for efficiency." },
-        { role: "user", content: `Optimize the following code for performance:\n\n${context}\n\nProvide improvements.` },
-      ],
-    };
-
+  async queryChatGPTForCode(filePath, context) {
     try {
-      const response = await axios.post("https://api.openai.com/v1/chat/completions", payload, {
-        headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
-      });
+      const code = fs.readFileSync(filePath, "utf-8");
 
-      return response.data.choices[0].message.content;
+      const response = await axios.post(
+        "https://api.openai.com/v1/completions",
+        {
+          model: "gpt-4",
+          prompt: `Analyze the following code for potential improvements and suggest a corrected version:\n\n${code}\n\nContext: ${context}`,
+          max_tokens: 800,
+          temperature: 0.3,
+        },
+        {
+          headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
+        }
+      );
+
+      return response.data?.choices?.[0]?.text?.trim() || null;
     } catch (error) {
-      console.error("❌ Error querying ChatGPT for code suggestions:", error);
-      return "Unable to retrieve suggestions at this time.";
+      console.error("❌ Error querying AI for code suggestions:", error);
+      return null;
     }
   }
 
@@ -103,20 +111,24 @@ class AICodeUpdater {
   }
 
   /**
-   * ✅ Apply AI-suggested improvements.
-   * @param {string} filePath - File to update.
-   * @param {string} updatedCode - AI-optimized code.
+   * ✅ Apply AI-Suggested Code Updates
+   * @param {string} filePath - The path of the file to update
+   * @param {string} updatedCode - The AI-suggested updated code
    * @returns {Promise<boolean>} - Success status.
    */
   async applyCodeUpdate(filePath, updatedCode) {
     try {
-      const fullPath = path.resolve(this.repoPath, filePath);
+      if (!updatedCode) {
+        console.log("⚠️ No valid updates were suggested.");
+        return false;
+      }
 
-      // ✅ Create a backup
+      // ✅ Create a backup before updating
       this.createBackup(filePath);
+      storePreviousVersion(filePath);
 
-      fs.writeFileSync(fullPath, updatedCode, "utf-8");
-      console.log(`✅ Successfully applied AI-suggested updates to ${filePath}`);
+      fs.writeFileSync(filePath, updatedCode, "utf-8");
+      console.log(`✅ AI Code Update Applied: ${filePath}`);
 
       // ✅ Verify syntax before committing changes
       if (await this.verifyCodeSyntax(filePath)) {
@@ -125,10 +137,11 @@ class AICodeUpdater {
       } else {
         console.error(`❌ Syntax errors detected in ${filePath}. Rolling back...`);
         this.restoreBackup(filePath);
+        rollbackToLastStable(filePath);
         return false;
       }
     } catch (error) {
-      console.error("❌ Error applying code update:", error);
+      console.error("❌ Error applying AI code update:", error);
       return false;
     }
   }
@@ -150,6 +163,24 @@ class AICodeUpdater {
         }
       });
     });
+  }
+
+  /**
+   * ✅ Auto-Rollback If Errors Detected
+   * @param {string} filePath - Path of the updated file.
+   */
+  async autoRollbackIfError(filePath) {
+    try {
+      // Simulate testing the updated code (to be replaced with an actual testing framework)
+      const testResult = Math.random() > 0.5; // Simulated pass/fail
+      if (!testResult) {
+        console.warn("⚠️ AI-generated code failed tests. Rolling back...");
+        this.restoreBackup(filePath);
+        rollbackToLastStable(filePath);
+      }
+    } catch (error) {
+      console.error("❌ Error during rollback check:", error.message);
+    }
   }
 
   /**

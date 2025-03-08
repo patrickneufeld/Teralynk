@@ -61,7 +61,6 @@ const getAllStorageProviders = () => {
     acc[providerName] = getStorageClient(providerName);
     return acc;
   }, {});
-
   return {
     ...builtInProviders, // ✅ Built-in providers
     ...dynamicStorageProviders, // ✅ User-added providers
@@ -127,7 +126,6 @@ const updateTotalStorage = async () => {
   console.log(`📊 Updated total available storage: ${totalStorage} GB`);
   return totalStorage;
 };
-
 /**
  * ✅ Remove a storage provider
  * @param {string} providerName - Storage provider to remove

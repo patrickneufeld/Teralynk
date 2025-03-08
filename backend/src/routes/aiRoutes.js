@@ -11,12 +11,27 @@ const router = express.Router();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // ✅ Ensure Secrets are Loaded from AWS Secrets Manager
-const { OPENAI_API_KEY, SUNO_API_KEY, X_AI_API_KEY } = process.env;
+const requiredKeys = ["OPENAI_API_KEY", "SUNO_API_KEY", "X_AI_API_KEY"];
+const optionalKeys = []; // Add optional keys here if needed
+const missingKeys = requiredKeys.filter((key) => !process.env[key]);
 
-if (!OPENAI_API_KEY || !SUNO_API_KEY || !X_AI_API_KEY) {
-  console.error("❌ ERROR: Missing API keys from AWS Secrets Manager.");
-  process.exit(1);
+// ✅ Handle Missing API Keys
+if (missingKeys.length > 0) {
+  console.error(`❌ ERROR: Missing Required API Keys: ${missingKeys.join(", ")}`);
+  process.exit(1); // Exit if required keys are missing
+} else {
+  console.log("✅ All required API keys are loaded successfully.");
 }
+
+// ✅ Optional Keys Handling (if needed)
+optionalKeys.forEach((key) => {
+  if (!process.env[key]) {
+    console.warn(`⚠️ Optional key "${key}" is missing.`);
+  }
+});
+
+// ✅ Destructure API Keys
+const { OPENAI_API_KEY, SUNO_API_KEY, X_AI_API_KEY } = process.env;
 
 /**
  * ✅ Route: POST /api/ai/query
