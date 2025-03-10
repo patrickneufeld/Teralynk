@@ -1,78 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- ✅ Security Fix: Content Security Policy -->
+    <!-- ✅ CSP Fix: Added Cognito endpoint to connect-src -->
     <meta http-equiv="Content-Security-Policy" content="
-        default-src 'self' https: http: data:;
-        script-src 'self' 'unsafe-inline' https: http:;
-        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-        font-src 'self' https://fonts.gstatic.com;
-        img-src 'self' data: https:;
-        connect-src 'self' https: http:;
-        upgrade-insecure-requests;
+      default-src 'self' http://localhost:5173 http://localhost:5001 data: blob:;
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:5173 http://localhost:5001;
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      font-src 'self' https://fonts.gstatic.com data:;
+      img-src 'self' data: https:;
+      connect-src 'self' http://localhost:5001 http://localhost:5173 ws://localhost:5173 https://cognito-idp.us-east-1.amazonaws.com;
+      form-action 'self';
+      object-src 'none';
+      upgrade-insecure-requests;
     " />
 
-    <!-- ✅ Basic Meta Information -->
+    <!-- ✅ Basic Meta -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#007bff" />
     <meta name="description" content="Teralynk - Elevate teamwork with seamless cloud collaboration and AI-powered productivity." />
     <title>Teralynk - The Future of Collaborative Cloud Storage</title>
 
-    <!-- ✅ Favicon and App Icons -->
+    <!-- ✅ Web App Meta -->
+    <meta name="application-name" content="Teralynk" />
+    <meta name="color-scheme" content="light dark" />
+
+    <!-- ✅ Icons -->
     <link rel="icon" type="image/png" href="/favicon.ico" />
     <link rel="apple-touch-icon" sizes="192x192" href="/logo192.png" />
     <link rel="apple-touch-icon" sizes="512x512" href="/logo512.png" />
 
-    <!-- ✅ Web App Manifest -->
+    <!-- ✅ Manifest -->
     <link rel="manifest" href="/manifest.json" />
 
-    <!-- ✅ Open Graph Meta Tags (Social Media Sharing) -->
+    <!-- ✅ Social Sharing -->
     <meta property="og:title" content="Teralynk - The Future of Collaborative Cloud Storage" />
     <meta property="og:description" content="Elevate teamwork with seamless cloud collaboration and AI-powered productivity." />
     <meta property="og:image" content="/logo192.png" />
     <meta property="og:url" content="https://teralynk.com" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Teralynk" />
-
-    <!-- ✅ Twitter Card Meta Tags -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Teralynk - The Future of Collaborative Cloud Storage" />
     <meta name="twitter:description" content="Elevate teamwork with seamless cloud collaboration and AI-powered productivity." />
     <meta name="twitter:image" content="/logo192.png" />
     <meta name="twitter:site" content="@Teralynk" />
 
-    <!-- ✅ SEO Optimization -->
+    <!-- ✅ SEO -->
     <meta name="keywords" content="cloud storage, collaboration, AI-powered productivity, file sharing, teamwork, remote work" />
     <meta name="author" content="Teralynk Team" />
     <meta name="robots" content="index, follow" />
     <meta name="google-site-verification" content="YOUR_GOOGLE_SITE_VERIFICATION_CODE" />
 
-    <!-- ✅ PWA & Mobile Optimization -->
+    <!-- ✅ Mobile Support -->
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Teralynk" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 
-    <!-- ✅ Fonts (Fix for CORS issues) -->
+    <!-- ✅ Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin="anonymous" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
 
-    <!-- ✅ Global Styles (Fixed Path for CSS) -->
+    <!-- ✅ Styles -->
     <link rel="stylesheet" href="/src/styles/global/index.css" />
 
-    <!-- ✅ Performance Enhancements -->
+    <!-- ✅ Performance -->
     <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
 
-    <!-- ✅ Entry Point for React App (Fixed Path for Vite) -->
+    <!-- ✅ Locale -->
+    <meta name="language" content="en" />
+    <meta name="direction" content="ltr" />
+
+    <!-- ✅ React App Entry -->
     <script type="module" src="/src/main.jsx" defer></script>
   </head>
   <body>
-    <!-- ✅ No JavaScript Fallback -->
-    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <noscript>
+      <p style="color: red; text-align: center; font-size: 16px;">
+        JavaScript is required for this application. Please enable JavaScript in your browser settings.
+      </p>
+    </noscript>
 
-    <!-- ✅ React App Mount Point -->
-    <div id="root"></div>
+    <div id="root" role="main" aria-label="Main Application Content"></div>
   </body>
 </html>

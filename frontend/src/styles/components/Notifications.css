@@ -1,75 +1,73 @@
-/* File Path: frontend/src/styles/Notifications.css */
+/* ✅ FILE: /src/styles/components/Notifications.css */
 
-/* Notifications Container */
-.notifications {
-    padding: 20px;
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    font-family: Arial, sans-serif;
-    max-width: 800px;
-    margin: 0 auto;
+.notifications-container {
+  padding: 1.5rem;
 }
 
-/* Section Title */
-.notifications h2 {
-    font-size: 1.8rem;
-    color: #333;
-    margin-bottom: 20px;
-    text-align: center;
+.notifications-title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
 }
 
-/* Notification List */
-.notifications ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+.filter-select {
+  margin-bottom: 1.5rem;
 }
 
-/* Notification Item */
-.notification-item {
-    background-color: #ffffff;
-    border: 1px solid #ddd;
-    padding: 15px;
-    margin-bottom: 10px;
-    border-radius: 5px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.notifications-grid {
+  display: grid;
+  gap: 1.5rem;
 }
 
-/* Notification Message */
-.notification-item p {
-    margin: 0;
-    font-size: 1rem;
-    color: #555;
+.notification-card {
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Timestamp */
-.timestamp {
-    font-size: 0.85rem;
-    color: #888;
-    margin-left: 10px;
+.notification-text {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
 }
 
-/* Error Message */
+.notification-timestamp {
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.approve-button {
+  background-color: #28a745;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.reject-button {
+  background-color: #dc3545;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.empty-message {
+  font-size: 1rem;
+  color: #6c757d;
+}
+
 .error-message {
-    color: #ff0000;
-    font-size: 1rem;
-    text-align: center;
+  color: #dc3545;
+  margin-bottom: 1rem;
 }
 
-/* Loading Message */
 .loading-message {
-    color: #007bff;
-    font-size: 1rem;
-    text-align: center;
-    margin-bottom: 15px;
-}
-
-/* No Notifications */
-.no-notifications {
-    text-align: center;
-    font-size: 1rem;
-    color: #555;
+  color: #007bff;
 }

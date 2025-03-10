@@ -1,5 +1,3 @@
-// /Users/patrick/Projects/Teralynk/frontend/src/components/Navbar.jsx
-
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { FaBars, FaTimes } from "react-icons/fa";
@@ -8,6 +6,7 @@ import "../styles/components/Navbar.css";
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
 
+    // Toggle the menu for mobile navigation
     const toggleMenu = () => {
         setIsOpen(!isOpen);
     };
@@ -17,7 +16,11 @@ const Navbar = () => {
             <div className="navbar-container">
                 {/* Logo */}
                 <div className="navbar-logo">
-                    <NavLink to="/" className="navbar-brand" aria-label="Go to Teralynk homepage">
+                    <NavLink
+                        to="/"
+                        className="navbar-brand"
+                        aria-label="Go to Teralynk homepage"
+                    >
                         Teralynk
                     </NavLink>
                 </div>
@@ -26,7 +29,9 @@ const Navbar = () => {
                 <button
                     className="menu-toggle"
                     onClick={toggleMenu}
-                    aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
+                    aria-label={
+                        isOpen ? "Close navigation menu" : "Open navigation menu"
+                    }
                 >
                     {isOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
                 </button>
@@ -36,7 +41,9 @@ const Navbar = () => {
                     <li>
                         <NavLink
                             to="/dashboard"
-                            className={({ isActive }) => (isActive ? "active" : "")}
+                            className={({ isActive }) =>
+                                isActive ? "active" : ""
+                            }
                         >
                             Dashboard
                         </NavLink>
@@ -44,7 +51,9 @@ const Navbar = () => {
                     <li>
                         <NavLink
                             to="/profile"
-                            className={({ isActive }) => (isActive ? "active" : "")}
+                            className={({ isActive }) =>
+                                isActive ? "active" : ""
+                            }
                         >
                             Profile
                         </NavLink>
@@ -52,7 +61,9 @@ const Navbar = () => {
                     <li>
                         <NavLink
                             to="/settings"
-                            className={({ isActive }) => (isActive ? "active" : "")}
+                            className={({ isActive }) =>
+                                isActive ? "active" : ""
+                            }
                         >
                             Settings
                         </NavLink>
@@ -60,7 +71,9 @@ const Navbar = () => {
                     <li>
                         <NavLink
                             to="/help"
-                            className={({ isActive }) => (isActive ? "active" : "")}
+                            className={({ isActive }) =>
+                                isActive ? "active" : ""
+                            }
                         >
                             Help
                         </NavLink>
@@ -68,7 +81,9 @@ const Navbar = () => {
                     <li>
                         <NavLink
                             to="/logout"
-                            className={({ isActive }) => (isActive ? "active logout" : "logout")}
+                            className={({ isActive }) =>
+                                isActive ? "active logout" : "logout"
+                            }
                         >
                             Logout
                         </NavLink>

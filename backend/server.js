@@ -1,6 +1,41 @@
-// ✅ Load AWS Secrets **BEFORE ANYTHING ELSE**
-import getSecrets from "./src/config/config.js";
+import dotenv from "dotenv";
+dotenv.config();
 
+import getSecrets from "./src/config/config.js";
+import express from "express";
+import cookieParser from "cookie-parser";
+import helmet from "helmet";
+import morgan from "morgan";
+import compression from "compression";
+import winston from "winston";
+import { CognitoIdentityProviderClient } from "@aws-sdk/client-cognito-identity-provider";
+import { S3Client } from "@aws-sdk/client-s3";
+import pkg from "pg";
+import rateLimit from "express-rate-limit";
+import path from "path";
+import fs from "fs";
+import https from "https";
+import { fileURLToPath } from "url";
+import corsMiddleware from "./src/middleware/corsMiddleware.js";
+import cors from "cors";
+
+// Setup __dirname for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const app = express(); // Initialize app before using it
+const PORT = process.env.PORT || 5001;
+const HTTPS_ENABLED = process.env.ENABLE_HTTPS === "true";
+
+// ✅ Allow frontend to reach backend
+app.use(
+  cors({
+    origin: "http://localhost:5173", // or "*" during testing
+    credentials: true,
+  })
+);
+
+// 🔐 Load Secrets from AWS Secrets Manager
 console.log("🔍 Fetching AWS Secrets from Secrets Manager...");
 let secrets;
 
@@ -9,99 +44,42 @@ try {
   if (!secrets || typeof secrets !== "object") {
     throw new Error("AWS Secrets Manager returned invalid data");
   }
+  console.log("✅ Successfully fetched secrets:", secrets);
 } catch (error) {
   console.error("❌ Failed to load AWS Secrets:", error.message);
   process.exit(1);
 }
 
-// ✅ Assign Secrets to `process.env` and Handle Missing Keys
-Object.keys(secrets).forEach((key) => {
-  process.env[key] = secrets[key];
+// ✅ Inject secrets into process.env
+Object.entries(secrets).forEach(([key, value]) => {
+  process.env[key] = value;
 });
 
-// ✅ Log Environment Variables After Secrets Are Loaded
-console.log("🔍 ENV AFTER LOADING SECRETS:", {
-  COGNITO_USER_POOL_ID: process.env.COGNITO_USER_POOL_ID || "❌ MISSING",
-  COGNITO_CLIENT_ID: process.env.COGNITO_CLIENT_ID || "❌ MISSING",
-  COGNITO_CLIENT_SECRET: process.env.COGNITO_CLIENT_SECRET ? "✔️ Loaded" : "❌ MISSING",
-  PORT: process.env.PORT || "❌ MISSING",
-  NODE_ENV: process.env.NODE_ENV || "❌ MISSING",
-  AWS_REGION: process.env.AWS_REGION || "❌ MISSING",
-  DB_HOST: process.env.DB_HOST || "❌ MISSING",
-  DB_NAME: process.env.DB_NAME || "❌ MISSING",
-  OPENAI_API_KEY: process.env.OPENAI_API_KEY ? "✔️ Loaded" : "❌ MISSING",
-});
-
-// ✅ Categorize Environment Variables
+// ✅ Check for required env vars
 const requiredEnvVars = [
   "PORT", "NODE_ENV", "AWS_REGION", "DB_HOST", "DB_NAME", "DB_USER",
   "DB_PASSWORD", "DB_PORT", "COGNITO_USER_POOL_ID", "COGNITO_CLIENT_ID",
   "COGNITO_CLIENT_SECRET", "JWT_SECRET"
 ];
 
-const optionalEnvVars = [
-  "VITE_API_URL", "FRONTEND_URL", "BUCKET_NAME", "DB_CONNECTION_STRING",
-  "REDIS_URL", "RABBITMQ_URL", "ENABLE_RATE_LIMITING", "LOG_LEVEL",
-  "LOG_STORAGE", "DEBUG", "AI_MODEL_NAME", "AI_PERFORMANCE_LOGGING",
-  "AI_ERROR_TRACKING", "AI_SELF_OPTIMIZATION", "AI_LOGGING_STORAGE",
-  "OPENAI_API_KEY", "EMAIL_NOTIFICATIONS_ENABLED", "NOTIFICATION_STORAGE",
-  "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "S3_STORAGE_BUCKET",
-  "S3_REGION", "FRONTEND_BASE_URL", "BACKEND_BASE_URL", "TROUBLESHOOTING_AI_URL",
-  "TROUBLESHOOTING_AI_KEY", "CORS_ALLOWED_ORIGINS", "SECRET_NAME"
-];
-
-// ✅ Log Missing Required Keys
-const missingKeys = [];
-requiredEnvVars.forEach((key) => {
-  if (!process.env[key]) {
-    missingKeys.push(key);
-  }
-});
-
+const missingKeys = requiredEnvVars.filter((key) => !process.env[key]);
 if (missingKeys.length > 0) {
-  console.warn(`⚠️ Missing Required ENV Variables: ${missingKeys.join(", ")}`);
-  console.warn("⚠️ Proceeding with missing variables. Application behavior may be affected.");
-} else {
-  console.log("✅ All required API keys are loaded successfully.");
+  console.error(`❌ Missing Required ENV Variables: ${missingKeys.join(", ")}`);
+  process.exit(1);
 }
 
-// ✅ Log Missing Optional Keys
-optionalEnvVars.forEach((key) => {
-  if (!process.env[key]) {
-    console.warn(`ℹ️ Optional ENV Variable Missing: ${key}`);
-  }
+// ✅ Confirm loaded ENV
+console.log("🔍 ENV AFTER LOADING SECRETS:", {
+  PORT: process.env.PORT,
+  NODE_ENV: process.env.NODE_ENV,
+  COGNITO_CLIENT_ID: process.env.COGNITO_CLIENT_ID,
+  AWS_REGION: process.env.AWS_REGION,
+  DB_HOST: process.env.DB_HOST,
+  DB_NAME: process.env.DB_NAME,
+  OPENAI_API_KEY: process.env.OPENAI_API_KEY ? "✔️ Loaded" : "❌ Missing",
 });
 
-// ✅ Import Dependencies AFTER Loading Secrets
-import dotenv from "dotenv";
-import express from "express";
-import cors from "cors";
-import cookieParser from "cookie-parser";
-import helmet from "helmet";
-import morgan from "morgan";
-import compression from "compression";
-import winston from "winston";
-import { CognitoIdentityProviderClient } from "@aws-sdk/client-cognito-identity-provider";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import pkg from "pg";
-import rateLimit from "express-rate-limit";
-import { requireAuth } from "./src/middleware/authMiddleware.js";
-import formidable from "formidable";
-import fs from "fs";
-
-// ✅ Initialize Express App
-dotenv.config();
-const app = express();
-const PORT = process.env.PORT || 5001;
-
-// ✅ AWS Cognito Initialization
-const cognito = new CognitoIdentityProviderClient({ region: process.env.AWS_REGION });
-console.log(`✅ Cognito Connected. Using Client ID: ${process.env.COGNITO_CLIENT_ID}`);
-
-// ✅ AWS S3 Client
-const s3Client = new S3Client({ region: process.env.AWS_REGION });
-
-// ✅ PostgreSQL Database Connection
+// ✅ PostgreSQL Connection
 const { Client } = pkg;
 const dbClient = new Client({
   host: process.env.DB_HOST,
@@ -114,20 +92,23 @@ const dbClient = new Client({
 
 try {
   await dbClient.connect();
-  console.log(`✅ PostgreSQL Connected Successfully at: ${new Date().toISOString()}`);
+  console.log(`✅ PostgreSQL connected: ${process.env.DB_NAME} at ${process.env.DB_HOST}`);
 } catch (err) {
-  console.error("❌ PostgreSQL Connection Failed:", err.message);
+  console.error("❌ PostgreSQL connection failed:", err.message);
   process.exit(1);
 }
 
-// ✅ Set up a basic rate limiter
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: { error: "Too many requests, please try again later." },
+// ✅ Cognito & S3 Clients
+const cognito = new CognitoIdentityProviderClient({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
 });
+const s3Client = new S3Client({ region: process.env.AWS_REGION });
 
-// ✅ Create Winston Logger
+// ✅ Logger Setup
 const logger = winston.createLogger({
   level: "info",
   format: winston.format.combine(
@@ -137,74 +118,101 @@ const logger = winston.createLogger({
   transports: [
     new winston.transports.Console(),
     new winston.transports.File({ filename: "logs/app.log", level: "info" }),
+    new winston.transports.File({ filename: "logs/error.log", level: "error" }),
   ],
 });
 
-// ✅ Middleware Configuration
-app.use(cors({ origin: process.env.FRONTEND_URL, credentials: true }));
+// ✅ Middleware
+app.use(corsMiddleware);
 app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("dev"));
-app.use(helmet());
 app.use(compression());
-app.use(limiter);
-app.use((req, res, next) => {
-  logger.info(`${req.method} ${req.url}`);
-  next();
-});
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https:"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", process.env.FRONTEND_URL],
+      fontSrc: ["'self'", "https:"],
+      frameAncestors: ["'none'"],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: [],
+    },
+  },
+}));
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: { error: "Too many requests, try again later." },
+}));
+
+// ✅ Dynamic Route Loader
+const dynamicRouteLoader = async (filePath, routePath) => {
+  try {
+    const { default: route } = await import(filePath);
+    app.use(routePath, route);
+    console.log(`✅ Route loaded: ${routePath}`);
+  } catch (err) {
+    logger.error(`❌ Failed to load route ${routePath}: ${err.message}`);
+  }
+};
 
 // ✅ Load Routes
-const { default: authRoutes } = await import("./src/routes/authRoutes.js");
-const { default: aiRoutes } = await import("./src/routes/aiRoutes.js");
-const { default: adminRoutes } = await import("./src/routes/adminRoutes.js");
-const { default: troubleshootingRoutes } = await import("./src/routes/troubleshootingRoutes.js");
-const { default: marketplaceRoutes } = await import("./src/routes/marketplaceRoutes.js");
-const { default: storageRoutes } = await import("./src/routes/storageRoutes.js");
+await dynamicRouteLoader("./src/routes/secrets.js", "/api/secrets");
+await dynamicRouteLoader("./src/routes/authRoutes.js", "/api/auth");
+await dynamicRouteLoader("./src/routes/aiRoutes.js", "/api/ai");
+await dynamicRouteLoader("./src/routes/adminRoutes.js", "/api/admin");
+await dynamicRouteLoader("./src/routes/storageRoutes.js", "/api/storage");
+await dynamicRouteLoader("./src/routes/marketplaceRoutes.js", "/api/marketplace");
 
-// ✅ Register Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/ai", requireAuth, aiRoutes);
-app.use("/api/admin", requireAuth, adminRoutes);
-app.use("/api/troubleshoot", requireAuth, troubleshootingRoutes);
-app.use("/api/storage", requireAuth, storageRoutes);
-app.use("/api/marketplace", requireAuth, marketplaceRoutes);
-
-console.log("✅ Routes Loaded: [Auth, AI, Admin, Troubleshooting, Storage, Marketplace]");
-
-// ✅ Basic Health Check Route
-app.get("/", (req, res) => {
-  res.status(200).json({ message: "🚀 Teralynk Backend Running Successfully!" });
+// ✅ Health Check
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "OK", uptime: process.uptime() });
 });
 
-// ✅ 404 Handler
-app.use((req, res) => {
-  res.status(404).json({ error: "Endpoint not found" });
+// ✅ API 404 Handler
+app.use("/api", (req, res) => {
+  res.status(404).json({ error: "API endpoint not found" });
 });
 
-// ✅ Global Error Handler
+// ✅ Serve Frontend (Static)
+app.use(express.static(path.join(__dirname, "../frontend/dist")));
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/dist", "index.html"));
+});
+
+// ✅ Error Handler
 app.use((err, req, res, next) => {
-  console.error(`❌ Unexpected Error: ${err.message}`, { stack: err.stack });
+  logger.error(`Error: ${err.message}`, { stack: err.stack });
   res.status(500).json({ error: "An unexpected server error occurred." });
 });
 
-// ✅ Start Server
-const server = app.listen(PORT, () => {
-  console.log(`🚀 Server running on ${process.env.FRONTEND_URL || `http://localhost:${PORT}`}`);
-});
+// ✅ Start Server (HTTPS disabled explicitly)
+if (HTTPS_ENABLED) {
+  const httpsOptions = {
+    key: fs.readFileSync("./path/to/your-key.pem"),
+    cert: fs.readFileSync("./path/to/your-cert.pem"),
+  };
+  https.createServer(httpsOptions, app).listen(PORT, () => {
+    console.log(`🚀 HTTPS Server running on https://localhost:${PORT}`);
+  });
+} else {
+  app.listen(PORT, () => {
+    console.log(`🚀 HTTP Server running on http://localhost:${PORT}`);
+  });
+}
 
 // ✅ Graceful Shutdown
-process.on("SIGTERM", () => {
-  console.log("Shutting down gracefully...");
-  server.close(() => {
-    dbClient.end();
-    process.exit(0);
-  });
+process.on("SIGTERM", async () => {
+  console.log("🔄 SIGTERM received. Closing DB connection...");
+  await dbClient.end();
+  process.exit(0);
 });
-
-process.on("SIGINT", () => {
-  console.log("Shutting down gracefully...");
-  server.close(() => {
-    dbClient.end();
-    process.exit(0);
-  });
+process.on("SIGINT", async () => {
+  console.log("🔄 SIGINT received. Closing DB connection...");
+  await dbClient.end();
+  process.exit(0);
 });

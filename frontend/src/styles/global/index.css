@@ -1,4 +1,4 @@
-/* File Path: frontend/styles/index.css */
+/* ✅ File Path: frontend/styles/index.css */
 
 /* ✅ Basic Reset */
 * {
@@ -8,9 +8,9 @@
 }
 
 html, body {
-  font-family: 'Roboto', sans-serif;
-  background-color: #f8f9fa;
-  color: #333;
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(180deg, #f8f9fa, #e9ecef); /* Smooth background gradient */
+  color: #212529;
   height: 100%;
   scroll-behavior: smooth;
 }
@@ -21,77 +21,95 @@ html, body {
   min-height: 100vh;
 }
 
-/* ✅ Global Utility Classes */
+/* ✅ Modern Global Utility Classes */
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 1.5rem;
+  padding: 2rem;
 }
 
 .flex {
   display: flex;
   justify-content: center;
   align-items: center;
+  gap: 1rem;
 }
 
 .center-text {
   text-align: center;
 }
 
+.card {
+  padding: 1.5rem;
+  border-radius: 10px;
+  background: white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
 /* ✅ Button Styles */
 button {
-  padding: 12px 24px;
+  padding: 14px 28px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 1rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease-in-out;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 button:hover {
-  filter: brightness(0.9);
+  filter: brightness(0.95);
+  transform: translateY(-2px);
 }
 
 button.primary {
-  background-color: #007bff;
+  background: linear-gradient(90deg, #007bff, #0056b3);
   color: white;
 }
 
 button.secondary {
-  background-color: #6c757d;
+  background: linear-gradient(90deg, #6c757d, #495057);
   color: white;
 }
 
 button.warning {
-  background-color: #ffc107;
+  background: linear-gradient(90deg, #ffc107, #e0a800);
   color: black;
 }
 
 button.success {
-  background-color: #28a745;
+  background: linear-gradient(90deg, #28a745, #218838);
   color: white;
 }
 
 button.danger {
-  background-color: #dc3545;
+  background: linear-gradient(90deg, #dc3545, #bd2130);
   color: white;
 }
 
 button:disabled {
-  background-color: #cccccc;
+  background-color: #e9ecef;
+  color: #6c757d;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 /* ✅ Link Styles */
 a {
   color: #007bff;
+  font-weight: 600;
   text-decoration: none;
-  font-weight: 500;
-  transition: color 0.3s ease-in-out;
+  transition: all 0.3s ease;
 }
 
 a:hover {
@@ -99,21 +117,21 @@ a:hover {
   text-decoration: underline;
 }
 
-/* ✅ Forms */
+/* ✅ Input and Forms */
 input, select, textarea {
   width: 100%;
-  padding: 12px;
-  margin: 10px 0;
-  border: 1px solid #ced4da;
-  border-radius: 5px;
+  padding: 14px;
+  margin: 12px 0;
+  border: 2px solid #ced4da;
+  border-radius: 8px;
   font-size: 1rem;
-  transition: border-color 0.3s ease;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 input:focus, select:focus, textarea:focus {
   border-color: #007bff;
   outline: none;
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
 }
 
 /* ✅ Error & Success Messages */
@@ -122,6 +140,7 @@ input:focus, select:focus, textarea:focus {
   font-size: 0.95rem;
   margin-top: 10px;
   text-align: center;
+  font-weight: 500;
 }
 
 .success {
@@ -129,30 +148,30 @@ input:focus, select:focus, textarea:focus {
   font-size: 0.95rem;
   margin-top: 10px;
   text-align: center;
+  font-weight: 500;
 }
 
 /* ✅ Navigation Bar */
 .navbar {
-  background-color: #007bff;
-  padding: 15px 20px;
+  background: linear-gradient(90deg, #007bff, #0056b3);
   color: white;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 20px 30px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .navbar ul {
-  list-style: none;
   display: flex;
-  gap: 20px;
-  justify-content: center;
-  padding: 0;
+  gap: 1.5rem;
+  list-style: none;
 }
 
 .navbar a {
   color: white;
   font-size: 1rem;
-  font-weight: 500;
+  font-weight: 600;
   transition: color 0.3s ease-in-out;
 }
 
@@ -162,18 +181,18 @@ input:focus, select:focus, textarea:focus {
 
 /* ✅ Footer */
 footer {
-  background-color: #007bff;
+  background: linear-gradient(90deg, #007bff, #0056b3);
   color: white;
   text-align: center;
-  padding: 15px 0;
-  margin-top: auto;
+  padding: 20px 0;
   font-size: 0.9rem;
+  box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* ✅ Responsive Design */
 @media (max-width: 992px) {
   .container {
-    padding: 1rem;
+    padding: 1.5rem;
   }
 
   .navbar ul {
@@ -193,11 +212,10 @@ footer {
   }
 
   .navbar ul {
-    flex-direction: column;
     padding-top: 10px;
   }
 
   .container {
-    padding: 0.75rem;
+    padding: 1rem;
   }
 }

@@ -1,0 +1,5 @@
+2025-03-08T14:36:40.114Z [INFO]: GET /api/auth/cognito-config
+2025-03-08T19:25:14.638Z [INFO]: GET /user/profile
+2025-03-08T19:25:38.721Z [INFO]: GET /user/profile
+2025-03-08T19:29:43.396Z [INFO]: GET /user/profile
+2025-03-09T19:41:39.130Z [ERROR]: Error: ENOENT: no such file or directory, stat '/Users/patrick/Projects/Teralynk/backend/frontend/build/index.html'

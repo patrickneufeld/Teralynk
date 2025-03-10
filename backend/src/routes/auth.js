@@ -9,21 +9,23 @@ import {
     signup,
     logout,
     status,
-} from "../controllers/authController.js";  // Import controllers correctly
-import { requireAuth } from "../middleware/authMiddleware.js";  // Import middleware for authorization
+} from "../controllers/authController.js";
+import { requireAuth } from "../middleware/authMiddleware.js";
+import { SecretsManagerClient, GetSecretValueCommand } from "@aws-sdk/client-secrets-manager";
 
 const router = express.Router();
+const secretsClient = new SecretsManagerClient({ region: process.env.AWS_REGION });
 
 // ✅ Rate Limiting Middleware (Prevents Brute-Force Attacks)
 const loginRateLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5, // Limit to 5 login attempts per window
+    max: 5,
     message: "⚠️ Too many login attempts. Please try again later.",
 });
 
 const signupRateLimiter = rateLimit({
     windowMs: 60 * 60 * 1000, // 1 hour
-    max: 3, // Limit to 3 signups per hour per IP
+    max: 3,
     message: "⚠️ Too many signup attempts. Please try again later.",
 });
 
@@ -92,4 +94,31 @@ router.post("/logout", requireAuth, logout);
  */
 router.get("/status", requireAuth, status);
 
-export default router;  // Correctly export the router
+/**
+ * @route   GET /api/auth/cognito-config
+ * @desc    Securely retrieve Cognito configuration from AWS Secrets Manager
+ * @access  Public (Frontend Fetch)
+ */
+router.get("/cognito-config", async (req, res) => {
+    try {
+        const secretName = process.env.SECRETS_MANAGER_NAME; // from env: "teralynk/env"
+        const command = new GetSecretValueCommand({ SecretId: secretName });
+        const response = await secretsClient.send(command);
+        const secrets = JSON.parse(response.SecretString);
+
+        if (!secrets.COGNITO_USER_POOL_ID || !secrets.COGNITO_CLIENT_ID) {
+            throw new Error("Missing required Cognito configuration values.");
+        }
+
+        res.json({
+            userPoolId: secrets.COGNITO_USER_POOL_ID,
+            clientId: secrets.COGNITO_CLIENT_ID,
+            region: secrets.COGNITO_REGION || process.env.AWS_REGION,
+        });
+    } catch (error) {
+        console.error("❌ Error retrieving Cognito configuration:", error);
+        res.status(500).json({ message: "Failed to retrieve Cognito configuration." });
+    }
+});
+
+export default router;

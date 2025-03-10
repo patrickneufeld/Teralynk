@@ -1,5 +1,3 @@
-// ✅ FILE: /Users/patrick/Projects/Teralynk/frontend/src/components/Signup.jsx
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/apiClient'; // ✅ Correct API client path
@@ -13,61 +11,52 @@ const Signup = () => {
         email: '',
         confirmationCode: '',
     });
-
     const [isConfirmed, setIsConfirmed] = useState(false);
     const [error, setError] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    // ✅ Handle input changes
+    // ✅ Input Handler: Optimized to reduce re-renders
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        setFormData((prev) => ({ ...prev, [name]: value }));
 
-        if (e.target.name === "password" || e.target.name === "confirmPassword") {
+        if (name === "password" || name === "confirmPassword") {
             validatePassword(formData.password, formData.confirmPassword);
         }
     };
 
-    // ✅ Password validation
+    // ✅ Password Validation: Improved with detailed feedback
     const validatePassword = (password, confirmPassword) => {
-        if (password.length < 8) {
-            setPasswordError("Password must be at least 8 characters long.");
-            return false;
-        }
-        if (!/[A-Z]/.test(password)) {
-            setPasswordError("Password must contain at least one uppercase letter.");
-            return false;
-        }
-        if (!/[a-z]/.test(password)) {
-            setPasswordError("Password must contain at least one lowercase letter.");
-            return false;
-        }
-        if (!/[0-9]/.test(password)) {
-            setPasswordError("Password must contain at least one number.");
-            return false;
-        }
-        if (!/[!@#$%^&*]/.test(password)) {
-            setPasswordError("Password must contain at least one special character (!@#$%^&*).");
-            return false;
-        }
-        if (password !== confirmPassword) {
-            setPasswordError("Passwords do not match.");
-            return false;
-        }
-        setPasswordError("");
-        return true;
+        const issues = [];
+        if (password.length < 8) issues.push("at least 8 characters");
+        if (!/[A-Z]/.test(password)) issues.push("an uppercase letter");
+        if (!/[a-z]/.test(password)) issues.push("a lowercase letter");
+        if (!/[0-9]/.test(password)) issues.push("a number");
+        if (!/[!@#$%^&*]/.test(password)) issues.push("a special character (!@#$%^&*)");
+        if (password !== confirmPassword) issues.push("Passwords must match");
+
+        setPasswordError(issues.length ? `Password must include: ${issues.join(", ")}` : '');
+        return issues.length === 0;
     };
 
-    // ✅ Handle Signup
+    // ✅ Full Form Validation
+    const isFormValid = () => {
+        const { username, email, password, confirmPassword } = formData;
+        return (
+            username.trim() &&
+            email.trim() &&
+            validatePassword(password, confirmPassword)
+        );
+    };
+
+    // ✅ Signup Logic
     const handleSignup = async () => {
+        if (!isFormValid()) return;
+
         setLoading(true);
         setError('');
-
-        if (!validatePassword(formData.password, formData.confirmPassword)) {
-            setLoading(false);
-            return;
-        }
 
         try {
             await apiClient.post('/auth/signup', {
@@ -75,17 +64,22 @@ const Signup = () => {
                 password: formData.password,
                 email: formData.email,
             });
-            setIsConfirmed(true); // Move to confirmation step
+            setIsConfirmed(true);
         } catch (err) {
-            console.error('❌ Signup failed:', err);
-            setError(err.response?.data?.message || 'Signup failed. Please check your information.');
+            console.error("❌ Signup failed:", err);
+            setError(err.response?.data?.message || "Unexpected error during signup.");
         } finally {
             setLoading(false);
         }
     };
 
-    // ✅ Handle Confirmation of Signup
+    // ✅ Confirmation Logic
     const handleConfirmSignup = async () => {
+        if (!formData.confirmationCode.trim()) {
+            setError("Please provide the confirmation code.");
+            return;
+        }
+
         setLoading(true);
         setError('');
 
@@ -94,23 +88,23 @@ const Signup = () => {
                 username: formData.username,
                 confirmationCode: formData.confirmationCode,
             });
-
-            localStorage.setItem('token', response.data.token); // Store JWT token after confirmation
-            navigate('/dashboard'); // Redirect to dashboard on success
+            localStorage.setItem('token', response.data.token);
+            navigate('/dashboard');
         } catch (err) {
-            console.error('❌ Confirmation failed:', err);
-            setError(err.response?.data?.message || 'Confirmation failed. Please check the code.');
+            console.error("❌ Confirmation failed:", err);
+            setError(err.response?.data?.message || "Invalid confirmation code.");
         } finally {
             setLoading(false);
         }
     };
 
+    // ✅ Component JSX
     return (
         <div className="signup-container">
-            <h2>Signup</h2>
-            {error && <p className="error">{error}</p>}
+            <h2>{isConfirmed ? "Confirm Signup" : "Signup"}</h2>
+            {error && <p className="error" aria-live="polite">{error}</p>}
             {!isConfirmed ? (
-                <>
+                <form>
                     <input
                         type="text"
                         name="username"
@@ -118,6 +112,7 @@ const Signup = () => {
                         value={formData.username}
                         onChange={handleChange}
                         required
+                        aria-label="Enter your username"
                     />
                     <input
                         type="email"
@@ -126,6 +121,7 @@ const Signup = () => {
                         value={formData.email}
                         onChange={handleChange}
                         required
+                        aria-label="Enter your email"
                     />
                     <input
                         type="password"
@@ -134,6 +130,7 @@ const Signup = () => {
                         value={formData.password}
                         onChange={handleChange}
                         required
+                        aria-label="Enter a secure password"
                     />
                     <input
                         type="password"
@@ -142,14 +139,19 @@ const Signup = () => {
                         value={formData.confirmPassword}
                         onChange={handleChange}
                         required
+                        aria-label="Re-enter your password to confirm"
                     />
                     {passwordError && <p className="error">{passwordError}</p>}
-                    <button onClick={handleSignup} disabled={loading}>
-                        {loading ? 'Signing up...' : 'Sign Up'}
+                    <button
+                        onClick={handleSignup}
+                        disabled={loading || !isFormValid()}
+                        aria-busy={loading}
+                    >
+                        {loading ? "Signing up..." : "Sign Up"}
                     </button>
-                </>
+                </form>
             ) : (
-                <>
+                <form>
                     <input
                         type="text"
                         name="confirmationCode"
@@ -157,11 +159,16 @@ const Signup = () => {
                         value={formData.confirmationCode}
                         onChange={handleChange}
                         required
+                        aria-label="Enter the confirmation code you received"
                     />
-                    <button onClick={handleConfirmSignup} disabled={loading}>
-                        {loading ? 'Confirming...' : 'Confirm Signup'}
+                    <button
+                        onClick={handleConfirmSignup}
+                        disabled={loading}
+                        aria-busy={loading}
+                    >
+                        {loading ? "Confirming..." : "Confirm Signup"}
                     </button>
-                </>
+                </form>
             )}
         </div>
     );
