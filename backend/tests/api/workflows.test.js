@@ -4,13 +4,13 @@ const request = require('supertest');
 const app = require('../../server');
 const { getAllWorkflows } = require('../../services/workflowService');
 
-// Mock the workflowService
+// ✅ Mock the workflowService
 jest.mock('../../services/workflowService', () => ({
     getAllWorkflows: jest.fn(),
 }));
 
-// Mock the authentication middleware
-jest.mock('../../middleware/authMiddleware', () => ({
+// ✅ Fixed: Correct path to authMiddleware
+jest.mock('../../../src/middleware/authMiddleware', () => ({
     authenticate: (req, res, next) => {
         req.user = { id: 'mockUserId', role: 'user' }; // Mock user data
         next();
