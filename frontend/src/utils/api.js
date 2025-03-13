@@ -1,86 +1,89 @@
-// ✅ FILE: frontend/src/utils/api.js
+// ✅ FILE: /frontend/src/utils/api.js
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
 
 /**
- * ✅ API Request Helper
- * Handles authenticated and non-authenticated API requests.
+ * 🌐 Standardized API request wrapper
+ * Handles auth tokens, errors, and body serialization.
  * 
  * @param {string} endpoint - The API endpoint (e.g., "/auth/login")
  * @param {string} method - HTTP method (GET, POST, etc.)
- * @param {object|null} body - Request payload (optional)
- * @param {string|null} token - Optional auth token (default: retrieved from localStorage)
- * @returns {Promise<object>} - API response JSON or throws an error
+ * @param {object|null} body - Request payload
+ * @param {string|null} token - Optional token override (defaults to accessToken from storage)
+ * @returns {Promise<any>} - Parsed JSON response or throws Error
  */
 export const apiRequest = async (endpoint, method = "GET", body = null, token = null) => {
-    try {
-        console.log(`🔹 API Request: ${method} ${BACKEND_URL}${endpoint}`);
+  try {
+    const url = `${BACKEND_URL}${endpoint}`;
+    const headers = {
+      "Content-Type": "application/json",
+    };
 
-        const headers = {
-            "Content-Type": "application/json",
-        };
-
-        // ✅ Attach Authorization Token if available
-        if (!token) {
-            token = localStorage.getItem("accessToken"); // Default to stored token
-        }
-        if (token) {
-            headers["Authorization"] = `Bearer ${token}`;
-        }
-
-        const options = {
-            method,
-            headers,
-            credentials: "include", // Ensure cookies are sent if needed
-        };
-
-        if (body) {
-            options.body = JSON.stringify(body);
-        }
-
-        const response = await fetch(`${BACKEND_URL}${endpoint}`, options);
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.error || `API request failed: ${response.statusText}`);
-        }
-
-        return data;
-    } catch (error) {
-        console.error(`❌ API Request Error [${method} ${endpoint}]:`, error);
-        throw error;
+    if (!token) {
+      token = localStorage.getItem("accessToken");
     }
+
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    const options = {
+      method,
+      headers,
+      credentials: "include",
+    };
+
+    if (body) {
+      options.body = JSON.stringify(body);
+    }
+
+    console.log(`📡 [API] ${method} ${url}`, { body });
+
+    const response = await fetch(url, options);
+    const data = await response.json();
+
+    if (!response.ok) {
+      const message = data?.error || data?.message || response.statusText || "API request failed";
+      throw new Error(message);
+    }
+
+    return data;
+  } catch (error) {
+    console.error(`❌ [API] ${method} ${endpoint} failed:`, error);
+    throw new Error(error.message || "Unknown API error");
+  }
 };
 
 /**
- * ✅ Login API Request
- * @param {string} email - User email
- * @param {string} password - User password
- * @returns {Promise<object>} - Login response with tokens
+ * 🔐 Login request
+ * @param {string} email
+ * @param {string} password
+ * @returns {Promise<any>}
  */
 export const loginUser = async (email, password) => {
-    return apiRequest("/auth/login", "POST", { email, password });
+  return apiRequest("/auth/login", "POST", { email, password });
 };
 
 /**
- * ✅ Fetch Current User Data
- * @returns {Promise<object>} - Returns user object if authenticated
+ * 👤 Fetch authenticated user
+ * @returns {Promise<any>}
  */
 export const fetchCurrentUser = async () => {
-    return apiRequest("/auth/me", "GET");
+  return apiRequest("/auth/me", "GET");
 };
 
 /**
- * ✅ Logout User
- * Clears session and calls backend logout if needed.
+ * 🚪 Logout user + clear local storage
+ * @returns {Promise<void>}
  */
 export const logoutUser = async () => {
-    try {
-        await apiRequest("/auth/logout", "POST");
-    } catch (error) {
-        console.warn("⚠️ Logout API Call Failed, clearing tokens manually.");
-    }
+  try {
+    await apiRequest("/auth/logout", "POST");
+  } catch (error) {
+    console.warn("⚠️ Logout failed. Clearing tokens manually.");
+  } finally {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
-    window.location.href = "/login"; // Redirect after logout
+    window.location.href = "/login";
+  }
 };

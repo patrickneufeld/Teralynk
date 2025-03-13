@@ -1,131 +1,187 @@
-// ✅ /frontend/src/utils/tokenUtils.js
-
 import CryptoJS from "crypto-js";
 
-// 🔍 Secure storage key prefix
+// 🔐 Key constants
 const TOKEN_KEY = "auth_token";
 const REFRESH_TOKEN_KEY = "refresh_token";
 const EXPIRY_KEY = "token_expiry";
-const STORAGE_MODE = "localStorage"; // Change to "sessionStorage" if needed
-const ENCRYPTION_SECRET = "super-secure-key"; // Change this to a secure key
+const STORAGE_MODE = import.meta.env.VITE_STORAGE_MODE || "sessionStorage"; // Make STORAGE_MODE configurable via env
+const ENCRYPTION_SECRET = import.meta.env.VITE_ENCRYPTION_SECRET || "super-secure-key";
 
 /**
- * 🔒 Encrypts token before storing (AES Encryption)
+ * 🔐 Encrypt a token (AES)
+ * @param {string} token - The token to encrypt
+ * @returns {string|null} - The encrypted token, or null on failure
  */
 const encryptToken = (token) => {
-  return CryptoJS.AES.encrypt(token, ENCRYPTION_SECRET).toString();
+  try {
+    return CryptoJS.AES.encrypt(token, ENCRYPTION_SECRET).toString();
+  } catch (err) {
+    console.error("🔴 Token encryption failed:", err);
+    throw new Error("Encryption failed");
+  }
 };
 
 /**
- * 🔓 Decrypts stored token
+ * 🔓 Decrypt a token
+ * @param {string} encryptedToken - The encrypted token to decrypt
+ * @returns {string|null} - The decrypted token, or null on failure
  */
 const decryptToken = (encryptedToken) => {
   try {
     const bytes = CryptoJS.AES.decrypt(encryptedToken, ENCRYPTION_SECRET);
     return bytes.toString(CryptoJS.enc.Utf8);
-  } catch (error) {
-    console.error("🔴 Token decryption failed", error);
-    return null;
+  } catch (err) {
+    console.error("🔴 Token decryption failed:", err);
+    throw new Error("Decryption failed");
   }
 };
 
 /**
- * 📌 Get the correct storage method (localStorage or sessionStorage)
+ * ⚙️ Get storage engine
+ * Uses sessionStorage or localStorage based on `STORAGE_MODE` constant
  */
-const getStorage = () => {
-  return STORAGE_MODE === "sessionStorage" ? sessionStorage : localStorage;
-};
+const getStorage = () =>
+  STORAGE_MODE === "sessionStorage" ? sessionStorage : localStorage;
 
 /**
- * 🔑 Stores a token securely with expiration
- * @param {string} token - The authentication token
- * @param {number} expiresIn - Expiry time in seconds
+ * ✅ Set access token securely
+ * @param {string} token - The token to store
+ * @param {number} expiresIn - Expiration time in seconds (default 1 hour)
  */
 export const setToken = (token, expiresIn = 3600) => {
-  const encryptedToken = encryptToken(token);
-  const expiryTimestamp = Date.now() + expiresIn * 1000;
   const storage = getStorage();
-
-  storage.setItem(TOKEN_KEY, encryptedToken);
-  storage.setItem(EXPIRY_KEY, expiryTimestamp.toString());
-  dispatchTokenUpdate();
+  try {
+    const encrypted = encryptToken(token);
+    const expiry = Date.now() + expiresIn * 1000;
+    storage.setItem(TOKEN_KEY, encrypted);
+    storage.setItem(EXPIRY_KEY, expiry.toString());
+    dispatchTokenUpdate(); // Notify other components about the token update
+  } catch (err) {
+    console.error("❌ Failed to store token:", err);
+    throw new Error("Failed to store token");
+  }
 };
 
 /**
- * 🔑 Retrieves the stored token (if not expired)
- * @returns {string|null} Token or null if expired
+ * 🔐 Get decrypted token if valid
+ * @returns {string|null} - Decrypted token or null if invalid or expired
  */
 export const getToken = () => {
   const storage = getStorage();
-  const encryptedToken = storage.getItem(TOKEN_KEY);
-  const expiryTimestamp = parseInt(storage.getItem(EXPIRY_KEY), 10);
+  try {
+    const encrypted = storage.getItem(TOKEN_KEY);
+    const expiry = parseInt(storage.getItem(EXPIRY_KEY), 10);
 
-  if (!encryptedToken || isNaN(expiryTimestamp)) return null;
+    if (!encrypted || isNaN(expiry)) return null;
 
-  // Check if expired
-  if (Date.now() > expiryTimestamp) {
-    removeToken();
-    return null;
+    if (Date.now() > expiry) {
+      removeToken();
+      return null;
+    }
+
+    return decryptToken(encrypted);
+  } catch (err) {
+    console.error("❌ Failed to retrieve token:", err);
+    throw new Error("Failed to retrieve token");
   }
-
-  return decryptToken(encryptedToken);
 };
 
 /**
- * 🕒 Checks if the stored token is still valid
- * @returns {boolean} True if token is valid, otherwise false
+ * ⏳ Check if token is valid
+ * @returns {boolean} - Returns true if token exists and is valid
  */
-export const isTokenValid = () => {
-  return getToken() !== null;
-};
+export const isTokenValid = () => !!getToken();
 
 /**
- * 🗑️ Removes the stored token
+ * 🗑 Remove token and expiry from storage
  */
 export const removeToken = () => {
   const storage = getStorage();
-  storage.removeItem(TOKEN_KEY);
-  storage.removeItem(EXPIRY_KEY);
-  dispatchTokenUpdate();
+  try {
+    storage.removeItem(TOKEN_KEY);
+    storage.removeItem(EXPIRY_KEY);
+    dispatchTokenUpdate(); // Notify about the token removal
+  } catch (err) {
+    console.error("❌ Failed to remove token:", err);
+    throw new Error("Failed to remove token");
+  }
 };
 
 /**
- * 🔄 Stores a refresh token securely
- * @param {string} refreshToken - The refresh token
+ * 💾 Set refresh token securely
+ * @param {string} refreshToken - The refresh token to store
  */
 export const setRefreshToken = (refreshToken) => {
-  const encryptedToken = encryptToken(refreshToken);
-  getStorage().setItem(REFRESH_TOKEN_KEY, encryptedToken);
+  const storage = getStorage();
+  try {
+    const encrypted = encryptToken(refreshToken);
+    storage.setItem(REFRESH_TOKEN_KEY, encrypted);
+  } catch (err) {
+    console.error("❌ Failed to store refresh token:", err);
+    throw new Error("Failed to store refresh token");
+  }
 };
 
 /**
- * 🔄 Retrieves the stored refresh token
- * @returns {string|null} Refresh token or null
+ * 🔄 Get refresh token
+ * @returns {string|null} - Decrypted refresh token or null if not found
  */
 export const getRefreshToken = () => {
-  const encryptedToken = getStorage().getItem(REFRESH_TOKEN_KEY);
-  return encryptedToken ? decryptToken(encryptedToken) : null;
+  try {
+    const encrypted = getStorage().getItem(REFRESH_TOKEN_KEY);
+    return encrypted ? decryptToken(encrypted) : null;
+  } catch (err) {
+    console.error("❌ Failed to retrieve refresh token:", err);
+    throw new Error("Failed to retrieve refresh token");
+  }
 };
 
 /**
- * 🔄 Removes the stored refresh token
+ * 🗑 Remove refresh token from storage
  */
 export const removeRefreshToken = () => {
-  getStorage().removeItem(REFRESH_TOKEN_KEY);
+  try {
+    getStorage().removeItem(REFRESH_TOKEN_KEY);
+  } catch (err) {
+    console.error("❌ Failed to remove refresh token:", err);
+    throw new Error("Failed to remove refresh token");
+  }
 };
 
 /**
- * 📡 Dispatches an event when the token is updated
+ * 📡 Notify when token updates
+ * Dispatches a global event that other components can listen for
  */
 const dispatchTokenUpdate = () => {
-  const event = new Event("tokenUpdated");
-  window.dispatchEvent(event);
+  try {
+    const event = new Event("tokenUpdated");
+    window.dispatchEvent(event);
+  } catch (err) {
+    console.error("❌ Failed to dispatch tokenUpdated event:", err);
+  }
 };
 
 /**
- * 📡 Adds a listener for token updates
- * @param {function} callback - Function to execute on token update
+ * 📡 Listen for token update events
+ * @param {Function} callback - The callback function to execute on token update
  */
 export const onTokenUpdate = (callback) => {
-  window.addEventListener("tokenUpdated", callback);
+  try {
+    window.addEventListener("tokenUpdated", callback);
+  } catch (err) {
+    console.error("❌ Failed to register token update listener:", err);
+  }
+};
+
+/**
+ * 🛡️ Token expiry check
+ * Uses decoded JWT to validate if the token has expired
+ * @param {string} token - The JWT token
+ * @returns {boolean} - True if token has expired
+ */
+export const isTokenExpired = (token) => {
+  if (!token) return true;
+  const decoded = JSON.parse(atob(token.split('.')[1])); // Decoding JWT to get exp
+  const currentTime = Date.now() / 1000;
+  return decoded.exp < currentTime;
 };

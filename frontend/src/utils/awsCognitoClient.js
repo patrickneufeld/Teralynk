@@ -1,45 +1,240 @@
-// /Users/patrick/Projects/Teralynk/frontend/src/utils/awsCognitoClient.js
+// File: /frontend/src/utils/awsCognitoClient.js
 
-import { CognitoIdentityProviderClient } from '@aws-sdk/client-cognito-identity-provider';
+import {
+  CognitoIdentityProviderClient,
+  InitiateAuthCommand,
+  GetUserCommand,
+  GlobalSignOutCommand,
+  ForgotPasswordCommand,
+  ConfirmForgotPasswordCommand,
+  ChangePasswordCommand,
+  SignUpCommand,
+} from "@aws-sdk/client-cognito-identity-provider";
+import { getToken, setToken, removeToken } from "./tokenUtils";
+
+let cognitoClient = null;
 
 /**
- * ✅ AWS Cognito Client Module
- * Dynamically loads AWS configuration and provides a Cognito client.
+ * ✅ Fetch secrets from sessionStorage and validate structure
  */
+const getAwsSecrets = () => {
+  const cached = sessionStorage.getItem("secrets");
+  if (!cached) throw new Error("Secrets not loaded yet.");
+  const secrets = JSON.parse(cached);
 
-const awsConfig = {
-  region: import.meta.env.VITE_AWS_REGION || "us-east-1",
-  userPoolId: import.meta.env.VITE_COGNITO_USER_POOL_ID || "mock-user-pool-id",
-  userPoolWebClientId: import.meta.env.VITE_COGNITO_CLIENT_ID || "mock-client-id",
-  accessKeyId: import.meta.env.VITE_AWS_ACCESS_KEY_ID || "",
-  secretAccessKey: import.meta.env.VITE_AWS_SECRET_ACCESS_KEY || "",
+  const {
+    VITE_COGNITO_CLIENT_ID,
+    VITE_AWS_REGION,
+    VITE_COGNITO_CLIENT_SECRET,
+  } = secrets;
+
+  if (!VITE_COGNITO_CLIENT_ID || !VITE_AWS_REGION) {
+    throw new Error("Cognito configuration is missing.");
+  }
+
+  return {
+    clientId: VITE_COGNITO_CLIENT_ID,
+    clientSecret: VITE_COGNITO_CLIENT_SECRET || "",
+    region: VITE_AWS_REGION,
+  };
 };
 
-// ✅ Validate Required AWS Configurations
-const requiredConfigKeys = ["region", "userPoolId", "userPoolWebClientId"];
-requiredConfigKeys.forEach((key) => {
-  if (!awsConfig[key]) {
-    console.error(`❌ Missing AWS Config: ${key} is undefined.`);
-  }
-});
+/**
+ * ✅ Singleton Cognito Client
+ */
+export const initializeCognitoClient = () => {
+  if (!cognitoClient) {
+    const { region } = getAwsSecrets();
 
-// ✅ CognitoIdentityProviderClient instance
-const cognitoClient = new CognitoIdentityProviderClient({
-  region: awsConfig.region,
-  credentials:
-    awsConfig.accessKeyId && awsConfig.secretAccessKey
-      ? {
-          accessKeyId: awsConfig.accessKeyId,
-          secretAccessKey: awsConfig.secretAccessKey,
-        }
-      : undefined, // Use default credentials if keys are not explicitly provided
-});
+    cognitoClient = new CognitoIdentityProviderClient({ region });
+    console.log("✅ Cognito Client Initialized");
+  }
+
+  return cognitoClient;
+};
 
 /**
- * ✅ Helper function to get Cognito Client instance
+ * ✅ Refresh session using RefreshToken
  */
-const getCognitoClient = () => cognitoClient;
+export const refreshSession = async () => {
+  const refreshToken = sessionStorage.getItem("refreshToken");
+  const { clientId } = getAwsSecrets();
 
-// ✅ Export the awsConfig, cognitoClient, and helper function explicitly
-export { awsConfig, cognitoClient, getCognitoClient };
+  if (!refreshToken) throw new Error("No refresh token available.");
 
+  const command = new InitiateAuthCommand({
+    AuthFlow: "REFRESH_TOKEN_AUTH",
+    ClientId: clientId,
+    AuthParameters: { REFRESH_TOKEN: refreshToken },
+  });
+
+  const client = initializeCognitoClient();
+  const response = await client.send(command);
+
+  if (!response.AuthenticationResult) throw new Error("Token refresh failed.");
+
+  setToken(response.AuthenticationResult.AccessToken, response.AuthenticationResult.ExpiresIn);
+  if (response.AuthenticationResult.IdToken) {
+    sessionStorage.setItem("idToken", response.AuthenticationResult.IdToken);
+  }
+  if (response.AuthenticationResult.RefreshToken) {
+    sessionStorage.setItem("refreshToken", response.AuthenticationResult.RefreshToken);
+  }
+
+  return response.AuthenticationResult;
+};
+
+/**
+ * ✅ Login with username/password
+ */
+export const authenticateUser = async (username, password) => {
+  const { clientId, clientSecret } = getAwsSecrets();
+  const client = initializeCognitoClient();
+
+  const params = {
+    AuthFlow: "USER_PASSWORD_AUTH",
+    ClientId: clientId,
+    AuthParameters: {
+      USERNAME: username,
+      PASSWORD: password,
+    },
+  };
+
+  if (clientSecret) {
+    const secretHash = btoa(`${username}${clientId}${clientSecret}`);
+    params.AuthParameters.SECRET_HASH = secretHash;
+  }
+
+  const command = new InitiateAuthCommand(params);
+  const response = await client.send(command);
+
+  if (!response.AuthenticationResult) throw new Error("Authentication failed.");
+
+  setToken(response.AuthenticationResult.AccessToken, response.AuthenticationResult.ExpiresIn);
+  sessionStorage.setItem("idToken", response.AuthenticationResult.IdToken);
+  sessionStorage.setItem("refreshToken", response.AuthenticationResult.RefreshToken);
+
+  return response.AuthenticationResult;
+};
+
+/**
+ * ✅ Get User Profile
+ */
+export const fetchUserProfile = async () => {
+  let accessToken = getToken();
+  if (!accessToken) throw new Error("No access token found.");
+  const client = initializeCognitoClient();
+
+  try {
+    return await client.send(new GetUserCommand({ AccessToken: accessToken }));
+  } catch (err) {
+    if (err.name === "NotAuthorizedException" || err.message.includes("expired")) {
+      const refreshed = await refreshSession();
+      accessToken = refreshed.AccessToken;
+      return await client.send(new GetUserCommand({ AccessToken: accessToken }));
+    }
+    console.error("❌ User Profile Error:", err);
+    throw err;
+  }
+};
+
+/**
+ * ✅ Logout the user
+ */
+export const logoutUser = async () => {
+  const accessToken = getToken();
+  const client = initializeCognitoClient();
+
+  if (accessToken) {
+    await client.send(new GlobalSignOutCommand({ AccessToken: accessToken }));
+  }
+
+  removeToken();
+  sessionStorage.removeItem("idToken");
+  sessionStorage.removeItem("refreshToken");
+};
+
+/**
+ * ✅ Start password reset
+ */
+export const forgotPassword = async (username) => {
+  const { clientId } = getAwsSecrets();
+  const client = initializeCognitoClient();
+
+  await client.send(new ForgotPasswordCommand({ ClientId: clientId, Username: username }));
+  return { message: "Password reset code sent." };
+};
+
+/**
+ * ✅ Confirm new password
+ */
+export const confirmForgotPassword = async (username, confirmationCode, newPassword) => {
+  const { clientId } = getAwsSecrets();
+  const client = initializeCognitoClient();
+
+  await client.send(
+    new ConfirmForgotPasswordCommand({
+      ClientId: clientId,
+      Username: username,
+      ConfirmationCode: confirmationCode,
+      Password: newPassword,
+    })
+  );
+
+  return { message: "Password reset successful." };
+};
+
+/**
+ * ✅ Change password for logged-in user
+ */
+export const changePassword = async (previousPassword, newPassword) => {
+  const accessToken = getToken();
+  if (!accessToken) throw new Error("No access token found.");
+  const client = initializeCognitoClient();
+
+  await client.send(
+    new ChangePasswordCommand({
+      PreviousPassword: previousPassword,
+      ProposedPassword: newPassword,
+      AccessToken: accessToken,
+    })
+  );
+
+  return { message: "Password changed successfully." };
+};
+
+/**
+ * ✅ User signup
+ */
+export const signUpUser = async (username, password, email) => {
+  const { clientId } = getAwsSecrets();
+  const client = initializeCognitoClient();
+
+  await client.send(
+    new SignUpCommand({
+      ClientId: clientId,
+      Username: username,
+      Password: password,
+      UserAttributes: [{ Name: "email", Value: email }],
+    })
+  );
+
+  return { message: "User signed up successfully." };
+};
+
+/**
+ * ✅ Export Cognito client (singleton)
+ */
+export const getCognitoClient = () => initializeCognitoClient();
+
+export default {
+  authenticateUser,
+  fetchUserProfile,
+  refreshSession,
+  logoutUser,
+  forgotPassword,
+  confirmForgotPassword,
+  changePassword,
+  signUpUser,
+  initializeCognitoClient,
+};

@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
+import clsx from "clsx";
 
 /**
  * Custom Button Component
@@ -10,6 +11,7 @@ import PropTypes from "prop-types";
  * - Includes loading state
  * - Provides accessibility with ARIA attributes
  * - Smooth hover, focus, and disabled transitions
+ * - Optionally includes icons
  */
 const Button = ({
     children,
@@ -22,6 +24,8 @@ const Button = ({
     fullWidth = false,
     type = "button",
     ariaLabel = "Button",
+    leftIcon = null,
+    rightIcon = null,
     ...props
 }) => {
     // Variant Styles
@@ -39,27 +43,38 @@ const Button = ({
         lg: "text-lg px-6 py-3"
     };
 
+    // Concatenate classes dynamically based on the props
+    const buttonClasses = clsx(
+        variantClasses[variant], 
+        sizeClasses[size],
+        {
+            "w-full": fullWidth,
+            "w-auto": !fullWidth,
+            "font-semibold rounded-md shadow-sm": true,
+            "focus:outline-none focus:ring-2 focus:ring-offset-2": true,
+            "transition-all disabled:opacity-50 disabled:cursor-not-allowed": true,
+        },
+        className
+    );
+
     return (
         <button
             type={type}
             onClick={onClick}
             disabled={disabled || isLoading}
-            className={`
-                ${variantClasses[variant]} 
-                ${sizeClasses[size]} 
-                ${fullWidth ? "w-full" : "w-auto"} 
-                font-semibold rounded-md shadow-sm 
-                focus:outline-none focus:ring-2 focus:ring-offset-2 
-                transition-all disabled:opacity-50 disabled:cursor-not-allowed 
-                ${className}
-            `}
+            className={buttonClasses}
             aria-label={ariaLabel}
+            aria-busy={isLoading ? "true" : "false"}
             {...props}
         >
             {isLoading ? (
                 <span className="animate-spin inline-block w-4 h-4 border-2 border-t-white border-r-white border-b-gray-400 border-l-gray-400 rounded-full"></span>
             ) : (
-                children
+                <>
+                    {leftIcon && <span className="mr-2">{leftIcon}</span>}
+                    {children}
+                    {rightIcon && <span className="ml-2">{rightIcon}</span>}
+                </>
             )}
         </button>
     );
@@ -76,7 +91,9 @@ Button.propTypes = {
     isLoading: PropTypes.bool,
     fullWidth: PropTypes.bool,
     type: PropTypes.oneOf(["button", "submit", "reset"]),
-    ariaLabel: PropTypes.string
+    ariaLabel: PropTypes.string,
+    leftIcon: PropTypes.node,
+    rightIcon: PropTypes.node
 };
 
 // Default Props
@@ -88,7 +105,9 @@ Button.defaultProps = {
     isLoading: false,
     fullWidth: false,
     type: "button",
-    ariaLabel: "Button"
+    ariaLabel: "Button",
+    leftIcon: null,
+    rightIcon: null
 };
 
 export default Button;

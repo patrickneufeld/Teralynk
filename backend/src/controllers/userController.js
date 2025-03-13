@@ -1,9 +1,7 @@
-// ✅ FILE: /Users/patrick/Projects/Teralynk/backend/src/controllers/userController.js
-
 import { getUserRole, revokeToken } from "../services/authService.js";
 import { getUserById, updateUserDetails } from "../services/userService.js"; // Assuming you have a userService for DB operations
 
-// ✅ Fetch User Details
+// Fetch User Details
 /**
  * @route   GET /api/users/:id
  * @desc    Get user details by ID
@@ -20,12 +18,12 @@ export const getUserDetails = async (req, res) => {
 
         res.json(user);
     } catch (error) {
-        console.error("❌ Error fetching user details:", error);
+        console.error("❌ Error fetching user details:", error.message);
         res.status(500).json({ error: "Failed to fetch user details" });
     }
 };
 
-// ✅ Update User Details
+// Update User Details
 /**
  * @route   PUT /api/users/:id
  * @desc    Update user details
@@ -36,6 +34,10 @@ export const updateUser = async (req, res) => {
         const userId = req.params.id;
         const { email, username } = req.body;
 
+        if (!email && !username) {
+            return res.status(400).json({ error: "Email or username required" });
+        }
+
         // Only allow updating email or username, not sensitive data like password
         const updatedUser = await updateUserDetails(userId, { email, username });
 
@@ -45,12 +47,12 @@ export const updateUser = async (req, res) => {
 
         res.json(updatedUser);
     } catch (error) {
-        console.error("❌ Error updating user details:", error);
+        console.error("❌ Error updating user details:", error.message);
         res.status(500).json({ error: "Failed to update user details" });
     }
 };
 
-// ✅ Handle User Logout (Revoke Token)
+// Handle User Logout (Revoke Token)
 /**
  * @route   POST /api/users/logout
  * @desc    Log the user out and revoke their token
@@ -66,12 +68,12 @@ export const logoutUser = (req, res) => {
 
         res.json({ message: "Logout successful, token revoked" });
     } catch (error) {
-        console.error("❌ Logout Error:", error);
+        console.error("❌ Logout Error:", error.message);
         res.status(500).json({ error: "Failed to log out" });
     }
 };
 
-// ✅ Handle Fetching User Role
+// Handle Fetching User Role
 /**
  * @route   GET /api/users/role/:id
  * @desc    Fetch the role of a user by their ID
@@ -89,7 +91,7 @@ export const getUserRoleById = async (req, res) => {
         const role = getUserRole(user);
         res.json({ role });
     } catch (error) {
-        console.error("❌ Error fetching user role:", error);
+        console.error("❌ Error fetching user role:", error.message);
         res.status(500).json({ error: "Failed to fetch user role" });
     }
 };

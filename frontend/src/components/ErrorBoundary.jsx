@@ -44,7 +44,7 @@ class ErrorBoundary extends React.Component {
   resetErrorBoundary = () => {
     this.setState({ hasError: false, error: null, errorInfo: null });
 
-    // Optional: Trigger reset callback if provided
+    // Trigger reset callback if provided
     if (this.props.onReset) {
       this.props.onReset();
     }

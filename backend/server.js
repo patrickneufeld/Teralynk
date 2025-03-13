@@ -1,3 +1,5 @@
+// /Users/patrick/Projects/Teralynk/backend/server.js
+
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -19,43 +21,41 @@ import { fileURLToPath } from "url";
 import corsMiddleware from "./src/middleware/corsMiddleware.js";
 import cors from "cors";
 
-// Setup __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const app = express(); // Initialize app before using it
+const app = express(); 
 const PORT = process.env.PORT || 5001;
 const HTTPS_ENABLED = process.env.ENABLE_HTTPS === "true";
 
-// ✅ Allow frontend to reach backend
+// Allow frontend to reach backend
 app.use(
   cors({
-    origin: "http://localhost:5173", // or "*" during testing
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
     credentials: true,
   })
 );
 
-// 🔐 Load Secrets from AWS Secrets Manager
+// Load Secrets from AWS Secrets Manager
 console.log("🔍 Fetching AWS Secrets from Secrets Manager...");
 let secrets;
-
 try {
   secrets = await getSecrets();
   if (!secrets || typeof secrets !== "object") {
     throw new Error("AWS Secrets Manager returned invalid data");
   }
-  console.log("✅ Successfully fetched secrets:", secrets);
+  console.log("✅ Successfully fetched secrets:", Object.keys(secrets));
 } catch (error) {
   console.error("❌ Failed to load AWS Secrets:", error.message);
   process.exit(1);
 }
 
-// ✅ Inject secrets into process.env
+// Inject secrets into process.env
 Object.entries(secrets).forEach(([key, value]) => {
   process.env[key] = value;
 });
 
-// ✅ Check for required env vars
+// Check for required env vars
 const requiredEnvVars = [
   "PORT", "NODE_ENV", "AWS_REGION", "DB_HOST", "DB_NAME", "DB_USER",
   "DB_PASSWORD", "DB_PORT", "COGNITO_USER_POOL_ID", "COGNITO_CLIENT_ID",
@@ -68,7 +68,7 @@ if (missingKeys.length > 0) {
   process.exit(1);
 }
 
-// ✅ Confirm loaded ENV
+// Confirm loaded ENV
 console.log("🔍 ENV AFTER LOADING SECRETS:", {
   PORT: process.env.PORT,
   NODE_ENV: process.env.NODE_ENV,
@@ -79,7 +79,7 @@ console.log("🔍 ENV AFTER LOADING SECRETS:", {
   OPENAI_API_KEY: process.env.OPENAI_API_KEY ? "✔️ Loaded" : "❌ Missing",
 });
 
-// ✅ PostgreSQL Connection
+// PostgreSQL Connection
 const { Client } = pkg;
 const dbClient = new Client({
   host: process.env.DB_HOST,
@@ -98,7 +98,7 @@ try {
   process.exit(1);
 }
 
-// ✅ Cognito & S3 Clients
+// Cognito & S3 Clients
 const cognito = new CognitoIdentityProviderClient({
   region: process.env.AWS_REGION,
   credentials: {
@@ -108,7 +108,7 @@ const cognito = new CognitoIdentityProviderClient({
 });
 const s3Client = new S3Client({ region: process.env.AWS_REGION });
 
-// ✅ Logger Setup
+// Logger Setup
 const logger = winston.createLogger({
   level: "info",
   format: winston.format.combine(
@@ -122,7 +122,7 @@ const logger = winston.createLogger({
   ],
 });
 
-// ✅ Middleware
+// Middleware
 app.use(corsMiddleware);
 app.use(express.json());
 app.use(cookieParser());
@@ -149,7 +149,7 @@ app.use(rateLimit({
   message: { error: "Too many requests, try again later." },
 }));
 
-// ✅ Dynamic Route Loader
+// Dynamic Route Loader
 const dynamicRouteLoader = async (filePath, routePath) => {
   try {
     const { default: route } = await import(filePath);
@@ -160,37 +160,47 @@ const dynamicRouteLoader = async (filePath, routePath) => {
   }
 };
 
-// ✅ Load Routes
+// Load All Routes
 await dynamicRouteLoader("./src/routes/secrets.js", "/api/secrets");
 await dynamicRouteLoader("./src/routes/authRoutes.js", "/api/auth");
 await dynamicRouteLoader("./src/routes/aiRoutes.js", "/api/ai");
 await dynamicRouteLoader("./src/routes/adminRoutes.js", "/api/admin");
 await dynamicRouteLoader("./src/routes/storageRoutes.js", "/api/storage");
 await dynamicRouteLoader("./src/routes/marketplaceRoutes.js", "/api/marketplace");
+await dynamicRouteLoader("./src/routes/notificationRoutes.js", "/api/notifications");
+await dynamicRouteLoader("./src/routes/fileRoutes.js", "/api/files");
+await dynamicRouteLoader("./src/routes/performanceRoutes.js", "/api/performance");
+await dynamicRouteLoader("./src/routes/workflowRoutes.js", "/api/workflows");
+await dynamicRouteLoader("./src/routes/troubleshootingRoutes.js", "/api/troubleshoot");
+await dynamicRouteLoader("./src/routes/feedbackRoutes.js", "/api/feedback");
+await dynamicRouteLoader("./src/routes/developerRoutes.js", "/api/developers");
+await dynamicRouteLoader("./src/routes/appRoutes.js", "/api/apps");
+await dynamicRouteLoader("./src/routes/keyRoutes.js", "/api/keys");
+await dynamicRouteLoader("./src/routes/billingRoutes.js", "/api/billing");
 
-// ✅ Health Check
+// Health Check
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "OK", uptime: process.uptime() });
 });
 
-// ✅ API 404 Handler
+// API 404 Handler
 app.use("/api", (req, res) => {
   res.status(404).json({ error: "API endpoint not found" });
 });
 
-// ✅ Serve Frontend (Static)
+// Serve Frontend (Static)
 app.use(express.static(path.join(__dirname, "../frontend/dist")));
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/dist", "index.html"));
 });
 
-// ✅ Error Handler
+// Global Error Handler
 app.use((err, req, res, next) => {
   logger.error(`Error: ${err.message}`, { stack: err.stack });
   res.status(500).json({ error: "An unexpected server error occurred." });
 });
 
-// ✅ Start Server (HTTPS disabled explicitly)
+// Start Server
 if (HTTPS_ENABLED) {
   const httpsOptions = {
     key: fs.readFileSync("./path/to/your-key.pem"),
@@ -205,7 +215,7 @@ if (HTTPS_ENABLED) {
   });
 }
 
-// ✅ Graceful Shutdown
+// Graceful Shutdown
 process.on("SIGTERM", async () => {
   console.log("🔄 SIGTERM received. Closing DB connection...");
   await dbClient.end();

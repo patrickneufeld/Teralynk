@@ -1,106 +1,151 @@
-// ✅ FILE: /Users/patrick/Projects/Teralynk/frontend/src/components/Settings.js
+// ✅ FILE: /Users/patrick/Projects/Teralynk/frontend/src/components/Settings.jsx
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
-import "../styles/components/Settings.css"; // ✅ Ensure correct CSS path
+import Input from "./ui/Input";
+import Select from "./ui/Select";
+import Button from "./ui/Button";
+import Alert from "./ui/Alert";
+import { logError, getErrorMessage } from "../utils/ErrorHandler";
+import { getToken } from "../utils/tokenUtils"; // ✅ Secure token access
+import "../styles/components/Settings.css";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
 
-function Settings() {
-    const [emailNotifications, setEmailNotifications] = useState(true);
-    const [theme, setTheme] = useState("light");
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+export default function Settings() {
+  const [emailNotifications, setEmailNotifications] = useState(true);
+  const [theme, setTheme] = useState("light");
+  const [language, setLanguage] = useState("en");
+  const [autoSave, setAutoSave] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
 
-    // ✅ Load current user settings on component mount
-    useEffect(() => {
-        const fetchSettings = async () => {
-            setLoading(true);
-            setError(null);
+  const settingsRef = useRef({});
 
-            try {
-                const token = localStorage.getItem("token");
-                if (!token) throw new Error("Authentication token missing.");
+  useEffect(() => {
+    fetchSettings();
+  }, []);
 
-                console.log(`🔍 Fetching user settings: ${BACKEND_URL}/api/user/settings`);
+  const fetchSettings = async () => {
+    setLoading(true);
+    setError("");
 
-                const response = await axios.get(`${BACKEND_URL}/api/user/settings`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                    withCredentials: true,
-                });
+    try {
+      const token = getToken();
+      if (!token) throw new Error("Token missing.");
 
-                if (response.data) {
-                    setEmailNotifications(response.data.emailNotifications);
-                    setTheme(response.data.theme);
-                } else {
-                    setError("No settings found.");
-                }
-            } catch (err) {
-                console.error("❌ Settings Fetch Error:", err);
-                setError("Failed to load settings. Please try again.");
-            } finally {
-                setLoading(false);
-            }
-        };
+      const response = await axios.get(`${BACKEND_URL}/api/user/settings`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-        fetchSettings();
-    }, []);
+      const { emailNotifications, theme, language } = response.data || {};
 
-    // ✅ Handle Save Settings
-    const handleSaveSettings = async () => {
-        setLoading(true);
-        setError(null);
+      setEmailNotifications(emailNotifications ?? true);
+      setTheme(theme || "light");
+      setLanguage(language || "en");
+      settingsRef.current = { emailNotifications, theme, language };
+    } catch (err) {
+      logError(err, "Settings - fetchSettings");
+      setError(getErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        try {
-            const token = localStorage.getItem("token");
-            if (!token) throw new Error("Authentication token missing.");
+  const saveSettings = async () => {
+    setLoading(true);
+    setError("");
+    setSuccess("");
 
-            console.log(`🔍 Saving user settings: ${BACKEND_URL}/api/user/settings`);
+    try {
+      const token = getToken();
+      if (!token) throw new Error("Token missing.");
 
-            await axios.post(
-                `${BACKEND_URL}/api/user/settings`,
-                { emailNotifications, theme },
-                { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
-            );
+      const payload = { emailNotifications, theme, language };
 
-            alert("✅ Settings saved successfully!");
-        } catch (err) {
-            console.error("❌ Settings Save Error:", err);
-            setError("Error saving settings. Please try again.");
-        } finally {
-            setLoading(false);
-        }
-    };
+      const response = await axios.post(`${BACKEND_URL}/api/user/settings`, payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    if (loading) return <div className="settings-container">Loading...</div>;
+      if (response.status === 200 || response.status === 204) {
+        setSuccess("✅ Settings saved successfully!");
+        settingsRef.current = payload;
+      } else {
+        throw new Error("Settings save failed.");
+      }
+    } catch (err) {
+      logError(err, "Settings - saveSettings");
+      setError(getErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return (
-        <div className="settings-container">
-            <h2>User Settings</h2>
-            {error && <p className="error">⚠️ {error}</p>}
+  const handleSettingChange = (setter) => (value) => {
+    setter(value);
+    if (autoSave) saveSettings();
+  };
 
-            <div className="settings-option">
-                <label>Email Notifications</label>
-                <input
-                    type="checkbox"
-                    checked={emailNotifications}
-                    onChange={() => setEmailNotifications(!emailNotifications)}
-                />
-            </div>
+  const handleToggle = (setter, current) => () => {
+    setter(!current);
+    if (autoSave) saveSettings();
+  };
 
-            <div className="settings-option">
-                <label>Theme</label>
-                <select value={theme} onChange={(e) => setTheme(e.target.value)}>
-                    <option value="light">Light</option>
-                    <option value="dark">Dark</option>
-                </select>
-            </div>
+  return (
+    <div className="settings-container">
+      <h2 className="text-2xl font-bold mb-4">⚙️ User Settings</h2>
 
-            <button className="save-button" onClick={handleSaveSettings} disabled={loading}>
-                {loading ? "Saving..." : "Save Settings"}
-            </button>
-        </div>
-    );
+      {error && <Alert type="error" className="mb-4">{error}</Alert>}
+      {success && <Alert type="success" className="mb-4">{success}</Alert>}
+      {loading && <p className="loading-text">Loading...</p>}
+
+      <div className="settings-option">
+        <label>Email Notifications</label>
+        <input
+          type="checkbox"
+          checked={emailNotifications}
+          onChange={handleToggle(setEmailNotifications, emailNotifications)}
+        />
+      </div>
+
+      <div className="settings-option">
+        <label>Theme</label>
+        <Select value={theme} onChange={(e) => handleSettingChange(setTheme)(e.target.value)}>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+          <option value="system">System</option>
+        </Select>
+      </div>
+
+      <div className="settings-option">
+        <label>Language</label>
+        <Select value={language} onChange={(e) => handleSettingChange(setLanguage)(e.target.value)}>
+          <option value="en">English</option>
+          <option value="es">Spanish</option>
+          <option value="fr">French</option>
+          <option value="de">German</option>
+        </Select>
+      </div>
+
+      <div className="settings-option">
+        <label>
+          <input
+            type="checkbox"
+            checked={autoSave}
+            onChange={(e) => setAutoSave(e.target.checked)}
+          />
+          Auto Save on Change
+        </label>
+      </div>
+
+      <Button
+        className="save-button"
+        onClick={saveSettings}
+        disabled={loading || autoSave}
+      >
+        {loading ? "Saving..." : "💾 Save Settings"}
+      </Button>
+    </div>
+  );
 }
-
-export default Settings;

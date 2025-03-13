@@ -1,9 +1,9 @@
 // File Path: /Users/patrick/Projects/Teralynk/backend/src/routes/workflowRoutes.js
 
 import express from "express";
-const { authenticate } = require("../middleware/authMiddleware");
-import aiWorkflowManager from "../ai/aiWorkflowManager";
-import aiLearningManager from "../ai/aiLearningManager";
+import { requireAuth } from "../middleware/authMiddleware.js";
+import aiWorkflowManager from "../ai/aiWorkflowManager.js";
+import aiLearningManager from "../ai/aiLearningManager.js";
 
 const router = express.Router();
 
@@ -11,7 +11,7 @@ const router = express.Router();
  * Route: POST /api/workflows/create
  * Description: AI creates and configures a new automated workflow.
  */
-router.post("/create", authenticate, async (req, res) => {
+router.post("/create", requireAuth, async (req, res) => {
   const { userId } = req.user;
   const { workflowName, triggers, actions } = req.body;
 
@@ -22,10 +22,7 @@ router.post("/create", authenticate, async (req, res) => {
   try {
     console.log(`⚙️ AI Creating Workflow: ${workflowName}`);
 
-    // AI configures the workflow based on user input
     const workflowConfig = await aiWorkflowManager.createWorkflow(userId, workflowName, triggers, actions);
-    
-    // Log AI learning from workflow creation
     await aiLearningManager.logAILearning(userId, "workflow_created", { workflowName, triggers, actions });
 
     res.status(200).json({ message: "Workflow created successfully", workflowConfig });
@@ -39,13 +36,11 @@ router.post("/create", authenticate, async (req, res) => {
  * Route: GET /api/workflows/list
  * Description: Retrieve a list of user-defined workflows.
  */
-router.get("/list", authenticate, async (req, res) => {
+router.get("/list", requireAuth, async (req, res) => {
   const { userId } = req.user;
 
   try {
     console.log(`📋 AI Fetching Workflows for User: ${userId}`);
-
-    // AI retrieves all active workflows for the user
     const workflows = await aiWorkflowManager.getUserWorkflows(userId);
 
     res.status(200).json({ message: "Workflows retrieved", workflows });
@@ -59,7 +54,7 @@ router.get("/list", authenticate, async (req, res) => {
  * Route: POST /api/workflows/execute
  * Description: AI executes an automated workflow based on triggers.
  */
-router.post("/execute", authenticate, async (req, res) => {
+router.post("/execute", requireAuth, async (req, res) => {
   const { userId } = req.user;
   const { workflowId, inputData } = req.body;
 
@@ -69,11 +64,7 @@ router.post("/execute", authenticate, async (req, res) => {
 
   try {
     console.log(`🚀 AI Executing Workflow: ${workflowId}`);
-
-    // AI triggers the workflow and executes associated actions
     const executionResult = await aiWorkflowManager.executeWorkflow(userId, workflowId, inputData);
-    
-    // Log AI learning from workflow execution
     await aiLearningManager.logAILearning(userId, "workflow_executed", { workflowId, inputData, executionResult });
 
     res.status(200).json({ message: "Workflow executed successfully", executionResult });
@@ -87,7 +78,7 @@ router.post("/execute", authenticate, async (req, res) => {
  * Route: DELETE /api/workflows/delete
  * Description: AI deletes an existing workflow.
  */
-router.delete("/delete", authenticate, async (req, res) => {
+router.delete("/delete", requireAuth, async (req, res) => {
   const { userId } = req.user;
   const { workflowId } = req.body;
 
@@ -97,11 +88,7 @@ router.delete("/delete", authenticate, async (req, res) => {
 
   try {
     console.log(`🗑️ AI Deleting Workflow: ${workflowId}`);
-
-    // AI removes the workflow from the system
     const deleteResult = await aiWorkflowManager.deleteWorkflow(userId, workflowId);
-    
-    // Log AI learning from workflow removal
     await aiLearningManager.logAILearning(userId, "workflow_deleted", { workflowId });
 
     res.status(200).json({ message: "Workflow deleted successfully", deleteResult });
@@ -111,4 +98,4 @@ router.delete("/delete", authenticate, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

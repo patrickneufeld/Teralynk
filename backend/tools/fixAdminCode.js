@@ -1,84 +1,127 @@
-// File Path: /Users/patrick/Projects/Teralynk/backend/tools/fixAdminCode.js
+// File: /tools/fixAdminCode.js
 
-const fs = require("fs");
-const path = require("path");
-const axios = require("axios");
+import fs from 'fs';
+import path from 'path';
+import dotenv from 'dotenv';
+import axios from 'axios';
+import { fileURLToPath } from 'url';
 
-const XAI_ENDPOINT = "https://xai.codefixer.api/v1";  // Replace with actual API endpoint
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const filesToFix = {
-    adminController: path.join(__dirname, "../src/controllers/adminController.js"),
-    adminRoutes: path.join(__dirname, "../src/routes/adminRoutes.js")
-};
+// Load environment variables from the project root
+dotenv.config({ path: path.join(__dirname, '../.env') });
 
-/**
- * Reads a file and returns its content.
- */
-const readFileContent = (filePath) => {
-    try {
-        return fs.readFileSync(filePath, "utf-8");
-    } catch (error) {
-        console.error(`Error reading file ${filePath}:`, error);
-        return null;
+const XAI_API_KEY = process.env.XAI_API_KEY;
+if (!XAI_API_KEY) {
+  console.error('❌ XAI_API_KEY not found in .env file.');
+  process.exit(1);
+}
+
+// === CORRECT PATHS HERE ===
+const rootDir = path.join(__dirname, '..'); // /Teralynk/backend
+
+const filesToCheck = [
+  path.join(rootDir, 'src/controllers/adminController.js'),
+  path.join(rootDir, 'src/routes/admin.js')
+];
+
+const frontendDir = path.join(rootDir, '../frontend/src');
+
+const foldersToCheck = [
+  path.join(frontendDir, 'utils'),
+  path.join(frontendDir, 'config'),
+  path.join(frontendDir, 'auth'),
+  path.join(frontendDir, 'components'),
+  path.join(frontendDir, 'services')
+];
+
+// === Collect JS/JSX files from folders ===
+function getAllJsFiles(folder) {
+  const entries = fs.readdirSync(folder, { withFileTypes: true });
+  return entries.flatMap(entry => {
+    const fullPath = path.join(folder, entry.name);
+    if (entry.isDirectory()) {
+      return getAllJsFiles(fullPath);
+    } else if (entry.name.endsWith('.js') || entry.name.endsWith('.jsx')) {
+      return [fullPath];
     }
-};
+    return [];
+  });
+}
 
-/**
- * Sends code to XAI CodeFixer for automated corrections.
- */
-const requestXaiFix = async (code, filename) => {
-    try {
-        const response = await axios.post(XAI_ENDPOINT, {
-            code,
-            filename
-        });
+// === Send code to Grok (xAI) API for review ===
+async function reviewCodeWithGrok(code, filePath) {
+  const prompt = `
+You are an expert developer reviewing the following JavaScript/React code.
+1. Identify any errors, misuses, or bugs.
+2. Suggest clear fixes and explain why.
+3. If the file is part of a frontend React app (e.g., contains "useSecrets", context, etc.), check for recent common bugs like:
+   - "useSecrets must be used within a SecretsProvider"
+   - secrets not loaded correctly
+4. If it's backend code, ensure middleware and routes are correctly used (e.g., Express, async handlers).
+5. Don’t rewrite the whole file, just list problems and suggest specific fixes.
+6. Compile a list of all the issues and save them at the bottom of the log so I have a summary of what to fix by file
+File path: ${filePath}
+Code:
+\`\`\`js
+${code}
+\`\`\`
+`;
 
-        if (response.data && response.data.fixedCode) {
-            return response.data.fixedCode;
-        } else {
-            console.error(`XAI CodeFixer returned an invalid response for ${filename}`);
-            return null;
+  try {
+    const response = await axios.post(
+      'https://api.x.ai/v1/chat/completions',
+      {
+        model: 'grok-beta',
+        messages: [
+          { role: 'system', content: 'You are an expert developer code reviewer.' },
+          { role: 'user', content: prompt }
+        ]
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${XAI_API_KEY}`,
+          'Content-Type': 'application/json'
         }
-    } catch (error) {
-        console.error(`Error requesting XAI fix for ${filename}:`, error);
-        return null;
-    }
-};
+      }
+    );
 
-/**
- * Writes corrected content to the respective file.
- */
-const writeFileContent = (filePath, content) => {
+    const suggestions = response.data.choices?.[0]?.message?.content || '⚠️ No suggestions returned.';
+    return suggestions;
+  } catch (err) {
+    console.error(`❌ Error reviewing file ${filePath}:`, err.message);
+    return '❌ Failed to get review from Grok.';
+  }
+}
+
+// === Run analysis on all files ===
+async function analyzeCodebase() {
+  const allFiles = [...filesToCheck];
+
+  for (const folder of foldersToCheck) {
     try {
-        fs.writeFileSync(filePath, content, "utf-8");
-        console.log(`✅ Successfully updated: ${filePath}`);
-    } catch (error) {
-        console.error(`Error writing file ${filePath}:`, error);
+      const jsFiles = getAllJsFiles(folder);
+      allFiles.push(...jsFiles);
+    } catch (err) {
+      console.warn(`⚠️ Skipping folder (not found): ${folder}`);
     }
-};
+  }
 
-/**
- * Main function to process both files and fix them using XAI.
- */
-const fixAdminFiles = async () => {
-    console.log("🔍 Reading files...");
-    const adminControllerContent = readFileContent(filesToFix.adminController);
-    const adminRoutesContent = readFileContent(filesToFix.adminRoutes);
+  console.log(`🔍 Reviewing ${allFiles.length} files...\n`);
 
-    if (!adminControllerContent || !adminRoutesContent) {
-        console.error("🚨 One or both files could not be read. Exiting...");
-        return;
+  for (const filePath of allFiles) {
+    try {
+      console.log(`📂 Reviewing ${filePath}...\n`);
+      const code = fs.readFileSync(filePath, 'utf-8');
+      const review = await reviewCodeWithGrok(code, filePath);
+      console.log(`💡 Suggestions for ${filePath}:\n${review}\n${'-'.repeat(80)}\n`);
+    } catch (err) {
+      console.error(`❌ Failed to read or review file ${filePath}:`, err.message);
     }
+  }
 
-    console.log("🛠 Sending files to XAI CodeFixer...");
-    const fixedAdminController = await requestXaiFix(adminControllerContent, "adminController.js");
-    const fixedAdminRoutes = await requestXaiFix(adminRoutesContent, "adminRoutes.js");
+  console.log('✅ Code review completed for all target files.');
+}
 
-    if (fixedAdminController) writeFileContent(filesToFix.adminController, fixedAdminController);
-    if (fixedAdminRoutes) writeFileContent(filesToFix.adminRoutes, fixedAdminRoutes);
-
-    console.log("✅ Code fixing complete!");
-};
-
-// Run the script
-fixAdminFiles();
+analyzeCodebase();

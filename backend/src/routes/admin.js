@@ -1,52 +1,61 @@
+// File: /backend/src/routes/adminRoutes.js
+
 import express from "express";
-import { requireAdmin } from "../middleware/authMiddleware.js"; // Import the requireAdmin middleware correctly
+import { requireAdmin } from "../middleware/authMiddleware.js";
+import * as adminController from "../controllers/adminController.js";
+import { downloadLogs } from "../controllers/logController.js";
 
 const router = express.Router();
 
-// ✅ Dynamically import adminController
-const adminController = await import("../controllers/adminController.js");
-
-// 🚨 LOGGING TO CATCH ERRORS
-console.log("✅ Loaded adminController:", adminController.default);
-console.log("✅ Functions inside adminController:", Object.keys(adminController.default));
-
-// 🚨 ENSURE ALL FUNCTIONS ARE VALID
-const requiredFunctions = [
-    "fetchAIOptimizations",
-    "approveOptimization",
-    "rejectOptimization",
-    "deleteOptimization",
-    "fetchAILogs",
-    "fetchLatestAILogs",
-    "fetchUsers",
-    "disableUser",
-    "enableUser",
-    "fetchSystemStatus",
-    "fetchMetrics",
+// ✅ Define required controller functions for validation
+const requiredAdminFunctions = [
+  "fetchAIOptimizations",
+  "approveOptimization",
+  "rejectOptimization",
+  "deleteOptimization",
+  "fetchAILogs",
+  "fetchLatestAILogs",
+  "fetchUsers",
+  "disableUser",
+  "enableUser",
+  "fetchSystemStatus",
+  "fetchMetrics",
 ];
 
-// 🚨 CHECK IF ALL FUNCTIONS EXIST IN adminController
-requiredFunctions.forEach((fn) => {
-    if (typeof adminController.default[fn] !== "function") {
-        console.error(`❌ ERROR: ${fn} is MISSING or NOT a function!`);
-        adminController.default[fn] = (req, res) => res.status(500).json({ error: `${fn} is missing!` });
+const requiredLogFunctions = ["downloadLogs"];
+
+// ✅ Validate controller functions are implemented
+const validateFunctions = (controller, requiredFunctions, controllerName) => {
+  for (const fn of requiredFunctions) {
+    if (typeof controller[fn] !== "function") {
+      throw new Error(`❌ Missing or invalid function: ${controllerName}.${fn}`);
     }
-});
+  }
+};
 
-// ✅ ADD ROUTES
-router.get("/ai-optimizations", requireAdmin, adminController.default.fetchAIOptimizations);
-router.post("/ai-optimizations/approve", requireAdmin, adminController.default.approveOptimization);
-router.post("/ai-optimizations/reject", requireAdmin, adminController.default.rejectOptimization);
-router.delete("/ai-optimizations/:id", requireAdmin, adminController.default.deleteOptimization);
+try {
+  validateFunctions(adminController, requiredAdminFunctions, "adminController");
+  validateFunctions({ downloadLogs }, requiredLogFunctions, "logController");
+} catch (error) {
+  console.error(`🚨 Route validation error:`, error.message);
+  process.exit(1); // Exit to avoid running routes with missing handlers
+}
 
-router.get("/ai-logs", requireAdmin, adminController.default.fetchAILogs);
-router.get("/ai-logs/latest", requireAdmin, adminController.default.fetchLatestAILogs);
+// ✅ Admin Routes with middleware protection
+router.get("/ai-optimizations", requireAdmin, adminController.fetchAIOptimizations);
+router.post("/ai-optimizations/approve", requireAdmin, adminController.approveOptimization);
+router.post("/ai-optimizations/reject", requireAdmin, adminController.rejectOptimization);
+router.delete("/ai-optimizations/:id", requireAdmin, adminController.deleteOptimization);
 
-router.get("/users", requireAdmin, adminController.default.fetchUsers);
-router.post("/users/disable", requireAdmin, adminController.default.disableUser);
-router.post("/users/enable", requireAdmin, adminController.default.enableUser);
+router.get("/logs", requireAdmin, adminController.fetchAILogs);
+router.get("/logs/latest", requireAdmin, adminController.fetchLatestAILogs);
+router.get("/logs/download", requireAdmin, downloadLogs);
 
-router.get("/system-status", requireAdmin, adminController.default.fetchSystemStatus);
-router.get("/metrics", requireAdmin, adminController.default.fetchMetrics);
+router.get("/users", requireAdmin, adminController.fetchUsers);
+router.post("/users/disable", requireAdmin, adminController.disableUser);
+router.post("/users/enable", requireAdmin, adminController.enableUser);
 
-export default router;  // Use export default instead of module.exports
+router.get("/system-status", requireAdmin, adminController.fetchSystemStatus);
+router.get("/metrics", requireAdmin, adminController.fetchMetrics);
+
+export default router;

@@ -1,85 +1,206 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+// ✅ FILE: /Users/patrick/Projects/Teralynk/frontend/src/components/FileSearchReplace.jsx
+
+import React, { useState } from "react";
+import axios from "axios";
+import Input from "./ui/Input";
+import Button from "./ui/Button";
+import Alert from "./ui/Alert";
+import Modal from "./ui/Modal";
+import { Card, CardContent } from "./ui/Card";
+import Loader from "./ui/Loader";
+import "../styles/components/FileSearchReplace.css";
 
 const FileSearchReplace = () => {
-  const [query, setQuery] = useState(''); // Search query
-  const [replaceText, setReplaceText] = useState(''); // Replacement text
-  const [fileId, setFileId] = useState(''); // File ID to apply changes
-  const [message, setMessage] = useState(''); // Feedback message
-  const [loading, setLoading] = useState(false); // Loading state
-  const [error, setError] = useState(''); // Error state
-  const [updatedFileContent, setUpdatedFileContent] = useState(''); // Updated content after replacement
+  const [searchPairs, setSearchPairs] = useState([{ search: "", replace: "" }]);
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
+  const [confirmModal, setConfirmModal] = useState(false);
+  const [replacedFiles, setReplacedFiles] = useState([]);
+  const [renameMap, setRenameMap] = useState({});
+  const [saveAsNew, setSaveAsNew] = useState(true);
 
-  // Handle search and replace action
-  const handleSearchReplace = async () => {
-    if (!query || !replaceText || !fileId) {
-      setMessage('Please provide file ID, search query, and replace text.');
+  const handleSearch = async () => {
+    const searchTerms = searchPairs.map(p => p.search).filter(Boolean);
+    if (searchTerms.length === 0) {
+      setErrorMsg("Please enter at least one search term.");
       return;
     }
 
     setLoading(true);
-    setError('');
-    setMessage('');
+    setErrorMsg("");
+    setSuccessMsg("");
+    setResults([]);
 
     try {
-      // Send request to search and replace content in the file
-      const response = await axios.post('/api/files/search-replace', {
-        fileId,
-        query,
-        replaceText,
-      }, { withCredentials: true });
+      const response = await axios.get("/api/files/search-content", {
+        params: { query: searchTerms },
+        withCredentials: true,
+      });
 
-      setUpdatedFileContent(response.data.updatedContent);
-      setMessage('File content updated successfully!');
+      if (response.data?.matches?.length > 0) {
+        setResults(response.data.matches);
+        setSuccessMsg(`Found ${response.data.matches.length} file(s) containing your search terms.`);
+      } else {
+        setSuccessMsg("No files contain the search terms.");
+      }
     } catch (err) {
-      setError('Failed to perform search and replace.');
+      console.error("❌ Search error:", err);
+      setErrorMsg("Error searching files. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleReplace = async () => {
+    setLoading(true);
+    setErrorMsg("");
+    setSuccessMsg("");
+    setReplacedFiles([]);
+
+    try {
+      const response = await axios.post(
+        "/api/files/replace",
+        {
+          searchPairs,
+          files: results.map((f) => f.path),
+          renameMap,
+          saveAsNew,
+        },
+        { withCredentials: true }
+      );
+
+      setSuccessMsg(`✅ Replaced and saved ${response.data.modified.length} file(s).`);
+      setReplacedFiles(response.data.modified);
+      setResults([]);
+    } catch (err) {
+      console.error("❌ Replace error:", err);
+      setErrorMsg("Replacement failed. Please try again.");
+    } finally {
+      setLoading(false);
+      setConfirmModal(false);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") handleSearch();
+  };
+
+  const updateSearchPair = (index, key, value) => {
+    const updated = [...searchPairs];
+    updated[index][key] = value;
+    setSearchPairs(updated);
+  };
+
+  const addSearchPair = () => {
+    setSearchPairs([...searchPairs, { search: "", replace: "" }]);
+  };
+
+  const removeSearchPair = (index) => {
+    const updated = searchPairs.filter((_, i) => i !== index);
+    setSearchPairs(updated);
+  };
+
+  const updateRenameMap = (filePath, newName) => {
+    setRenameMap(prev => ({ ...prev, [filePath]: newName }));
+  };
+
   return (
-    <div className="file-search-replace">
-      <h2>Search and Replace Content in File</h2>
+    <div className="file-replace-container">
+      <h2 className="file-replace-title">🔄 Search & Replace Across Files</h2>
 
-      {/* File ID Input */}
-      <input
-        type="text"
-        value={fileId}
-        onChange={(e) => setFileId(e.target.value)}
-        placeholder="Enter file ID"
-      />
+      {errorMsg && <Alert type="error">{errorMsg}</Alert>}
+      {successMsg && <Alert type="success">{successMsg}</Alert>}
+      {loading && <Loader className="mb-4" />}
 
-      {/* Search Query Input */}
-      <input
-        type="text"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search for..."
-      />
+      {/* Dynamic Search/Replace Fields */}
+      <div className="search-replace-list">
+        {searchPairs.map((pair, idx) => (
+          <div key={idx} className="search-replace-row">
+            <Input
+              placeholder="Search for..."
+              value={pair.search}
+              onChange={(e) => updateSearchPair(idx, "search", e.target.value)}
+            />
+            <Input
+              placeholder="Replace with..."
+              value={pair.replace}
+              onChange={(e) => updateSearchPair(idx, "replace", e.target.value)}
+            />
+            <Button onClick={() => removeSearchPair(idx)} className="bg-red-500 text-white">🗑</Button>
+          </div>
+        ))}
+        <Button onClick={addSearchPair} className="mt-2">➕ Add Another</Button>
+      </div>
 
-      {/* Replace Text Input */}
-      <input
-        type="text"
-        value={replaceText}
-        onChange={(e) => setReplaceText(e.target.value)}
-        placeholder="Replace with..."
-      />
+      {/* Search/Replace Controls */}
+      <div className="replace-controls mt-4">
+        <Button onClick={handleSearch} disabled={loading}>🔍 Search</Button>
+        <Button
+          onClick={() => setConfirmModal(true)}
+          disabled={results.length === 0}
+          className="bg-yellow-500 ml-3"
+        >
+          ⚠️ Replace In All
+        </Button>
+        <label className="ml-4 text-sm">
+          <input
+            type="checkbox"
+            checked={saveAsNew}
+            onChange={() => setSaveAsNew(!saveAsNew)}
+          /> Save as New Files
+        </label>
+      </div>
 
-      {/* Action Button */}
-      <button onClick={handleSearchReplace} disabled={loading}>
-        {loading ? 'Processing...' : 'Search & Replace'}
-      </button>
+      {/* Matched File Preview + Rename */}
+      {results.length > 0 && (
+        <div className="results-list mt-4">
+          <h3 className="text-lg font-semibold mb-2">🔍 Files with Matches</h3>
+          {results.map((file, idx) => (
+            <Card key={idx}>
+              <CardContent className="p-4">
+                <p className="font-semibold">{file.name}</p>
+                <p className="text-sm text-gray-500">{file.path}</p>
+                <p className="mt-2 text-xs text-gray-400">...match found...</p>
+                <Input
+                  placeholder="Optional new name"
+                  value={renameMap[file.path] || ""}
+                  onChange={(e) => updateRenameMap(file.path, e.target.value)}
+                  className="mt-2"
+                />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
-      {/* Display Messages */}
-      {message && <div className="message">{message}</div>}
-      {error && <div className="error">{error}</div>}
+      {/* Confirmation Modal */}
+      {confirmModal && (
+        <Modal
+          title="⚠️ Confirm Replacement"
+          onClose={() => setConfirmModal(false)}
+          onConfirm={handleReplace}
+          confirmText="Yes, Replace"
+        >
+          <p>
+            This will find & replace across <strong>{results.length}</strong> file(s).
+            <br />
+            Total replacements: <strong>{searchPairs.length}</strong>
+          </p>
+          {saveAsNew && <p className="text-sm mt-2">🗂 Files will be saved as new versions.</p>}
+        </Modal>
+      )}
 
-      {/* Display Updated Content */}
-      {updatedFileContent && (
-        <div className="updated-content">
-          <h3>Updated Content:</h3>
-          <textarea readOnly value={updatedFileContent} />
+      {/* Confirmation List */}
+      {replacedFiles.length > 0 && (
+        <div className="replaced-list mt-6">
+          <h3 className="text-lg font-semibold mb-2">✅ Modified Files</h3>
+          <ul className="grid gap-2">
+            {replacedFiles.map((f, idx) => (
+              <li key={idx} className="bg-green-50 p-2 rounded-md text-sm">{f}</li>
+            ))}
+          </ul>
         </div>
       )}
     </div>

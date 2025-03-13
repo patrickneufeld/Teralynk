@@ -1,45 +1,45 @@
 import { dbClient } from "../config/db.js";
+import { v4 as uuidv4 } from "uuid"; // For generating unique IDs
 
-/**
- * ✅ Service Functions to Handle Marketplace Operations
- */
-
-// ✅ Fetch All APIs
-export const getAllAPIs = async () => {
+// Fetch All APIs
+export const getAllAPIs = async (req, res) => {
   try {
     const result = await dbClient.query("SELECT * FROM marketplace_addons ORDER BY created_at DESC");
-    return result.rows;
+    res.json({ apis: result.rows });
   } catch (error) {
     console.error("❌ Error fetching APIs from marketplace:", error.message);
-    throw new Error("Failed to fetch marketplace APIs.");
+    res.status(500).json({ error: "Failed to fetch marketplace APIs" });
   }
 };
 
-// ✅ Fetch a Single API by ID
-export const getAPIById = async (id) => {
+// Fetch a Single API by ID
+export const getAPIById = async (req, res) => {
+  const { id } = req.params;
   try {
     const result = await dbClient.query("SELECT * FROM marketplace_addons WHERE id = $1", [id]);
 
     if (result.rows.length === 0) {
-      throw new Error("API not found.");
+      return res.status(404).json({ error: "API not found" });
     }
 
-    return result.rows[0];
+    res.json({ api: result.rows[0] });
   } catch (error) {
     console.error("❌ Error fetching API by ID:", error.message);
-    throw new Error("Failed to fetch API details.");
+    res.status(500).json({ error: "Failed to fetch API details" });
   }
 };
 
-// ✅ Add a New API to the Marketplace
-export const addMarketplaceAddon = async ({ name, description, type, api_url, username, password, addedBy }) => {
+// Add a New API to the Marketplace
+export const addMarketplaceAddon = async (req, res) => {
+  const { name, description, type, api_url, username, password, addedBy } = req.body;
   try {
     const query = `
-      INSERT INTO marketplace_addons (name, description, type, api_url, username, password, added_by, created_at)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, NOW()) RETURNING *;
+      INSERT INTO marketplace_addons (id, name, description, type, api_url, username, password, added_by, created_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW()) RETURNING *;
     `;
 
     const result = await dbClient.query(query, [
+      uuidv4(),
       name,
       description,
       type,
@@ -49,15 +49,17 @@ export const addMarketplaceAddon = async ({ name, description, type, api_url, us
       addedBy,
     ]);
 
-    return result.rows[0];
+    res.json({ message: "API added to marketplace successfully", api: result.rows[0] });
   } catch (error) {
     console.error("❌ Error adding API to marketplace:", error.message);
-    throw new Error("Failed to add API to the marketplace.");
+    res.status(500).json({ error: "Failed to add API to the marketplace" });
   }
 };
 
-// ✅ Update an Existing API
-export const updateMarketplaceAddon = async (id, { name, description, type, api_url, username, password, updatedBy }) => {
+// Update an Existing API
+export const updateMarketplaceAddon = async (req, res) => {
+  const { id } = req.params;
+  const { name, description, type, api_url, username, password, updatedBy } = req.body;
   try {
     const query = `
       UPDATE marketplace_addons 
@@ -79,113 +81,118 @@ export const updateMarketplaceAddon = async (id, { name, description, type, api_
     ]);
 
     if (result.rowCount === 0) {
-      throw new Error("API not found.");
+      return res.status(404).json({ error: "API not found" });
     }
 
-    return result.rows[0];
+    res.json({ message: "API updated successfully", api: result.rows[0] });
   } catch (error) {
     console.error("❌ Error updating API:", error.message);
-    throw new Error("Failed to update marketplace API.");
+    res.status(500).json({ error: "Failed to update marketplace API" });
   }
 };
 
-// ✅ Delete an API from the Marketplace
-export const deleteMarketplaceAddon = async (id) => {
+// Delete an API from the Marketplace
+export const deleteMarketplaceAddon = async (req, res) => {
+  const { id } = req.params;
   try {
     const result = await dbClient.query("DELETE FROM marketplace_addons WHERE id = $1 RETURNING *;", [id]);
 
     if (result.rowCount === 0) {
-      throw new Error("API not found.");
+      return res.status(404).json({ error: "API not found" });
     }
 
-    return result.rows[0];
+    res.json({ message: "API deleted successfully", api: result.rows[0] });
   } catch (error) {
     console.error("❌ Error deleting API:", error.message);
-    throw new Error("Failed to delete marketplace API.");
+    res.status(500).json({ error: "Failed to delete marketplace API" });
   }
 };
 
-// ✅ Purchase an API
-export const purchaseAPI = async (addonId, userId) => {
+// Purchase an API
+export const purchaseAPI = async (req, res) => {
+  const { addonId, userId } = req.body;
   try {
     // Check if the API exists
     const apiExists = await dbClient.query("SELECT * FROM marketplace_addons WHERE id = $1", [addonId]);
     if (apiExists.rows.length === 0) {
-      throw new Error("API not found.");
+      return res.status(404).json({ error: "API not found" });
     }
 
     // Insert into purchases table
     const query = `
-      INSERT INTO user_purchases (user_id, addon_id, purchased_at)
-      VALUES ($1, $2, NOW()) RETURNING *;
+      INSERT INTO user_purchases (id, user_id, addon_id, purchased_at)
+      VALUES ($1, $2, $3, NOW()) RETURNING *;
     `;
-    const result = await dbClient.query(query, [userId, addonId]);
+    const result = await dbClient.query(query, [uuidv4(), userId, addonId]);
 
-    return result.rows[0];
+    res.json({ message: "API purchased successfully", purchase: result.rows[0] });
   } catch (error) {
     console.error("❌ Error purchasing API:", error.message);
-    throw new Error("Failed to complete purchase.");
+    res.status(500).json({ error: "Failed to complete purchase" });
   }
 };
 
-// ✅ Rate an API
-export const rateAPI = async (addonId, userId, { rating, review }) => {
+// Rate an API
+export const rateAPI = async (req, res) => {
+  const { addonId, userId, rating, review } = req.body;
   try {
     if (!rating || rating < 1 || rating > 5) {
-      throw new Error("Invalid rating. Must be between 1 and 5.");
+      return res.status(400).json({ error: "Invalid rating. Must be between 1 and 5" });
     }
 
     const query = `
-      INSERT INTO marketplace_reviews (addon_id, user_id, rating, review, created_at)
-      VALUES ($1, $2, $3, $4, NOW()) RETURNING *;
+      INSERT INTO marketplace_reviews (id, addon_id, user_id, rating, review, created_at)
+      VALUES ($1, $2, $3, $4, $5, NOW()) RETURNING *;
     `;
 
-    const result = await dbClient.query(query, [addonId, userId, rating, review || null]);
+    const result = await dbClient.query(query, [uuidv4(), addonId, userId, rating, review || null]);
 
-    return result.rows[0];
+    res.json({ message: "Review submitted successfully", review: result.rows[0] });
   } catch (error) {
     console.error("❌ Error submitting review:", error.message);
-    throw new Error("Failed to submit review.");
+    res.status(500).json({ error: "Failed to submit review" });
   }
 };
 
-// ✅ Delete a Review
-export const deleteReview = async (reviewId) => {
+// Delete a Review
+export const deleteReview = async (req, res) => {
+  const { id } = req.params;
   try {
-    const result = await dbClient.query("DELETE FROM marketplace_reviews WHERE id = $1 RETURNING *;", [reviewId]);
+    const result = await dbClient.query("DELETE FROM marketplace_reviews WHERE id = $1 RETURNING *;", [id]);
 
     if (result.rowCount === 0) {
-      throw new Error("Review not found.");
+      return res.status(404).json({ error: "Review not found" });
     }
 
-    return result.rows[0];
+    res.json({ message: "Review deleted successfully", review: result.rows[0] });
   } catch (error) {
     console.error("❌ Error deleting review:", error.message);
-    throw new Error("Failed to delete review.");
+    res.status(500).json({ error: "Failed to delete review" });
   }
 };
 
-// ✅ Fetch All Reviews for a Specific Add-On
-export const getAddonReviews = async (addonId) => {
+// Fetch All Reviews for a Specific Add-On
+export const getAddonReviews = async (req, res) => {
+  const { addonId } = req.params;
   try {
     const result = await dbClient.query(
       `SELECT * FROM marketplace_reviews WHERE addon_id = $1 ORDER BY created_at DESC`,
       [addonId]
     );
-    return result.rows;
+    res.json({ reviews: result.rows });
   } catch (error) {
     console.error("❌ Error fetching reviews for add-on:", error.message);
-    throw new Error("Failed to fetch reviews.");
+    res.status(500).json({ error: "Failed to fetch reviews" });
   }
 };
 
-// ✅ Fetch All Reviews Across All Add-Ons
-export const getAllReviews = async () => {
+// Fetch All Reviews Across All Add-Ons
+export const getAllReviews = async (req, res) => {
   try {
     const result = await dbClient.query(`SELECT * FROM marketplace_reviews ORDER BY created_at DESC`);
-    return result.rows;
+    res.json({ reviews: result.rows });
   } catch (error) {
     console.error("❌ Error fetching all reviews:", error.message);
-    throw new Error("Failed to fetch reviews.");
+    res.status(500).json({ error: "Failed to fetch reviews" });
   }
 };

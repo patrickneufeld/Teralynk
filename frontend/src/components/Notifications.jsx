@@ -6,48 +6,54 @@ import Button from "../components/ui/Button";
 import Select, { SelectItem } from "../components/ui/Select";
 import "../styles/components/Notifications.css";
 
-export default function Notifications() {
+const Notifications = () => {
   const [notifications, setNotifications] = useState([]);
   const [filter, setFilter] = useState("All");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchNotifications = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const response = await fetch("/api/notifications");
-        if (!response.ok) {
-          throw new Error("Failed to load notifications.");
-        }
-        const data = await response.json();
-        setNotifications(data);
-      } catch (err) {
-        setError(err.message || "An unexpected error occurred.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchNotifications();
 
-    // Setup WebSocket for real-time updates
     const ws = new WebSocket("ws://localhost:8001/ws/notifications");
 
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        setNotifications((prev) => [...data.notifications, ...prev]);
+        if (Array.isArray(data.notifications)) {
+          setNotifications((prev) => [...data.notifications, ...prev]);
+        }
       } catch (err) {
         console.error("❌ WebSocket message error:", err);
       }
     };
 
-    // Clean up WebSocket on component unmount
     return () => ws.close();
   }, []);
+
+  const fetchNotifications = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch("/api/notifications", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) throw new Error("Failed to load notifications.");
+
+      const data = await response.json();
+      setNotifications(data);
+    } catch (err) {
+      setError(err.message || "An unexpected error occurred.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleApproval = async (id, status) => {
     try {
@@ -60,13 +66,11 @@ export default function Notifications() {
         body: JSON.stringify({ optimization_id: id, status }),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to update notification status.");
-      }
+      if (!response.ok) throw new Error("Failed to update notification status.");
 
       setNotifications((prev) => prev.filter((notif) => notif._id !== id));
     } catch (err) {
-      setError(err.message || "Failed to update notification status.");
+      setError(err.message || "Failed to update notification.");
     }
   };
 
@@ -77,13 +81,11 @@ export default function Notifications() {
 
   return (
     <div className="notifications-container">
-      <h1 className="notifications-title">AI Notifications</h1>
+      <h1 className="notifications-title">🔔 AI Notifications</h1>
 
-      {/* Display error message */}
-      {error && <p className="error-message" role="alert">{error}</p>}
-      {loading && <p className="loading-message">Loading notifications...</p>}
+      {error && <p className="error-message" role="alert">❌ {error}</p>}
+      {loading && <p className="loading-message">⏳ Loading notifications...</p>}
 
-      {/* Filter dropdown */}
       <Select
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
@@ -95,10 +97,9 @@ export default function Notifications() {
         <SelectItem value="Retraining Trigger">AI Retraining Alerts</SelectItem>
       </Select>
 
-      {/* Notification grid */}
       <div className="notifications-grid">
         {filteredNotifications.length === 0 && !loading ? (
-          <p className="empty-message">No notifications available.</p>
+          <p className="empty-message">📭 No notifications found.</p>
         ) : (
           filteredNotifications.map((notif) => (
             <Card key={notif._id} className="notification-card">
@@ -110,20 +111,19 @@ export default function Notifications() {
                   {new Date(notif.timestamp || notif.date).toLocaleString()}
                 </span>
 
-                {/* Display approval actions for pending notifications */}
                 {notif.status === "Pending Approval" && (
                   <div className="actions">
                     <Button
                       onClick={() => handleApproval(notif._id, "Approved")}
                       className="approve-button"
                     >
-                      Approve
+                      ✅ Approve
                     </Button>
                     <Button
                       onClick={() => handleApproval(notif._id, "Rejected")}
                       className="reject-button"
                     >
-                      Reject
+                      ❌ Reject
                     </Button>
                   </div>
                 )}
@@ -134,4 +134,6 @@ export default function Notifications() {
       </div>
     </div>
   );
-}
+};
+
+export default Notifications;

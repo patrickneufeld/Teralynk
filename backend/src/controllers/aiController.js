@@ -6,7 +6,7 @@ import dotenv from "dotenv";  // To load environment variables
 
 dotenv.config();
 
-// ✅ Initialize PostgreSQL Client
+// Initialize PostgreSQL Client
 const dbClient = new Client({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -20,7 +20,7 @@ dbClient.connect().catch(err => {
     console.error("❌ PostgreSQL Connection Error:", err.message);
 });
 
-// ✅ PROCESS AI REQUEST
+// PROCESS AI REQUEST
 export const processAIRequest = async (req, res) => {
     try {
         const { query, models } = req.body;
@@ -45,7 +45,7 @@ export const processAIRequest = async (req, res) => {
 
                 const { api_url, api_key } = apiResult.rows[0];
 
-                // ✅ Perform AI request
+                // Perform AI request
                 const response = await axios.post(api_url, { query }, {
                     headers: { Authorization: `Bearer ${api_key}` }
                 });
@@ -58,7 +58,7 @@ export const processAIRequest = async (req, res) => {
             }
         }));
 
-        // ✅ Log AI request to PostgreSQL
+        // Log AI request to PostgreSQL
         await dbClient.query(
             `INSERT INTO ai_requests (id, user_id, query, response, created_at)
              VALUES ($1, $2, $3, $4, NOW())`,
@@ -67,13 +67,13 @@ export const processAIRequest = async (req, res) => {
 
         res.json({ message: "AI responses retrieved successfully", data: aiResponses });
     } catch (error) {
-        console.error("❌ AI Processing Error:", error);
+        console.error("❌ AI Processing Error:", error.message);
         res.status(500).json({ error: "AI processing failed." });
     }
 };
 
 /**
- * ✅ Fetch AI Request History
+ * Fetch AI Request History
  * @route GET /api/ai/history
  */
 export const fetchAIHistory = async (req, res) => {
@@ -88,13 +88,13 @@ export const fetchAIHistory = async (req, res) => {
 
         res.json({ history: result.rows });
     } catch (error) {
-        console.error("❌ AI History Fetch Error:", error);
+        console.error("❌ AI History Fetch Error:", error.message);
         res.status(500).json({ error: "Failed to fetch AI history." });
     }
 };
 
 /**
- * ✅ Delete specific AI History entry
+ * Delete specific AI History entry
  * @route DELETE /api/ai/history/:id
  */
 export const deleteAIHistory = async (req, res) => {
@@ -113,7 +113,7 @@ export const deleteAIHistory = async (req, res) => {
 
         res.json({ message: "AI history entry deleted successfully." });
     } catch (error) {
-        console.error("❌ AI History Deletion Error:", error);
+        console.error("❌ AI History Deletion Error:", error.message);
         res.status(500).json({ error: "Failed to delete AI history entry." });
     }
 };

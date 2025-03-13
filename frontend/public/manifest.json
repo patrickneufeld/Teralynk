@@ -1,6 +1,6 @@
 {
-  "short_name": "Teralynk",
-  "name": "Teralynk - The Collaborative Storage Platform",
+  "short_name": "React App",
+  "name": "Create React App Sample",
   "icons": [
     {
       "src": "favicon.ico",
@@ -18,12 +18,8 @@
       "sizes": "512x512"
     }
   ],
-  "start_url": "/",
-  "scope": "/",
+  "start_url": ".",
   "display": "standalone",
-  "theme_color": "#0d6efd",
-  "background_color": "#f5f5f5",
-  "description": "Teralynk is a collaborative and creative cloud storage platform designed to boost productivity and teamwork.",
-  "orientation": "portrait-primary",
-  "categories": ["productivity", "cloud-storage", "collaboration"]
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
 }

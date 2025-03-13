@@ -6,45 +6,44 @@ const { getRole } = require('./rbacService');
 const AWS = require('aws-sdk');
 const dotenv = require('dotenv');
 const Redis = require('redis');
-const standardErrorResponse = (res, message = 'An error occurred') => {
-    res.status(500).json({ success: false, message });
-};
+const winston = require('winston');
 
-// **Load environment variables**
+// Load environment variables
 dotenv.config();
 
-// **AWS Secrets Manager Configuration**
+// AWS Secrets Manager Configuration
 const secretsManager = new AWS.SecretsManager({
     region: process.env.AWS_REGION || 'us-east-1',
 });
 
-// **Redis connection for token blacklisting**
+// Redis connection for token blacklisting
 const redisClient = Redis.createClient({ url: process.env.REDIS_URL });
-redisClient.on('error', (err) => console.error('Redis connection error:', err));
-redisClient.on('connect', () => console.log('Redis connected successfully'));
-redisClient.connect().catch(console.error);
+redisClient.on('error', (err) => winston.error('Redis connection error:', err));
+redisClient.on('connect', () => winston.info('Redis connected successfully'));
+redisClient.connect().catch((err) => winston.error('Redis connection failed:', err));
 
-// **Helper function to retrieve secret from AWS Secrets Manager**
+// Helper function to retrieve secret from AWS Secrets Manager
 const getSecretValue = async (secretName) => {
     try {
         const data = await secretsManager.getSecretValue({ SecretId: secretName }).promise();
         return data.SecretString ? JSON.parse(data.SecretString) : data.SecretBinary.toString('ascii');
     } catch (error) {
-        console.error('Error retrieving the secret:', error.message);
+        winston.error('Error retrieving the secret:', error.message);
         throw new Error('Failed to retrieve secret.');
     }
 };
 
-// **Get JWT Secret from AWS Secrets Manager**
+// Get JWT Secret from AWS Secrets Manager (cached at app startup)
+let cachedJWTSecret;
 const getJWTSecret = async () => {
-    const secret = await getSecretValue(process.env.JWT_SECRET_NAME || 'jwt_secret');
-    if (!secret || !secret.jwt_secret) {
-        throw new Error('JWT secret not found in the secret value.');
+    if (!cachedJWTSecret) {
+        const secret = await getSecretValue(process.env.JWT_SECRET_NAME || 'jwt_secret');
+        cachedJWTSecret = secret.jwt_secret;
     }
-    return secret.jwt_secret;
+    return cachedJWTSecret;
 };
 
-// **Login function to authenticate a user**
+// Login function to authenticate a user
 const loginUser = async (email, password) => {
     if (!email || !password) {
         throw new Error('Email and password are required.');
@@ -70,7 +69,7 @@ const loginUser = async (email, password) => {
     return { token, user };
 };
 
-// **Register a new user**
+// Register a new user
 const registerUser = async (email, password, role) => {
     if (!email || !password || !role) {
         throw new Error('Email, password, and role are required.');
@@ -87,7 +86,7 @@ const registerUser = async (email, password, role) => {
     return { email, role };
 };
 
-// **Refresh JWT token**
+// Refresh JWT token
 const refreshToken = async (oldToken) => {
     try {
         const JWT_SECRET_KEY = await getJWTSecret();
@@ -100,12 +99,12 @@ const refreshToken = async (oldToken) => {
         const newToken = jwt.sign({ userId: decoded.userId, role: decoded.role }, JWT_SECRET_KEY, { expiresIn: '1h' });
         return { newToken };
     } catch (error) {
-        console.error('Error refreshing token:', error.message);
+        winston.error('Error refreshing token:', error.message);
         throw new Error('Invalid or expired refresh token.');
     }
 };
 
-// **Blacklist JWT tokens**
+// Blacklist JWT tokens
 const blacklistToken = async (token) => {
     const decoded = jwt.decode(token);
     if (!decoded) {
@@ -116,13 +115,13 @@ const blacklistToken = async (token) => {
     await redisClient.set(token, JSON.stringify({ userId: decoded.userId, issuedAt: decoded.iat }), 'EX', expiresIn);
 };
 
-// **Check if a token is blacklisted**
+// Check if a token is blacklisted
 const isTokenBlacklisted = async (token) => {
     const result = await redisClient.get(token);
     return result !== null;
 };
 
-// **Logout function (blacklist the token)**
+// Logout function (blacklist the token)
 const logoutUser = async (userId, token) => {
     await blacklistToken(token);
     await recordActivity(userId, 'logout', null, { message: 'User logged out' });
@@ -130,7 +129,7 @@ const logoutUser = async (userId, token) => {
     return { message: 'User logged out successfully.' };
 };
 
-// **Secure route access: ensure user has permission**
+// Secure route access: ensure user has permission
 const secureRouteAccess = async (userId, requiredPermission) => {
     const role = await getRole(userId);
     const permissions = role.permissions || [];
@@ -146,4 +145,5 @@ module.exports = {
     logoutUser,
     blacklistToken,
     isTokenBlacklisted,
+    secureRouteAccess
 };

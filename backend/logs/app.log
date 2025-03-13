@@ -3,3 +3,240 @@
 2025-03-08T19:25:38.721Z [INFO]: GET /user/profile
 2025-03-08T19:29:43.396Z [INFO]: GET /user/profile
 2025-03-09T19:41:39.130Z [ERROR]: Error: ENOENT: no such file or directory, stat '/Users/patrick/Projects/Teralynk/backend/frontend/build/index.html'
+2025-03-10T11:27:39.107Z [ERROR]: ❌ Failed to load route /api/admin: Unexpected identifier 'Missing'
+2025-03-10T14:28:35.995Z [ERROR]: ❌ Failed to load route /api/admin: Named export 'Client' not found. The requested module 'pg' is a CommonJS module, which may not support all module.exports as named exports.
+CommonJS modules can always be imported via the default export, for example using:
+
+import pkg from 'pg';
+const { Client } = pkg;
+
+2025-03-11T00:26:52.485Z [ERROR]: ❌ Failed to load route /api/admin: Named export 'Client' not found. The requested module 'pg' is a CommonJS module, which may not support all module.exports as named exports.
+CommonJS modules can always be imported via the default export, for example using:
+
+import pkg from 'pg';
+const { Client } = pkg;
+
+2025-03-11T00:27:15.213Z [ERROR]: ❌ Failed to load route /api/admin: Named export 'Client' not found. The requested module 'pg' is a CommonJS module, which may not support all module.exports as named exports.
+CommonJS modules can always be imported via the default export, for example using:
+
+import pkg from 'pg';
+const { Client } = pkg;
+
+2025-03-11T00:27:28.461Z [ERROR]: ❌ Failed to load route /api/admin: Named export 'Client' not found. The requested module 'pg' is a CommonJS module, which may not support all module.exports as named exports.
+CommonJS modules can always be imported via the default export, for example using:
+
+import pkg from 'pg';
+const { Client } = pkg;
+
+2025-03-11T00:27:43.669Z [ERROR]: ❌ Failed to load route /api/admin: Named export 'Client' not found. The requested module 'pg' is a CommonJS module, which may not support all module.exports as named exports.
+CommonJS modules can always be imported via the default export, for example using:
+
+import pkg from 'pg';
+const { Client } = pkg;
+
+2025-03-11T10:53:09.366Z [ERROR]: ❌ Failed to load route /api/admin: Named export 'Client' not found. The requested module 'pg' is a CommonJS module, which may not support all module.exports as named exports.
+CommonJS modules can always be imported via the default export, for example using:
+
+import pkg from 'pg';
+const { Client } = pkg;
+
+2025-03-11T10:53:09.975Z [ERROR]: ❌ Failed to load route /api/notifications: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/notificationRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:53:09.975Z [ERROR]: ❌ Failed to load route /api/files: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/fileRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:53:09.975Z [ERROR]: ❌ Failed to load route /api/performance: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/performanceRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:53:09.976Z [ERROR]: ❌ Failed to load route /api/workflows: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/ai/aiWorkflowManager' imported from /Users/patrick/Projects/Teralynk/backend/src/routes/workflowRoutes.js
+2025-03-11T10:53:09.976Z [ERROR]: ❌ Failed to load route /api/troubleshoot: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/troubleshootRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:53:09.976Z [ERROR]: ❌ Failed to load route /api/feedback: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/feedbackRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:53:09.976Z [ERROR]: ❌ Failed to load route /api/developers: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/developerRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:53:09.977Z [ERROR]: ❌ Failed to load route /api/apps: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/appRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:53:09.977Z [ERROR]: ❌ Failed to load route /api/keys: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/keyRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:53:09.977Z [ERROR]: ❌ Failed to load route /api/billing: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/billingRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:56:02.586Z [ERROR]: ❌ Failed to load route /api/admin: Named export 'Client' not found. The requested module 'pg' is a CommonJS module, which may not support all module.exports as named exports.
+CommonJS modules can always be imported via the default export, for example using:
+
+import pkg from 'pg';
+const { Client } = pkg;
+
+2025-03-11T10:56:03.076Z [ERROR]: ❌ Failed to load route /api/notifications: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/notificationRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:56:03.076Z [ERROR]: ❌ Failed to load route /api/files: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/fileRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:56:03.076Z [ERROR]: ❌ Failed to load route /api/performance: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/performanceRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:56:03.077Z [ERROR]: ❌ Failed to load route /api/workflows: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/ai/aiWorkflowManager' imported from /Users/patrick/Projects/Teralynk/backend/src/routes/workflowRoutes.js
+2025-03-11T10:56:03.077Z [ERROR]: ❌ Failed to load route /api/troubleshoot: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/troubleshootRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:56:03.077Z [ERROR]: ❌ Failed to load route /api/feedback: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/feedbackRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:56:03.077Z [ERROR]: ❌ Failed to load route /api/developers: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/developerRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:56:03.077Z [ERROR]: ❌ Failed to load route /api/apps: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/appRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:56:03.077Z [ERROR]: ❌ Failed to load route /api/keys: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/keyRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:56:03.077Z [ERROR]: ❌ Failed to load route /api/billing: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/billingRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:56:12.171Z [ERROR]: ❌ Failed to load route /api/admin: Named export 'Client' not found. The requested module 'pg' is a CommonJS module, which may not support all module.exports as named exports.
+CommonJS modules can always be imported via the default export, for example using:
+
+import pkg from 'pg';
+const { Client } = pkg;
+
+2025-03-11T10:56:12.482Z [ERROR]: ❌ Failed to load route /api/notifications: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/notificationRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:56:12.483Z [ERROR]: ❌ Failed to load route /api/files: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/fileRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:56:12.483Z [ERROR]: ❌ Failed to load route /api/performance: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/performanceRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:56:12.484Z [ERROR]: ❌ Failed to load route /api/workflows: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/ai/aiWorkflowManager' imported from /Users/patrick/Projects/Teralynk/backend/src/routes/workflowRoutes.js
+2025-03-11T10:56:12.484Z [ERROR]: ❌ Failed to load route /api/troubleshoot: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/troubleshootRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:56:12.484Z [ERROR]: ❌ Failed to load route /api/feedback: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/feedbackRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:56:12.484Z [ERROR]: ❌ Failed to load route /api/developers: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/developerRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:56:12.484Z [ERROR]: ❌ Failed to load route /api/apps: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/appRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:56:12.484Z [ERROR]: ❌ Failed to load route /api/keys: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/keyRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:56:12.484Z [ERROR]: ❌ Failed to load route /api/billing: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/billingRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:57:36.466Z [ERROR]: ❌ Failed to load route /api/admin: Identifier 'logger' has already been declared
+2025-03-11T10:57:36.782Z [ERROR]: ❌ Failed to load route /api/notifications: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/notificationRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:57:36.782Z [ERROR]: ❌ Failed to load route /api/files: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/fileRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:57:36.782Z [ERROR]: ❌ Failed to load route /api/performance: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/performanceRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:57:36.783Z [ERROR]: ❌ Failed to load route /api/workflows: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/ai/aiWorkflowManager' imported from /Users/patrick/Projects/Teralynk/backend/src/routes/workflowRoutes.js
+2025-03-11T10:57:36.783Z [ERROR]: ❌ Failed to load route /api/troubleshoot: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/troubleshootRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:57:36.783Z [ERROR]: ❌ Failed to load route /api/feedback: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/feedbackRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:57:36.783Z [ERROR]: ❌ Failed to load route /api/developers: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/developerRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:57:36.783Z [ERROR]: ❌ Failed to load route /api/apps: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/appRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:57:36.783Z [ERROR]: ❌ Failed to load route /api/keys: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/keyRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T10:57:36.783Z [ERROR]: ❌ Failed to load route /api/billing: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/billingRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:04:46.127Z [ERROR]: ❌ Failed to load route /api/admin: Identifier 'logger' has already been declared
+2025-03-11T11:04:46.449Z [ERROR]: ❌ Failed to load route /api/notifications: Router.use() requires a middleware function but got a undefined
+2025-03-11T11:04:46.449Z [ERROR]: ❌ Failed to load route /api/files: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/fileRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:04:46.450Z [ERROR]: ❌ Failed to load route /api/performance: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/performanceRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:04:46.450Z [ERROR]: ❌ Failed to load route /api/workflows: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/ai/aiWorkflowManager' imported from /Users/patrick/Projects/Teralynk/backend/src/routes/workflowRoutes.js
+2025-03-11T11:04:46.450Z [ERROR]: ❌ Failed to load route /api/troubleshoot: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/troubleshootRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:04:46.450Z [ERROR]: ❌ Failed to load route /api/feedback: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/feedbackRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:04:46.451Z [ERROR]: ❌ Failed to load route /api/developers: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/developerRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:04:46.451Z [ERROR]: ❌ Failed to load route /api/apps: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/appRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:04:46.451Z [ERROR]: ❌ Failed to load route /api/keys: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/keyRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:04:46.451Z [ERROR]: ❌ Failed to load route /api/billing: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/billingRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:05:28.185Z [ERROR]: ❌ Failed to load route /api/admin: Identifier 'logger' has already been declared
+2025-03-11T11:05:28.525Z [ERROR]: ❌ Failed to load route /api/files: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/fileRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:05:28.525Z [ERROR]: ❌ Failed to load route /api/performance: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/performanceRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:05:28.526Z [ERROR]: ❌ Failed to load route /api/workflows: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/ai/aiWorkflowManager' imported from /Users/patrick/Projects/Teralynk/backend/src/routes/workflowRoutes.js
+2025-03-11T11:05:28.526Z [ERROR]: ❌ Failed to load route /api/troubleshoot: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/troubleshootRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:05:28.526Z [ERROR]: ❌ Failed to load route /api/feedback: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/feedbackRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:05:28.526Z [ERROR]: ❌ Failed to load route /api/developers: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/developerRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:05:28.526Z [ERROR]: ❌ Failed to load route /api/apps: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/appRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:05:28.527Z [ERROR]: ❌ Failed to load route /api/keys: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/keyRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:05:28.527Z [ERROR]: ❌ Failed to load route /api/billing: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/billingRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:06:20.041Z [ERROR]: ❌ Failed to load route /api/admin: Identifier 'logger' has already been declared
+2025-03-11T11:06:20.360Z [ERROR]: ❌ Failed to load route /api/files: Router.use() requires a middleware function but got a undefined
+2025-03-11T11:06:20.361Z [ERROR]: ❌ Failed to load route /api/performance: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/performanceRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:06:20.361Z [ERROR]: ❌ Failed to load route /api/workflows: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/ai/aiWorkflowManager' imported from /Users/patrick/Projects/Teralynk/backend/src/routes/workflowRoutes.js
+2025-03-11T11:06:20.361Z [ERROR]: ❌ Failed to load route /api/troubleshoot: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/troubleshootRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:06:20.362Z [ERROR]: ❌ Failed to load route /api/feedback: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/feedbackRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:06:20.362Z [ERROR]: ❌ Failed to load route /api/developers: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/developerRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:06:20.362Z [ERROR]: ❌ Failed to load route /api/apps: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/appRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:06:20.362Z [ERROR]: ❌ Failed to load route /api/keys: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/keyRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:06:20.362Z [ERROR]: ❌ Failed to load route /api/billing: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/billingRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:06:34.280Z [ERROR]: ❌ Failed to load route /api/admin: Identifier 'logger' has already been declared
+2025-03-11T11:06:34.607Z [ERROR]: ❌ Failed to load route /api/performance: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/performanceRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:06:34.607Z [ERROR]: ❌ Failed to load route /api/workflows: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/ai/aiWorkflowManager' imported from /Users/patrick/Projects/Teralynk/backend/src/routes/workflowRoutes.js
+2025-03-11T11:06:34.608Z [ERROR]: ❌ Failed to load route /api/troubleshoot: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/troubleshootRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:06:34.608Z [ERROR]: ❌ Failed to load route /api/feedback: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/feedbackRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:06:34.608Z [ERROR]: ❌ Failed to load route /api/developers: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/developerRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:06:34.608Z [ERROR]: ❌ Failed to load route /api/apps: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/appRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:06:34.608Z [ERROR]: ❌ Failed to load route /api/keys: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/keyRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:06:34.608Z [ERROR]: ❌ Failed to load route /api/billing: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/billingRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:07:27.203Z [ERROR]: ❌ Failed to load route /api/admin: Identifier 'logger' has already been declared
+2025-03-11T11:07:27.549Z [ERROR]: ❌ Failed to load route /api/performance: Router.use() requires a middleware function but got a undefined
+2025-03-11T11:07:27.552Z [ERROR]: ❌ Failed to load route /api/workflows: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/ai/aiWorkflowManager' imported from /Users/patrick/Projects/Teralynk/backend/src/routes/workflowRoutes.js
+2025-03-11T11:07:27.552Z [ERROR]: ❌ Failed to load route /api/troubleshoot: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/troubleshootRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:07:27.553Z [ERROR]: ❌ Failed to load route /api/feedback: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/feedbackRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:07:27.553Z [ERROR]: ❌ Failed to load route /api/developers: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/developerRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:07:27.553Z [ERROR]: ❌ Failed to load route /api/apps: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/appRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:07:27.553Z [ERROR]: ❌ Failed to load route /api/keys: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/keyRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:07:27.553Z [ERROR]: ❌ Failed to load route /api/billing: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/billingRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:07:38.173Z [ERROR]: ❌ Failed to load route /api/admin: Identifier 'logger' has already been declared
+2025-03-11T11:07:38.499Z [ERROR]: ❌ Failed to load route /api/workflows: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/ai/aiWorkflowManager' imported from /Users/patrick/Projects/Teralynk/backend/src/routes/workflowRoutes.js
+2025-03-11T11:07:38.499Z [ERROR]: ❌ Failed to load route /api/troubleshoot: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/troubleshootRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:07:38.500Z [ERROR]: ❌ Failed to load route /api/feedback: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/feedbackRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:07:38.500Z [ERROR]: ❌ Failed to load route /api/developers: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/developerRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:07:38.500Z [ERROR]: ❌ Failed to load route /api/apps: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/appRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:07:38.500Z [ERROR]: ❌ Failed to load route /api/keys: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/keyRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:07:38.500Z [ERROR]: ❌ Failed to load route /api/billing: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/billingRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:08:43.046Z [ERROR]: ❌ Failed to load route /api/admin: Identifier 'logger' has already been declared
+2025-03-11T11:08:43.369Z [ERROR]: ❌ Failed to load route /api/workflows: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/ai/aiWorkflowManager' imported from /Users/patrick/Projects/Teralynk/backend/src/routes/workflowRoutes.js
+2025-03-11T11:08:43.369Z [ERROR]: ❌ Failed to load route /api/troubleshoot: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/troubleshootRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:08:43.369Z [ERROR]: ❌ Failed to load route /api/feedback: Router.use() requires a middleware function but got a undefined
+2025-03-11T11:08:43.369Z [ERROR]: ❌ Failed to load route /api/developers: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/developerRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:08:43.370Z [ERROR]: ❌ Failed to load route /api/apps: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/appRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:08:43.370Z [ERROR]: ❌ Failed to load route /api/keys: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/keyRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:08:43.370Z [ERROR]: ❌ Failed to load route /api/billing: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/billingRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:09:01.477Z [ERROR]: ❌ Failed to load route /api/admin: Identifier 'logger' has already been declared
+2025-03-11T11:09:01.802Z [ERROR]: ❌ Failed to load route /api/workflows: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/ai/aiWorkflowManager' imported from /Users/patrick/Projects/Teralynk/backend/src/routes/workflowRoutes.js
+2025-03-11T11:09:01.802Z [ERROR]: ❌ Failed to load route /api/troubleshoot: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/troubleshootRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:09:01.802Z [ERROR]: ❌ Failed to load route /api/developers: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/developerRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:09:01.803Z [ERROR]: ❌ Failed to load route /api/apps: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/appRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:09:01.803Z [ERROR]: ❌ Failed to load route /api/keys: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/keyRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:09:01.803Z [ERROR]: ❌ Failed to load route /api/billing: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/billingRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:09:47.880Z [ERROR]: ❌ Failed to load route /api/admin: Identifier 'logger' has already been declared
+2025-03-11T11:09:48.203Z [ERROR]: ❌ Failed to load route /api/workflows: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/ai/aiWorkflowManager' imported from /Users/patrick/Projects/Teralynk/backend/src/routes/workflowRoutes.js
+2025-03-11T11:09:48.203Z [ERROR]: ❌ Failed to load route /api/troubleshoot: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/troubleshootRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:09:48.204Z [ERROR]: ❌ Failed to load route /api/developers: Router.use() requires a middleware function but got a undefined
+2025-03-11T11:09:48.204Z [ERROR]: ❌ Failed to load route /api/apps: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/appRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:09:48.204Z [ERROR]: ❌ Failed to load route /api/keys: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/keyRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:09:48.204Z [ERROR]: ❌ Failed to load route /api/billing: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/billingRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:10:03.548Z [ERROR]: ❌ Failed to load route /api/admin: Identifier 'logger' has already been declared
+2025-03-11T11:10:03.876Z [ERROR]: ❌ Failed to load route /api/workflows: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/ai/aiWorkflowManager' imported from /Users/patrick/Projects/Teralynk/backend/src/routes/workflowRoutes.js
+2025-03-11T11:10:03.877Z [ERROR]: ❌ Failed to load route /api/troubleshoot: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/troubleshootRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:10:03.877Z [ERROR]: ❌ Failed to load route /api/apps: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/appRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:10:03.877Z [ERROR]: ❌ Failed to load route /api/keys: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/keyRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:10:03.878Z [ERROR]: ❌ Failed to load route /api/billing: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/billingRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:10:17.904Z [ERROR]: ❌ Failed to load route /api/admin: Identifier 'logger' has already been declared
+2025-03-11T11:10:18.233Z [ERROR]: ❌ Failed to load route /api/workflows: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/ai/aiWorkflowManager' imported from /Users/patrick/Projects/Teralynk/backend/src/routes/workflowRoutes.js
+2025-03-11T11:10:18.233Z [ERROR]: ❌ Failed to load route /api/troubleshoot: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/troubleshootRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:10:18.234Z [ERROR]: ❌ Failed to load route /api/apps: Router.use() requires a middleware function but got a undefined
+2025-03-11T11:10:18.234Z [ERROR]: ❌ Failed to load route /api/keys: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/keyRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:10:18.235Z [ERROR]: ❌ Failed to load route /api/billing: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/billingRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:10:31.424Z [ERROR]: ❌ Failed to load route /api/admin: Identifier 'logger' has already been declared
+2025-03-11T11:10:31.749Z [ERROR]: ❌ Failed to load route /api/workflows: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/ai/aiWorkflowManager' imported from /Users/patrick/Projects/Teralynk/backend/src/routes/workflowRoutes.js
+2025-03-11T11:10:31.749Z [ERROR]: ❌ Failed to load route /api/troubleshoot: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/troubleshootRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:10:31.750Z [ERROR]: ❌ Failed to load route /api/keys: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/keyRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:10:31.750Z [ERROR]: ❌ Failed to load route /api/billing: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/billingRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:10:55.253Z [ERROR]: ❌ Failed to load route /api/admin: Identifier 'logger' has already been declared
+2025-03-11T11:10:55.580Z [ERROR]: ❌ Failed to load route /api/workflows: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/ai/aiWorkflowManager' imported from /Users/patrick/Projects/Teralynk/backend/src/routes/workflowRoutes.js
+2025-03-11T11:10:55.581Z [ERROR]: ❌ Failed to load route /api/troubleshoot: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/troubleshootRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:10:55.582Z [ERROR]: ❌ Failed to load route /api/keys: Router.use() requires a middleware function but got a undefined
+2025-03-11T11:10:55.582Z [ERROR]: ❌ Failed to load route /api/billing: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/billingRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:11:32.209Z [ERROR]: ❌ Failed to load route /api/admin: Identifier 'logger' has already been declared
+2025-03-11T11:11:32.540Z [ERROR]: ❌ Failed to load route /api/workflows: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/ai/aiWorkflowManager' imported from /Users/patrick/Projects/Teralynk/backend/src/routes/workflowRoutes.js
+2025-03-11T11:11:32.540Z [ERROR]: ❌ Failed to load route /api/troubleshoot: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/troubleshootRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:11:32.541Z [ERROR]: ❌ Failed to load route /api/billing: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/billingRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:11:50.654Z [ERROR]: ❌ Failed to load route /api/admin: Identifier 'logger' has already been declared
+2025-03-11T11:11:50.977Z [ERROR]: ❌ Failed to load route /api/workflows: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/ai/aiWorkflowManager' imported from /Users/patrick/Projects/Teralynk/backend/src/routes/workflowRoutes.js
+2025-03-11T11:11:50.978Z [ERROR]: ❌ Failed to load route /api/troubleshoot: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/troubleshootRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:11:50.979Z [ERROR]: ❌ Failed to load route /api/billing: Router.use() requires a middleware function but got a undefined
+2025-03-11T11:12:26.275Z [ERROR]: ❌ Failed to load route /api/admin: Identifier 'logger' has already been declared
+2025-03-11T11:12:26.597Z [ERROR]: ❌ Failed to load route /api/workflows: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/ai/aiWorkflowManager' imported from /Users/patrick/Projects/Teralynk/backend/src/routes/workflowRoutes.js
+2025-03-11T11:12:26.597Z [ERROR]: ❌ Failed to load route /api/troubleshoot: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/troubleshootRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:13:27.300Z [ERROR]: ❌ Failed to load route /api/admin: Identifier 'logger' has already been declared
+2025-03-11T11:13:27.612Z [ERROR]: ❌ Failed to load route /api/workflows: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/ai/aiWorkflowManager' imported from /Users/patrick/Projects/Teralynk/backend/src/routes/workflowRoutes.js
+2025-03-11T11:13:27.612Z [ERROR]: ❌ Failed to load route /api/troubleshoot: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/troubleshootRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:13:39.408Z [ERROR]: ❌ Failed to load route /api/admin: Identifier 'logger' has already been declared
+2025-03-11T11:13:39.711Z [ERROR]: ❌ Failed to load route /api/workflows: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/ai/aiWorkflowManager' imported from /Users/patrick/Projects/Teralynk/backend/src/routes/workflowRoutes.js
+2025-03-11T11:13:39.711Z [ERROR]: ❌ Failed to load route /api/troubleshoot: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/troubleshootRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:15:39.403Z [ERROR]: ❌ Failed to load route /api/admin: Identifier 'logger' has already been declared
+2025-03-11T11:15:39.733Z [ERROR]: ❌ Failed to load route /api/workflows: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/ai/aiWorkflowManager' imported from /Users/patrick/Projects/Teralynk/backend/src/routes/workflowRoutes.js
+2025-03-11T11:15:39.733Z [ERROR]: ❌ Failed to load route /api/troubleshoot: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/troubleshootRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:15:51.674Z [ERROR]: ❌ Failed to load route /api/admin: Identifier 'logger' has already been declared
+2025-03-11T11:15:52.001Z [ERROR]: ❌ Failed to load route /api/workflows: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/ai/aiWorkflowManager' imported from /Users/patrick/Projects/Teralynk/backend/src/routes/workflowRoutes.js
+2025-03-11T11:15:52.001Z [ERROR]: ❌ Failed to load route /api/troubleshoot: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/troubleshootRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:18:21.740Z [ERROR]: ❌ Failed to load route /api/admin: Identifier 'logger' has already been declared
+2025-03-11T11:18:22.055Z [ERROR]: ❌ Failed to load route /api/workflows: The requested module '../ai/aiWorkflowManager.js' does not provide an export named 'default'
+2025-03-11T11:18:22.055Z [ERROR]: ❌ Failed to load route /api/troubleshoot: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/troubleshootRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:18:46.309Z [ERROR]: ❌ Failed to load route /api/admin: Identifier 'logger' has already been declared
+2025-03-11T11:18:46.623Z [ERROR]: ❌ Failed to load route /api/workflows: The requested module '../ai/aiWorkflowManager.js' does not provide an export named 'default'
+2025-03-11T11:18:46.624Z [ERROR]: ❌ Failed to load route /api/troubleshoot: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/troubleshootRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:20:23.657Z [ERROR]: ❌ Failed to load route /api/workflows: The requested module '../ai/aiWorkflowManager.js' does not provide an export named 'default'
+2025-03-11T11:20:23.658Z [ERROR]: ❌ Failed to load route /api/troubleshoot: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/troubleshootRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:20:42.289Z [ERROR]: ❌ Failed to load route /api/workflows: The requested module '../ai/aiWorkflowManager.js' does not provide an export named 'default'
+2025-03-11T11:20:42.289Z [ERROR]: ❌ Failed to load route /api/troubleshoot: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/troubleshootRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:22:01.016Z [ERROR]: ❌ Failed to load route /api/workflows: The requested module '../middleware/authMiddleware.js' does not provide an export named 'authenticate'
+2025-03-11T11:22:01.016Z [ERROR]: ❌ Failed to load route /api/troubleshoot: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/troubleshootRoutes.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-11T11:25:30.473Z [ERROR]: ❌ Failed to load route /api/workflows: The requested module '../middleware/authMiddleware.js' does not provide an export named 'authenticate'
+2025-03-11T11:26:15.639Z [ERROR]: ❌ Failed to load route /api/workflows: The requested module '../middleware/authMiddleware.js' does not provide an export named 'authenticate'
+2025-03-11T22:42:57.986Z [ERROR]: ❌ Failed to load route /api/secrets: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/secrets.js' imported from /Users/patrick/Projects/Teralynk/backend/server.js
+2025-03-12T23:46:42.207Z [ERROR]: ❌ Failed to load route /api/apps: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/authRoutes' imported from /Users/patrick/Projects/Teralynk/backend/src/routes/appRoutes.js
+2025-03-12T23:57:07.605Z [ERROR]: ❌ Failed to load route /api/apps: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/authRoutes' imported from /Users/patrick/Projects/Teralynk/backend/src/routes/appRoutes.js
+2025-03-12T23:57:21.219Z [ERROR]: ❌ Failed to load route /api/apps: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/authRoutes' imported from /Users/patrick/Projects/Teralynk/backend/src/routes/appRoutes.js
+2025-03-12T23:57:35.873Z [ERROR]: ❌ Failed to load route /api/apps: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/authRoutes' imported from /Users/patrick/Projects/Teralynk/backend/src/routes/appRoutes.js
+2025-03-12T23:58:01.952Z [ERROR]: ❌ Failed to load route /api/apps: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/authRoutes' imported from /Users/patrick/Projects/Teralynk/backend/src/routes/appRoutes.js
+2025-03-12T23:58:35.917Z [ERROR]: ❌ Failed to load route /api/apps: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/authRoutes' imported from /Users/patrick/Projects/Teralynk/backend/src/routes/appRoutes.js
+2025-03-12T23:58:52.980Z [ERROR]: ❌ Failed to load route /api/apps: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/authRoutes' imported from /Users/patrick/Projects/Teralynk/backend/src/routes/appRoutes.js
+2025-03-13T00:24:59.494Z [ERROR]: ❌ Failed to load route /api/apps: Cannot find module '/Users/patrick/Projects/Teralynk/backend/src/routes/authRoutes' imported from /Users/patrick/Projects/Teralynk/backend/src/routes/appRoutes.js

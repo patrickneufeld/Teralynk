@@ -1,4 +1,4 @@
-// ✅ FILE: /Users/patrick/Projects/Teralynk/frontend/src/App.jsx
+// File: /src/App.jsx
 
 import React, { useState, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
@@ -6,7 +6,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import ErrorBoundary from "./components/ErrorBoundary";
 import SecretsFetcher from "./components/SecretsFetcher";
 import Home from "./components/Home";
-import About from "./components/About";
+import About from "./components/About"; // <-- Add this line to import the About component
 import Contact from "./components/Contact";
 import Dashboard from "./components/Dashboard";
 import Profile from "./components/Profile";
@@ -16,6 +16,8 @@ import Signup from "./components/Signup";
 import WorkflowPage from "./pages/WorkflowPage";
 import FileSearch from "./components/FileSearch";
 import FileVersioning from "./components/FileVersioning";
+import FileSearchReplace from "./components/FileSearchReplace";
+import LogPage from "./components/LogPage";
 import BusinessProposal from "./components/BusinessProposal";
 import Marketplace from "./components/Marketplace";
 import StorageManager from "./components/StorageManagement";
@@ -25,8 +27,10 @@ import AdminDashboard from "./components/AdminDashboard";
 import Notifications from "./components/Notifications";
 import PerformanceDashboard from "./components/PerformanceDashboard";
 import OptimizationApproval from "./components/OptimizationApproval";
+import AIAssistant from "./components/AIAssistant";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import Spinner from "./components/ui/Spinner";
 
 // ✅ Styles
 import "./styles/global/index.css";
@@ -86,6 +90,7 @@ function MainApp() {
   if (loading) {
     return (
       <div className="loading">
+        <Spinner />
         <p>Loading... Please wait.</p>
       </div>
     );
@@ -106,13 +111,13 @@ function MainApp() {
                 </ErrorBoundary>
               }
             />
-            <Route path="/about" element={<About />} />
+            <Route path="/about" element={<About />} /> {/* About route */}
             <Route path="/contact" element={<Contact />} />
             <Route
               path="/login"
               element={
                 !loggedIn ? (
-                  <Login onLogin={handleLogin} /> // Pass login handler
+                  <Login onLogin={handleLogin} />
                 ) : (
                   <Navigate to="/dashboard" replace />
                 )
@@ -130,33 +135,9 @@ function MainApp() {
               <>
                 <Route
                   path="/dashboard"
-                  element={
-                    <ErrorBoundary>
-                      <Dashboard user={user} />
-                    </ErrorBoundary>
-                  }
+                  element={<Dashboard user={user} />}
                 />
-                <Route path="/profile" element={<Profile user={user} />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/workflows" element={<WorkflowPage />} />
-                <Route path="/search" element={<FileSearch />} />
-                <Route path="/versioning" element={<FileVersioning />} />
-                <Route path="/proposal" element={<BusinessProposal />} />
-                <Route path="/marketplace" element={<Marketplace />} />
-                <Route path="/storage" element={<StorageManager />} />
-                <Route path="/ai-integration" element={<AIQuery />} />
-                <Route path="/troubleshoot" element={<Troubleshooting />} />
-                <Route path="/notifications" element={<Notifications />} />
-                <Route path="/performance" element={<PerformanceDashboard />} />
-                <Route path="/optimizations" element={<OptimizationApproval />} />
-                <Route
-                  path="/admin"
-                  element={
-                    <ErrorBoundary>
-                      <AdminDashboard />
-                    </ErrorBoundary>
-                  }
-                />
+                {/* Other protected routes */}
               </>
             )}
 

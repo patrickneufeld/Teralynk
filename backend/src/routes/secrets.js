@@ -1,26 +1,48 @@
+// ✅ File: /Users/patrick/Projects/Teralynk/backend/src/routes/secrets.js
+
 import express from "express";
+import dotenv from "dotenv";
+import { SecretsManagerClient, GetSecretValueCommand } from "@aws-sdk/client-secrets-manager";
+
+dotenv.config();
 
 const router = express.Router();
 
-/**
- * ✅ GET /api/secrets/teralynk/env
- * Public route to expose selected frontend-safe environment variables.
- */
-router.get("/teralynk/env", (req, res) => {
-  try {
-    const allowedEnv = {
-      VITE_API_URL: process.env.VITE_API_URL || "http://localhost:5001",
-      FRONTEND_URL: process.env.FRONTEND_URL || "http://localhost:5173",
-      VITE_AWS_REGION: process.env.AWS_REGION,
-      VITE_COGNITO_USER_POOL_ID: process.env.COGNITO_USER_POOL_ID,
-      VITE_COGNITO_CLIENT_ID: process.env.COGNITO_CLIENT_ID,
-      VITE_XAI_API_KEY: process.env.XAI_API_KEY || "", // Safe only if usage is client-authorized
-    };
+// ✅ Fetch secrets once and cache them
+let cachedSecrets = null;
 
-    res.status(200).json(allowedEnv);
+const secretName = (process.env.SECRETS_MANAGER_NAME || "teralynk/env").trim();
+const secretsManager = new SecretsManagerClient({ region: process.env.AWS_REGION || "us-east-1" });
+
+async function fetchSecrets() {
+  if (cachedSecrets) return cachedSecrets;
+
+  console.log(`🔍 Fetching secrets from AWS: ${secretName}`);
+  const secretData = await secretsManager.send(new GetSecretValueCommand({ SecretId: secretName }));
+
+  if (!secretData.SecretString) throw new Error("Empty SecretString from AWS");
+
+  const parsed = JSON.parse(secretData.SecretString.trim());
+
+  const requiredKeys = ["VITE_API_URL", "FRONTEND_URL"];
+  const missing = requiredKeys.filter((key) => !parsed[key]);
+
+  if (missing.length) {
+    throw new Error(`Missing required secrets: ${missing.join(", ")}`);
+  }
+
+  cachedSecrets = parsed;
+  return parsed;
+}
+
+// ✅ GET /api/secrets
+router.get("/", async (req, res) => {
+  try {
+    const secrets = await fetchSecrets();
+    res.json(secrets);
   } catch (err) {
-    console.error("❌ Failed to return frontend secrets:", err);
-    res.status(500).json({ error: "Failed to fetch environment variables." });
+    console.error("❌ Error returning secrets:", err.message);
+    res.status(500).json({ error: "Failed to load secrets" });
   }
 });
 

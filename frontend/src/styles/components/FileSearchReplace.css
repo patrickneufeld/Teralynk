@@ -1,0 +1,93 @@
+/* ✅ FILE: /Users/patrick/Projects/Teralynk/frontend/src/styles/components/FileSearchReplace.css */
+
+.file-replace-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+}
+
+.file-replace-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  color: #333;
+}
+
+.search-replace-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.search-replace-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.replace-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.results-list {
+  margin-top: 2rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.replaced-list {
+  margin-top: 2rem;
+  background: #f9f9f9;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.replaced-list ul {
+  padding-left: 1rem;
+  list-style: disc;
+}
+
+.replaced-list li {
+  font-size: 0.95rem;
+  color: #2d2d2d;
+}
+
+.file-tags {
+  margin-top: 0.5rem;
+}
+
+.file-tags .tag {
+  display: inline-block;
+  background-color: #e0e7ff;
+  color: #1e40af;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  margin: 2px;
+  border-radius: 6px;
+}
+
+.highlight {
+  background-color: #fff5b1;
+  padding: 0 4px;
+  font-weight: 600;
+  color: #8a5400;
+  border-radius: 4px;
+}
+
+input[type="text"] {
+  min-width: 220px;
+}
+
+input[type="checkbox"] {
+  transform: scale(1.1);
+  margin-right: 0.4rem;
+}

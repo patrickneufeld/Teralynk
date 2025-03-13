@@ -1,0 +1,68 @@
+/* ✅ FILE: /frontend/src/styles/components/AIAnalytics.css */
+
+.ai-analytics-container {
+    padding: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+  }
+  
+  .ai-analytics-container .title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 30px;
+    color: #1f2937;
+  }
+  
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  
+  .metrics-grid .card h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #444;
+  }
+  
+  .metrics-grid .card p {
+    font-size: 20px;
+    font-weight: bold;
+    color: #111;
+  }
+  
+  .full-span {
+    grid-column: 1 / -1;
+  }
+  
+  .optimization-item {
+    padding: 6px 12px;
+    margin-bottom: 6px;
+    background-color: #f1f5f9;
+    border-left: 4px solid #22c55e;
+    border-radius: 4px;
+    font-size: 15px;
+  }
+  
+  @media (max-width: 768px) {
+    .ai-analytics-container {
+      padding: 16px;
+    }
+  
+    .metrics-grid {
+      gap: 16px;
+    }
+  
+    .ai-analytics-container .title {
+      font-size: 24px;
+    }
+  
+    .metrics-grid .card p {
+      font-size: 18px;
+    }
+  }
+  

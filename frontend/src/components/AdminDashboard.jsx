@@ -1,43 +1,39 @@
-// ✅ FILE PATH: /Users/patrick/Projects/Teralynk/frontend/src/components/AdminDashboard.jsx
-
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import Alert from "../components/ui/Alert";
-import Spinner from "../components/ui/Spinner"; // Assuming you have a Spinner component
+import Spinner from "../components/ui/Spinner";
 
 export default function AdminDashboard() {
   const [optimizations, setOptimizations] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
-  /**
-   * ✅ Fetch pending AI optimizations from the server
-   * @returns {Promise<void>} Fetch and update the state with optimizations
-   */
+  // ✅ Fetch optimizations from backend
   useEffect(() => {
     const fetchOptimizations = async () => {
       setLoading(true);
       setError("");
 
       try {
-        const res = await fetch("/api/admin/optimizations", {
+        const res = await fetch("/api/admin/ai-optimizations", {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`, // Include auth token
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
             "Content-Type": "application/json",
           },
           credentials: "include",
         });
 
         if (!res.ok) {
-          throw new Error("Failed to fetch optimizations.");
+          const data = await res.json();
+          throw new Error(data?.error || "Failed to fetch optimizations.");
         }
 
         const data = await res.json();
-        setOptimizations(data.pending_optimizations);
+        setOptimizations(data?.data || []);
       } catch (err) {
-        console.error("❌ Error fetching optimizations:", err);
-        setError(err.message || "Error fetching optimizations. Please try again.");
+        console.error("❌ Fetch Error:", err);
+        setError(err.message || "Failed to load optimizations.");
       } finally {
         setLoading(false);
       }
@@ -46,31 +42,27 @@ export default function AdminDashboard() {
     fetchOptimizations();
   }, []);
 
-  /**
-   * ✅ Approve an AI optimization
-   * @param {string} id - ID of the optimization to approve
-   * @returns {Promise<void>} Sends an approval request and updates the state
-   */
+  // ✅ Approve optimization
   const approveOptimization = async (id) => {
     try {
-      const res = await fetch("/api/admin/optimizations/approve", {
+      const res = await fetch("/api/admin/ai-optimizations/approve", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`, // Include auth token
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ optimization_id: id }),
+        body: JSON.stringify({ id }),
       });
 
       if (!res.ok) {
-        throw new Error("Failed to approve optimization.");
+        const data = await res.json();
+        throw new Error(data?.error || "Approval failed.");
       }
 
-      // Remove the approved optimization from the list
       setOptimizations((prev) => prev.filter((opt) => opt._id !== id));
     } catch (err) {
-      console.error("❌ Error approving optimization:", err);
-      setError(err.message || "Error approving optimization. Please try again.");
+      console.error("❌ Approval Error:", err);
+      setError(err.message || "Failed to approve optimization.");
     }
   };
 
@@ -78,43 +70,41 @@ export default function AdminDashboard() {
     <div className="p-6 max-w-3xl mx-auto bg-white shadow-lg rounded-lg">
       <h1 className="text-2xl font-bold mb-4 text-center">Admin AI Optimizations</h1>
 
-      {/* Error Message */}
-      {error && <Alert className="mb-4 text-red-500" role="alert">{error}</Alert>}
+      {error && (
+        <Alert className="mb-4 text-red-600" role="alert">
+          {error}
+        </Alert>
+      )}
 
-      {/* Loading State */}
       {loading ? (
         <div className="flex justify-center items-center">
           <Spinner aria-label="Loading optimizations" />
         </div>
+      ) : optimizations.length === 0 ? (
+        <p className="text-center text-gray-600">
+          No pending optimizations at the moment.
+        </p>
       ) : (
-        // Content When Data is Available
-        <>
-          {optimizations.length === 0 ? (
-            <p className="text-center text-gray-600">
-              No pending optimizations at the moment.
-            </p>
-          ) : (
-            <div className="grid gap-4">
-              {optimizations.map((opt) => (
-                <Card
-                  key={opt._id}
-                  className="border border-gray-300 shadow-md hover:shadow-lg transition-shadow"
+        <div className="grid gap-4">
+          {optimizations.map((opt) => (
+            <Card
+              key={opt._id}
+              className="border border-gray-300 shadow-md hover:shadow-lg transition-shadow"
+            >
+              <CardContent className="p-4">
+                <p className="text-lg text-gray-800 mb-2">
+                  {opt.suggested_update || "Optimization suggestion"}
+                </p>
+                <Button
+                  onClick={() => approveOptimization(opt._id)}
+                  className="bg-green-500 hover:bg-green-600 text-white"
                 >
-                  <CardContent className="p-4">
-                    <p className="text-lg text-gray-800">{opt.suggested_update}</p>
-                    <Button
-                      onClick={() => approveOptimization(opt._id)}
-                      className="mt-2 bg-green-500 hover:bg-green-600 text-white"
-                      aria-label={`Approve optimization for ${opt.suggested_update}`}
-                    >
-                      Approve & Apply
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </>
+                  Approve & Apply
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       )}
     </div>
   );

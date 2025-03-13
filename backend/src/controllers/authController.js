@@ -9,12 +9,12 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-// ✅ AWS Cognito Setup
+// AWS Cognito Setup
 const cognito = new AWS.CognitoIdentityServiceProvider({
     region: process.env.COGNITO_REGION,
 });
 
-// ✅ PostgreSQL Initialization
+// PostgreSQL Initialization
 const dbClient = new Client({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -28,17 +28,17 @@ dbClient.connect().catch(err => {
     console.error("❌ PostgreSQL Connection Error:", err.message);
 });
 
-// ✅ Rate Limiting (Prevents Brute-Force Attacks)
+// Rate Limiting (Prevents Brute-Force Attacks)
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 10, // Limit each IP to 10 login attempts per windowMs
     message: "Too many login attempts. Please try again later.",
 });
 
-// ✅ Token Blacklist (For Revocation)
+// Token Blacklist (For Revocation)
 const tokenBlacklist = new Set();
 
-// ✅ SIGNUP (Cognito + PostgreSQL Transaction)
+// SIGNUP (Cognito + PostgreSQL Transaction)
 const signup = async (req, res) => {
     const { username, password, email } = req.body;
     if (!username || !password || !email) {
@@ -84,14 +84,14 @@ const signup = async (req, res) => {
         });
     } catch (error) {
         await client.query("ROLLBACK");
-        console.error("❌ Signup Error:", error);
+        console.error("❌ Signup Error:", error.message);
         res.status(500).json({ error: "Signup failed. Please try again." });
     } finally {
         client.release();
     }
 };
 
-// ✅ LOGIN - Authenticate User (Cognito)
+// LOGIN - Authenticate User (Cognito)
 const login = async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) {
@@ -123,12 +123,12 @@ const login = async (req, res) => {
             idToken: response.AuthenticationResult.IdToken,
         });
     } catch (error) {
-        console.error("❌ Login Error:", error);
+        console.error("❌ Login Error:", error.message);
         res.status(401).json({ error: "Authentication failed" });
     }
 };
 
-// ✅ REFRESH TOKEN
+// REFRESH TOKEN
 const refresh = async (req, res) => {
     try {
         const refreshToken = req.cookies.refreshToken;
@@ -144,13 +144,13 @@ const refresh = async (req, res) => {
 
         res.json({ accessToken: response.AuthenticationResult.AccessToken });
     } catch (error) {
-        console.error("❌ Refresh Token Error:", error);
+        console.error("❌ Refresh Token Error:", error.message);
         res.clearCookie("refreshToken");
         res.status(401).json({ error: "Invalid refresh token" });
     }
 };
 
-// ✅ LOGOUT - Revoke Refresh Token
+// LOGOUT - Revoke Refresh Token
 const logout = async (req, res) => {
     const refreshToken = req.cookies.refreshToken;
     if (refreshToken) tokenBlacklist.add(refreshToken); // Revoke token
@@ -158,7 +158,7 @@ const logout = async (req, res) => {
     res.json({ message: "Logout successful" });
 };
 
-// ✅ DELETE USER (With Transaction)
+// DELETE USER (With Transaction)
 const deleteUser = async (req, res) => {
     const { username } = req.body;
     if (!username) return res.status(400).json({ error: "Username required" });
@@ -179,20 +179,20 @@ const deleteUser = async (req, res) => {
         res.json({ message: "User deleted successfully" });
     } catch (error) {
         await client.query("ROLLBACK");
-        console.error("❌ Delete User Error:", error);
+        console.error("❌ Delete User Error:", error.message);
         res.status(500).json({ error: "Failed to delete user" });
     } finally {
         client.release();
     }
 };
 
-// ✅ STATUS (New Endpoint to Check Authentication Status)
+// STATUS (New Endpoint to Check Authentication Status)
 const status = async (req, res) => {
     try {
         const user = req.user;
         res.json({ status: "Authenticated", user: user });
     } catch (error) {
-        console.error("❌ Status Check Error:", error);
+        console.error("❌ Status Check Error:", error.message);
         res.status(500).json({ error: "Failed to fetch status" });
     }
 };

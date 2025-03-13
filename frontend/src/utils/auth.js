@@ -1,70 +1,62 @@
+// ✅ FILE: /frontend/src/utils/auth.js
+
 export const TOKEN_KEY = "teralynk_access_token";
 
 /**
- * ✅ Securely Store Authentication Token in Cookies
- * @param {string} token - JWT token received after login
- * @param {number} [expiresIn=3600] - Time in seconds before the token expires
+ * 🔐 Store authentication token securely in cookies
+ * @param {string} token - JWT access token
+ * @param {number} [expiresIn=3600] - Expiration time in seconds
  */
 export const setToken = (token, expiresIn = 3600) => {
-  if (token) {
-    const expirationDate = new Date(Date.now() + expiresIn * 1000).toUTCString();
-    document.cookie = `${TOKEN_KEY}=${token}; expires=${expirationDate}; Secure; SameSite=Strict; Path=/`;
-    console.log("✅ Token securely stored in cookies.");
-  } else {
-    console.warn("⚠️ Cannot store an empty token.");
+  if (!token) {
+    console.warn("❌ Cannot store an empty token.");
+    return;
   }
+
+  const expirationDate = new Date(Date.now() + expiresIn * 1000).toUTCString();
+  document.cookie = `${TOKEN_KEY}=${token}; expires=${expirationDate}; Secure; SameSite=Strict; Path=/`;
+  console.log("✅ Token securely stored in cookies.");
 };
 
 /**
- * ✅ Retrieve the stored authentication token from cookies
- * @returns {string|null} - Returns the token or null if not found
+ * 🍪 Retrieve token from cookies
+ * @returns {string|null}
  */
 export const getToken = () => {
-  try {
-    const cookies = document.cookie.split("; ");
-    for (let cookie of cookies) {
-      const [name, value] = cookie.split("=");
-      if (name === TOKEN_KEY) return value;
-    }
-    console.warn("⚠️ Token not found in cookies.");
-    return null;
-  } catch (error) {
-    console.error("❌ Error retrieving token:", error);
-    return null;
+  const cookies = document.cookie.split("; ");
+  for (const cookie of cookies) {
+    const [name, value] = cookie.split("=");
+    if (name === TOKEN_KEY) return value;
   }
+  return null;
 };
 
 /**
- * ✅ Remove the authentication token (logout)
- * Clears the token from cookies
+ * 🗑️ Remove the authentication token from cookies
  */
 export const removeToken = () => {
-  try {
-    document.cookie = `${TOKEN_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; Path=/; Secure; SameSite=Strict`;
-    console.log("✅ Token successfully removed from cookies.");
-  } catch (error) {
-    console.error("❌ Error removing token:", error);
-  }
+  document.cookie = `${TOKEN_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; Path=/; Secure; SameSite=Strict`;
+  console.log("🧹 Token removed from cookies.");
 };
 
 /**
- * ✅ Parse JWT Token to Get User Info
- * @returns {object|null} - Returns decoded user data or null if invalid
+ * 📖 Decode user info from JWT token
+ * @returns {object|null}
  */
 export const getUserInfo = () => {
+  const token = getToken();
+  if (!token) return null;
+
   try {
-    const token = getToken();
-    if (!token) return null;
-
-    const base64Url = token.split(".")[1]; // Extract the payload
+    const base64Url = token.split(".")[1];
     const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-    const jsonPayload = atob(base64)
-      .split("")
-      .map((char) => `%${("00" + char.charCodeAt(0).toString(16)).slice(-2)}`)
-      .join("");
-
-    const userInfo = JSON.parse(decodeURIComponent(jsonPayload));
-    console.log("✅ User info decoded from token:", userInfo);
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => `%${("00" + c.charCodeAt(0).toString(16)).slice(-2)}`)
+        .join("")
+    );
+    const userInfo = JSON.parse(jsonPayload);
     return userInfo;
   } catch (error) {
     console.error("❌ Error decoding token:", error);
@@ -73,83 +65,64 @@ export const getUserInfo = () => {
 };
 
 /**
- * ✅ Automatically Refresh Token if Expired
- * Calls the refresh endpoint to obtain a new token
- * @returns {boolean} - True if the refresh is successful, false otherwise
+ * ♻️ Refresh access token if expired
+ * @returns {Promise<boolean>}
  */
 export const refreshToken = async () => {
-  try {
-    console.log("🔄 Attempting to refresh token...");
-    const refreshToken = getToken();
-    if (!refreshToken) {
-      console.warn("⚠️ No refresh token found.");
-      return false;
-    }
+  const currentToken = getToken();
+  if (!currentToken) {
+    console.warn("⚠️ No token to refresh.");
+    return false;
+  }
 
+  try {
     const response = await fetch("/api/auth/refresh", {
       method: "POST",
       credentials: "include",
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to refresh token. Status: ${response.status}`);
+      throw new Error(`🔁 Refresh failed. Status: ${response.status}`);
     }
 
     const data = await response.json();
-    setToken(data.accessToken, data.expiresIn); // Update token with expiration time
-    console.log("✅ Token refreshed successfully.");
-    return true;
-  } catch (error) {
-    console.error("❌ Token Refresh Error:", error);
+    if (data?.accessToken) {
+      setToken(data.accessToken, data.expiresIn || 3600);
+      console.log("🔄 Token refreshed.");
+      return true;
+    } else {
+      console.warn("⚠️ Refresh response missing token.");
+      return false;
+    }
+  } catch (err) {
+    console.error("❌ Token refresh error:", err);
     return false;
   }
 };
 
 /**
- * ✅ Check if User is Authenticated
- * Verifies if a token exists and is valid
- * @returns {boolean} - Returns true if the token is valid
+ * ✅ Check if user is authenticated
+ * @returns {boolean}
  */
 export const isAuthenticated = () => {
   const token = getToken();
-  if (!token) {
-    console.warn("⚠️ No token found. User is not authenticated.");
-    return false;
-  }
+  if (!token) return false;
 
-  try {
-    const userInfo = getUserInfo();
-    if (!userInfo) return false;
+  const userInfo = getUserInfo();
+  if (!userInfo || !userInfo.exp) return false;
 
-    const currentTime = Math.floor(Date.now() / 1000);
-    if (userInfo.exp > currentTime) {
-      console.log("✅ Token is valid. User is authenticated.");
-      return true;
-    } else {
-      console.warn("⚠️ Token has expired.");
-      return false;
-    }
-  } catch (error) {
-    console.error("❌ Error verifying token:", error);
-    return false;
-  }
+  const currentTime = Math.floor(Date.now() / 1000);
+  return userInfo.exp > currentTime;
 };
 
 /**
- * ✅ Handle User Logout
- * Clears the token and optionally redirects to login
- * @param {boolean} [redirect=true] - Whether to redirect the user to the login page
+ * 🚪 Logout and optionally redirect
+ * @param {boolean} [redirect=true]
  */
 export const logout = (redirect = true) => {
-  try {
-    console.log("🚪 Logging out user...");
-    removeToken();
-
-    if (redirect) {
-      console.log("🔄 Redirecting to login page...");
-      window.location.href = "/login";
-    }
-  } catch (error) {
-    console.error("❌ Logout Error:", error);
+  console.log("🚪 Logging out...");
+  removeToken();
+  if (redirect) {
+    window.location.href = "/login";
   }
 };
