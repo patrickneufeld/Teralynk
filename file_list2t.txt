@@ -1,0 +1,898 @@
+.
+├── ai_data
+├── AppDelegate.swift
+├── assets
+├── auth_imports.txt
+├── AWSCLIV2.pkg
+├── babel.config.js
+├── backend
+│   ├── api
+│   │   ├── activityLog.js
+│   │   ├── admin.js
+│   │   ├── aiInsights.js
+│   │   ├── auditLog.js
+│   │   ├── authRoutes.js
+│   │   ├── billingRoutes.js
+│   │   ├── chatFileRoutes.js
+│   │   ├── collaborationMetrics.js
+│   │   ├── collaborationNotificationRoutes.js
+│   │   ├── collaborationNotifications.js
+│   │   ├── collaborationRealTime.js
+│   │   ├── contactRoutes.js
+│   │   ├── dashboard.js
+│   │   ├── dashboardRoutes.js
+│   │   ├── docs.js
+│   │   ├── documentation.js
+│   │   ├── encryption.js
+│   │   ├── fileSyncRoutes.js
+│   │   ├── health.js
+│   │   ├── healthCheck.js
+│   │   ├── listWorkflows.js
+│   │   ├── logs.js
+│   │   ├── metadataRoutes.js
+│   │   ├── metrics.js
+│   │   ├── notificationDashboard.js
+│   │   ├── permissions.js
+│   │   ├── permissionsRoutes.js
+│   │   ├── repoRoutes.js
+│   │   ├── sampleRoute.js
+│   │   ├── sandbox.js
+│   │   ├── search.js
+│   │   ├── settings.js
+│   │   ├── settingsRoutes.js
+│   │   ├── synchronization.js
+│   │   ├── versioning.js
+│   │   ├── webhooks.js
+│   │   ├── workflows.js
+│   │   └── workflowSharingRoutes.js
+│   ├── awsSecretsService.js
+│   ├── backups
+│   ├── collaboration
+│   │   ├── analyticsController.js
+│   │   ├── auditLogService.js
+│   │   ├── collaborationController.js
+│   │   ├── collaborationErrorHandler.js
+│   │   ├── collaborationMetricsController.js
+│   │   ├── collaborationSocketController.js
+│   │   ├── conflictResolutionService.js
+│   │   ├── historyService.js
+│   │   ├── livePresenceService.js
+│   │   ├── metricsService.js
+│   │   ├── notificationController.js
+│   │   ├── notificationService.js
+│   │   ├── participantService.js
+│   │   ├── permissionsService.js
+│   │   └── socketServer.js
+│   ├── combined.log
+│   ├── config
+│   │   ├── app.js
+│   │   ├── cognitoAuth.js
+│   │   ├── connectDB.js
+│   │   ├── database.js
+│   │   ├── db.js
+│   │   ├── dynamicStorageManager.js
+│   │   ├── environment.js
+│   │   ├── initialize_remaining_features.sh
+│   │   ├── logger.js
+│   │   └── oauthRoutes.js
+│   ├── convert-require-to-import.js
+│   ├── db
+│   │   ├── check-db.js
+│   │   ├── init-db.sh
+│   │   ├── schema.sql
+│   │   ├── setup-db.sh
+│   │   └── setup.sh
+│   ├── db_verify.js
+│   ├── debug.js
+│   ├── dump.rdb
+│   ├── error.log
+│   ├── fetchSecrets.mjs
+│   ├── findEnvVars.js
+│   ├── fixImports.js
+│   ├── init-db.sh
+│   ├── initialize_db.sh
+│   ├── logfile
+│   ├── logs
+│   │   ├── app.log
+│   │   ├── combined.log
+│   │   ├── error.log
+│   │   ├── troubleshooting-errors.log
+│   │   └── troubleshooting.log
+│   ├── models
+│   │   ├── Contact.js
+│   │   ├── eventHistoryService.js
+│   │   ├── participantModel.js
+│   │   ├── sessionModel.js
+│   │   └── UserRepository.js
+│   ├── nodemon.json
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── README.md
+│   ├── reset-db.sh
+│   ├── script.js
+│   ├── scripts
+│   │   ├── authenticate_cognito.py
+│   │   ├── cognitoAuth.js
+│   │   ├── fixCode.js
+│   │   ├── fixProject.js
+│   │   ├── initSchema.js
+│   │   ├── reorganize_backend.py
+│   │   └── reorganizeStructure.js
+│   ├── selfDebugger.js
+│   ├── server.js
+│   ├── services
+│   │   ├── accessControlService.js
+│   │   ├── activityLogService.js
+│   │   ├── aiInsightsService.js
+│   │   ├── analyticsService.js
+│   │   ├── auditLogService.js
+│   │   ├── auth
+│   │   │   ├── authenticationService.js
+│   │   │   └── cognitoService.js
+│   │   ├── backupService.js
+│   │   ├── collaborationAnalyticsService.js
+│   │   ├── collaborationAuditService.js
+│   │   ├── collaborationDBService.js
+│   │   ├── collaborationErrorLoggingService.js
+│   │   ├── collaborationFileLockService.js
+│   │   ├── collaborationFileSyncService.js
+│   │   ├── collaborationFileVersioningService.js
+│   │   ├── collaborationNotificationService.js
+│   │   ├── collaborationPermissionService.js
+│   │   ├── collaborationService.js
+│   │   ├── collaborationSessionAnalyticsService.js
+│   │   ├── collaborationSessionService.js
+│   │   ├── collaborationUserActivityService.js
+│   │   ├── common
+│   │   │   ├── cacheService.js
+│   │   │   ├── emailService.js
+│   │   │   ├── loggingService.js
+│   │   │   ├── rbacService.js
+│   │   │   └── securityService.js
+│   │   ├── dashboardService.js
+│   │   ├── db.js
+│   │   ├── encryptionService.js
+│   │   ├── eventHistoryService.js
+│   │   ├── file
+│   │   │   ├── fileService.js
+│   │   │   ├── fileSharing.js
+│   │   │   ├── fileSharingService.js
+│   │   │   ├── fileStorageService.js
+│   │   │   └── fileSyncService.js
+│   │   ├── livePresenceService.js
+│   │   ├── marketplaceService.js
+│   │   ├── metadataService.js
+│   │   ├── monitoringService.js
+│   │   ├── notification
+│   │   │   ├── notification.js
+│   │   │   ├── notificationDashboardService.js
+│   │   │   ├── notificationFallbackService.js
+│   │   │   └── notificationService.js
+│   │   ├── offlineSupportService.js
+│   │   ├── paymentService.js
+│   │   ├── permissionsService.js
+│   │   ├── rateLimiterService.js
+│   │   ├── repoIntegration.js
+│   │   ├── searchService.js
+│   │   ├── sessionService.js
+│   │   ├── storageAnalyticsService.js
+│   │   ├── synchronizationService.js
+│   │   ├── versioningService.js
+│   │   └── workflowService.js
+│   ├── setup_database.sh
+│   ├── setup-db.sh
+│   ├── setup.sh
+│   ├── src
+│   │   ├── ai
+│   │   │   ├── __tests__
+│   │   │   │   └── aiPromptTemplateManager.test.js
+│   │   │   ├── aiAccessControl.js
+│   │   │   ├── aiAutoLearner.js
+│   │   │   ├── aiAutoOptimizer.js
+│   │   │   ├── aiCodeUpdater.js
+│   │   │   ├── aiCollaborationManager.js
+│   │   │   ├── aiContextMemoryManager.js
+│   │   │   ├── aiDataAccessControl.js
+│   │   │   ├── aiDebugAPI.js
+│   │   │   ├── aiErrorHandler.js
+│   │   │   ├── aiErrors.json
+│   │   │   ├── aiExternalQueryManager.js
+│   │   │   ├── aiFeedbackProcessor.js
+│   │   │   ├── aiFileAnalyzer.js
+│   │   │   ├── aiFileDebugger.js
+│   │   │   ├── aiFileInsights.js
+│   │   │   ├── aiFileManager.js
+│   │   │   ├── aiFileMonitor.js
+│   │   │   ├── aiFileSearchReplace.js
+│   │   │   ├── aiFileVersioning.js
+│   │   │   ├── aiIntegration.js
+│   │   │   ├── aiIntegrationAPI.js
+│   │   │   ├── aiLearningManager.js
+│   │   │   ├── aiModelTrainer.js
+│   │   │   ├── aiNotificationManager.js
+│   │   │   ├── aiOptimizations.json
+│   │   │   ├── aiPerformanceTracker.js
+│   │   │   ├── aiPlatformIntegrationManager.js
+│   │   │   ├── aiPromptTemplateManager.js
+│   │   │   ├── aiProviderManager.js
+│   │   │   ├── aiQueryDispatcher.js
+│   │   │   ├── aiQueryLogs.js
+│   │   │   ├── aiRetrainManager.js
+│   │   │   ├── aiSecurityManager.js
+│   │   │   ├── aiSelfImprovementScheduler.js
+│   │   │   ├── aiStaticAnalyzer.js
+│   │   │   ├── aiStorageAnalytics.js
+│   │   │   ├── aiStorageAuditor.js
+│   │   │   ├── aiStorageAutoScaler.js
+│   │   │   ├── aiStorageBackup.js
+│   │   │   ├── aiStorageBalancer.js
+│   │   │   ├── aiStorageBilling.js
+│   │   │   ├── aiStorageCompliance.js
+│   │   │   ├── aiStorageCostOptimizer.js
+│   │   │   ├── aiStorageEncryption.js
+│   │   │   ├── aiStorageEventMonitor.js
+│   │   │   ├── aiStorageFailureHandler.js
+│   │   │   ├── aiStorageForecaster.js
+│   │   │   ├── aiStorageInvoiceManager.js
+│   │   │   ├── aiStorageManager.js
+│   │   │   ├── aiStorageMonitoring.js
+│   │   │   ├── aiStorageOptimizer.js
+│   │   │   ├── aiStorageSecurity.js
+│   │   │   ├── aiStorageSelfImprover.js
+│   │   │   ├── aiTrainingOrchestrator.js
+│   │   │   ├── aiTrainingStatusManager.js
+│   │   │   ├── aiTrainingStatusTracker.js
+│   │   │   ├── aiTroubleshooter.js
+│   │   │   ├── aiTrustEvaluator.js
+│   │   │   ├── aiUsageLogger.js
+│   │   │   ├── aiWorkflowManager.js
+│   │   │   ├── performance_tracker_api.py
+│   │   │   ├── performance_tracker.js
+│   │   │   ├── performance_tracker.py
+│   │   │   ├── selfImprovementTasks.json
+│   │   │   ├── storageAnalytics.js
+│   │   │   └── unsupervised_ai.py
+│   │   ├── api
+│   │   │   ├── aiOptimizationAPI.js
+│   │   │   ├── aiPerformance.js
+│   │   │   ├── aiPerformanceAPI.js
+│   │   │   ├── aiPerformanceTracker.js
+│   │   │   ├── aiQueryAPI.js
+│   │   │   ├── auto_adjust.py
+│   │   │   ├── log_export.py
+│   │   │   ├── logs_api.py
+│   │   │   ├── notification_manager.py
+│   │   │   ├── performance_analyzer.py
+│   │   │   ├── rollback_manager.js
+│   │   │   ├── rollbackManager.js
+│   │   │   ├── storage.js
+│   │   │   ├── websocket_server.py
+│   │   │   └── weekly_report.py
+│   │   ├── aws
+│   │   │   └── secretManager.js
+│   │   ├── config
+│   │   │   ├── api.js
+│   │   │   ├── apiDocsHelper.js
+│   │   │   ├── cognitoConfig.js
+│   │   │   ├── config.js
+│   │   │   ├── database.js
+│   │   │   ├── db.js
+│   │   │   ├── dynamicStorageConfig.js
+│   │   │   ├── dynamicStorageManager.js
+│   │   │   ├── getSecrets.js
+│   │   │   ├── migrate.js
+│   │   │   ├── openaiConfig.js
+│   │   │   ├── queueConfig.js
+│   │   │   ├── redisPubSub.js
+│   │   │   ├── storageConfig.js
+│   │   │   └── websocketConfig.js
+│   │   ├── controllers
+│   │   │   ├── adminController.js
+│   │   │   ├── aiController.js
+│   │   │   ├── aiGroupsController.js
+│   │   │   ├── aiPerformanceController.js
+│   │   │   ├── appController.js
+│   │   │   ├── billingController.js
+│   │   │   ├── collaborationAnalyticsController.js
+│   │   │   ├── collaborationEventController.js
+│   │   │   ├── collaborationMetricsController.js
+│   │   │   ├── collaborationNotificationController.js
+│   │   │   ├── collaborationSessionController.js
+│   │   │   ├── collaborationSocketController.js
+│   │   │   ├── contactController.js
+│   │   │   ├── dashboardController.js
+│   │   │   ├── developerController.js
+│   │   │   ├── feedbackController.js
+│   │   │   ├── fileController.js
+│   │   │   ├── integrationController.js
+│   │   │   ├── keyController.js
+│   │   │   ├── logController.js
+│   │   │   ├── marketplaceController.js
+│   │   │   ├── notificationController.js
+│   │   │   ├── performanceController.js
+│   │   │   ├── s3Controller.js
+│   │   │   ├── secretsController.js
+│   │   │   ├── serviceController.js
+│   │   │   ├── settingsController.js
+│   │   │   ├── storageController.js
+│   │   │   ├── troubleshootingController.js
+│   │   │   ├── userController.js
+│   │   │   └── workflowController.js
+│   │   ├── dashboard
+│   │   │   ├── admin_dashboard.py
+│   │   │   └── performance_dashboard.py
+│   │   ├── db
+│   │   │   ├── index.js
+│   │   │   └── schema.sql
+│   │   ├── errors
+│   │   │   └── DatabaseError.js
+│   │   ├── index.ts
+│   │   ├── middleware
+│   │   │   ├── adminMiddleware.js
+│   │   │   ├── authenticateToken.js
+│   │   │   ├── authenticateUser.js
+│   │   │   ├── authMiddleware.js
+│   │   │   ├── collaborationValidationMiddleware.js
+│   │   │   ├── corsMiddleware.js
+│   │   │   ├── csrfMiddleware.js
+│   │   │   ├── errorHandler.js
+│   │   │   ├── errorMiddleware.js
+│   │   │   ├── inputValidationMiddleware.js
+│   │   │   ├── loggingMiddleware.js
+│   │   │   ├── privacyMiddleware.js
+│   │   │   ├── rateLimiterMiddleware.js
+│   │   │   ├── rbacMiddleware.js
+│   │   │   ├── requestLogger.js
+│   │   │   ├── storageMiddleware.js
+│   │   │   ├── validationMiddleware.js
+│   │   │   ├── verifyCognitoToken.js
+│   │   │   └── verifyToken.js
+│   │   ├── models
+│   │   │   ├── AILogModel.js
+│   │   │   ├── AIOptimizationModel.js
+│   │   │   ├── aiPerformanceModel.js
+│   │   │   ├── LogModel.js
+│   │   │   ├── MarketplaceAPI.js
+│   │   │   ├── MetricsModel.js
+│   │   │   ├── OAuthCredential.js
+│   │   │   ├── Service.js
+│   │   │   ├── storageUsage.js
+│   │   │   ├── userFiles.js
+│   │   │   ├── UserModel.js
+│   │   │   ├── UserPurchase.js
+│   │   │   └── UserService.js
+│   │   ├── routes
+│   │   │   ├── admin.js
+│   │   │   ├── adminRoutes.js
+│   │   │   ├── ai.js
+│   │   │   ├── aiCollaborationRoutes.js
+│   │   │   ├── aiGroups.js
+│   │   │   ├── aiPerformanceRoutes.js
+│   │   │   ├── aiPromptTemplateRoutes.js
+│   │   │   ├── aiRoutes.js
+│   │   │   ├── apiRoutes.js
+│   │   │   ├── appRoutes.js
+│   │   │   ├── auth.js
+│   │   │   ├── authRoutes.js
+│   │   │   ├── billingRoutes.js
+│   │   │   ├── collaborationRoutes.js
+│   │   │   ├── debug.js
+│   │   │   ├── developerRoutes.js
+│   │   │   ├── docsRoutes.js
+│   │   │   ├── editRoutes.js
+│   │   │   ├── feedbackRoutes.js
+│   │   │   ├── fileAnalysisRoutes.js
+│   │   │   ├── fileOrganizationRoutes.js
+│   │   │   ├── filePreviewRoutes.js
+│   │   │   ├── fileRelationshipRoutes.js
+│   │   │   ├── fileRetrievalRoutes.js
+│   │   │   ├── fileRoutes.js
+│   │   │   ├── fileSearchReplaceRoutes.js
+│   │   │   ├── fileSearchRoutes.js
+│   │   │   ├── fileSecurityRoutes.js
+│   │   │   ├── fileTaggingRoutes.js
+│   │   │   ├── fileVersioningRoutes.js
+│   │   │   ├── health.js
+│   │   │   ├── index.js
+│   │   │   ├── integrationRoutes.js
+│   │   │   ├── keyRoutes.js
+│   │   │   ├── logs.js
+│   │   │   ├── logsRoutes.js
+│   │   │   ├── marketplace.js
+│   │   │   ├── marketplaceRoutes.js
+│   │   │   ├── notificationRoutes.js
+│   │   │   ├── performanceRoutes.js
+│   │   │   ├── predictionRoutes.js
+│   │   │   ├── s3Routes.js
+│   │   │   ├── searchRoutes.js
+│   │   │   ├── secrets.js
+│   │   │   ├── securityRoutes.js
+│   │   │   ├── serviceRoutes.js
+│   │   │   ├── storageManagementRoutes.js
+│   │   │   ├── storageProviderRoutes.js
+│   │   │   ├── storageRoutes.js
+│   │   │   ├── troubleshootingRoutes.js
+│   │   │   ├── uploadProfilePresignedUrl.js
+│   │   │   ├── user.js
+│   │   │   ├── userRoutes.js
+│   │   │   ├── users.js
+│   │   │   └── workflowRoutes.js
+│   │   ├── secrets-api.js
+│   │   ├── services
+│   │   │   ├── activityService.js
+│   │   │   ├── aiPerformanceService.js
+│   │   │   ├── auth
+│   │   │   │   ├── auth.js
+│   │   │   │   └── authService.js
+│   │   │   ├── common
+│   │   │   ├── file
+│   │   │   │   └── fileService2.js
+│   │   │   ├── marketplaceService.js
+│   │   │   ├── notification
+│   │   │   └── userService.js
+│   │   └── utils
+│   │       ├── bootstrapLogger.js
+│   │       ├── dateUtils.js
+│   │       ├── dbLogger.js
+│   │       ├── errorManager.js
+│   │       ├── jwtUtils.js
+│   │       ├── logger.js
+│   │       ├── roleUtils.js
+│   │       ├── s3.js
+│   │       ├── s3UploadHelper.js
+│   │       ├── secrets.js
+│   │       ├── sql.js
+│   │       ├── tokenUtils.js
+│   │       ├── uploadToS3.js
+│   │       └── validation.js
+│   ├── storageProviders.json
+│   ├── swagger.json
+│   ├── testDb.js
+│   ├── tests
+│   │   ├── api
+│   │   │   ├── health.test.mjs
+│   │   │   └── workflows.test.mjs
+│   │   ├── authService.test.js
+│   │   └── workflowService.test.js
+│   ├── tools
+│   │   ├── teralynk-env-fixed.json
+│   │   └── updateSecrets.sh
+│   ├── tsconfig.json
+│   ├── uploads
+│   ├── utils
+│   │   ├── errors.js
+│   │   ├── externalIntegrations.js
+│   │   ├── preloadIntegrations.js
+│   │   └── troubleshootingLogger.js
+│   ├── verify-db.sh
+│   └── yarn.lock
+├── Cartfile
+├── Cartfile.resolved
+├── combined.log
+├── current_structure.txt
+├── detailed_frontend_structure.txt
+├── directory-structure.txt
+├── dist
+│   └── aws-exports.js
+├── error.log
+├── file_list.txt
+├── file_list2t.txt
+├── frontend
+│   ├── __mocks__
+│   ├── AmazonQ.md
+│   ├── babel.config.js
+│   ├── build
+│   │   ├── asset-manifest.json
+│   │   ├── favicon.ico
+│   │   ├── images
+│   │   ├── index.html
+│   │   ├── logo192.png
+│   │   ├── logo512.png
+│   │   ├── manifest.json
+│   │   ├── robots.txt
+│   │   └── static
+│   │       ├── css
+│   │       │   ├── main.3941bc21.css
+│   │       │   └── main.3941bc21.css.map
+│   │       └── js
+│   │           ├── 453.b2b49186.chunk.js
+│   │           ├── 453.b2b49186.chunk.js.map
+│   │           ├── main.92a31e4e.js
+│   │           ├── main.92a31e4e.js.LICENSE.txt
+│   │           └── main.92a31e4e.js.map
+│   ├── certs
+│   │   ├── localhost-cert.pem
+│   │   └── localhost-key.pem
+│   ├── config.js
+│   ├── eslint.config.mjs
+│   ├── fixImports.js
+│   ├── index.html
+│   ├── jsconfig.json
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── postcss.config.js
+│   ├── public
+│   │   ├── favicon.ico
+│   │   ├── images
+│   │   ├── index.html
+│   │   ├── logo192.png
+│   │   ├── logo512.png
+│   │   ├── manifest.json
+│   │   └── robots.txt
+│   ├── README.md
+│   ├── src
+│   │   ├── AdminReview.jsx
+│   │   ├── amplifyconfiguration.json
+│   │   ├── api
+│   │   │   ├── admin.js
+│   │   │   ├── aiTools.js
+│   │   │   ├── analytics.js
+│   │   │   ├── apiclient.js
+│   │   │   ├── authApi.js
+│   │   │   ├── axiosInstance.js
+│   │   │   ├── client.jsx
+│   │   │   ├── credentials.js
+│   │   │   ├── folders.js
+│   │   │   ├── metrics.js
+│   │   │   ├── notifications.js
+│   │   │   ├── profile.js
+│   │   │   ├── s3Api.js
+│   │   │   ├── s3Storage.js
+│   │   │   ├── savedResults.js 
+│   │   │   ├── search.js
+│   │   │   ├── storage.js
+│   │   │   ├── team.js
+│   │   │   ├── webhooks.js
+│   │   │   └── workflowsApi.js
+│   │   ├── api.js
+│   │   ├── App.jsx
+│   │   ├── App.test.js
+│   │   ├── auth
+│   │   │   └── loginTest.js
+│   │   ├── aws-exports.js
+│   │   ├── components
+│   │   │   ├── About.jsx
+│   │   │   ├── AddService.jsx
+│   │   │   ├── AddStorage.jsx
+│   │   │   ├── AdminDashboard.jsx
+│   │   │   ├── AdminReview.jsx
+│   │   │   ├── AIAnalytics.jsx
+│   │   │   ├── AIAssistant.jsx
+│   │   │   ├── AIBenchmark.jsx
+│   │   │   ├── AICommandBar.jsx
+│   │   │   ├── AIExecutionConsole.jsx
+│   │   │   ├── AIGroupManager.jsx
+│   │   │   ├── AIGroups.jsx
+│   │   │   ├── AIIntegration.jsx
+│   │   │   ├── AIMetrics.jsx
+│   │   │   ├── AIModelTraining.jsx
+│   │   │   ├── AIOptimizationPanel.jsx
+│   │   │   ├── AiPerformanceLogs.jsx
+│   │   │   ├── AIQuery.jsx
+│   │   │   ├── AiQueryPanel.jsx
+│   │   │   ├── AIRecommendations.jsx
+│   │   │   ├── AITools.jsx
+│   │   │   ├── AITrainingPanel.jsx
+│   │   │   ├── Analytics.jsx
+│   │   │   ├── AuditLog.jsx
+│   │   │   ├── BusinessProposal.jsx
+│   │   │   ├── ChangePassword.jsx
+│   │   │   ├── Collaboration.jsx
+│   │   │   ├── CollaborationDialog.jsx
+│   │   │   ├── CollaborationPanel.jsx
+│   │   │   ├── common
+│   │   │   │   ├── Fallback.jsx
+│   │   │   │   └── Loading.jsx
+│   │   │   ├── ConfirmDialog.jsx
+│   │   │   ├── Contact.jsx
+│   │   │   ├── CredentialManager.jsx
+│   │   │   ├── Dashboard.jsx
+│   │   │   ├── DashboardBuilder.jsx
+│   │   │   ├── DataAnalysis.jsx
+│   │   │   ├── DraggableWidget.jsx
+│   │   │   ├── ErrorPage.jsx
+│   │   │   ├── FileExplorer.jsx
+│   │   │   ├── FileIcon.jsx
+│   │   │   ├── FileManager.jsx
+│   │   │   ├── FilePreviewModal.jsx
+│   │   │   ├── FileSearch.jsx
+│   │   │   ├── FileSearchReplace.jsx
+│   │   │   ├── FilesPage.jsx
+│   │   │   ├── FileUpload.jsx
+│   │   │   ├── FileUploadProgress.jsx
+│   │   │   ├── FileVersioning.jsx
+│   │   │   ├── FolderPermissions.jsx
+│   │   │   ├── Footer.jsx
+│   │   │   ├── Header.jsx
+│   │   │   ├── Help.jsx
+│   │   │   ├── Home.jsx
+│   │   │   ├── Insights.jsx
+│   │   │   ├── InsightsDashboard.jsx
+│   │   │   ├── Login.jsx
+│   │   │   ├── LoginComponent.jsx
+│   │   │   ├── LogoutButton.jsx
+│   │   │   ├── LogPage.jsx
+│   │   │   ├── Marketplace.jsx
+│   │   │   ├── MetadataDialog.jsx
+│   │   │   ├── Navbar.jsx
+│   │   │   ├── NotificationLog.jsx
+│   │   │   ├── Notifications.jsx
+│   │   │   ├── OAuthManager.jsx
+│   │   │   ├── Onboarding.jsx
+│   │   │   ├── OptimizationApproval.jsx
+│   │   │   ├── OptimizationReview.jsx
+│   │   │   ├── PerformanceDashboard.jsx
+│   │   │   ├── Profile copy.jsx
+│   │   │   ├── Profile.jsx
+│   │   │   ├── Recommendations.jsx
+│   │   │   ├── ResetPassword.jsx
+│   │   │   ├── S3FileExplorer.jsx
+│   │   │   ├── S3FileUpload.jsx
+│   │   │   ├── SearchBar.jsx
+│   │   │   ├── SecretsFetcher.css
+│   │   │   ├── SecretsFetcher.jsx
+│   │   │   ├── Settings.jsx
+│   │   │   ├── ShareDialog.jsx
+│   │   │   ├── Signup.jsx
+│   │   │   ├── StorageForm.jsx
+│   │   │   ├── StorageManagement.jsx
+│   │   │   ├── StorageManager.jsx
+│   │   │   ├── SystemAlerts.jsx
+│   │   │   ├── TeamManagement.jsx
+│   │   │   ├── TemplateCloner.jsx
+│   │   │   ├── Troubleshooting.jsx
+│   │   │   ├── ui
+│   │   │   │   ├── Alert.jsx
+│   │   │   │   ├── Button.jsx
+│   │   │   │   ├── Card.jsx
+│   │   │   │   ├── CardContent.jsx
+│   │   │   │   ├── CardFooter.jsx
+│   │   │   │   ├── CardHeader.jsx
+│   │   │   │   ├── ConfirmationDialog.jsx
+│   │   │   │   ├── DragAndDrop.jsx
+│   │   │   │   ├── FeedbackForm.jsx
+│   │   │   │   ├── FileList.jsx
+│   │   │   │   ├── Input.jsx
+│   │   │   │   ├── Loader.jsx
+│   │   │   │   ├── Modal.jsx
+│   │   │   │   ├── Select.jsx
+│   │   │   │   ├── Spinner.jsx
+│   │   │   │   └── Textarea.jsx
+│   │   │   ├── UserRoles.jsx
+│   │   │   ├── VersionHistoryDialog.jsx
+│   │   │   ├── WidgetManager.jsx
+│   │   │   └── WorkflowForm.jsx
+│   │   ├── config
+│   │   │   ├── api.js
+│   │   │   ├── apiRoutes.js
+│   │   │   ├── awsConfig.js
+│   │   │   ├── cognitoConfig.js
+│   │   │   ├── options.js
+│   │   │   ├── userPoolConfig.js
+│   │   │   └── widgets.js
+│   │   ├── constants
+│   │   ├── context
+│   │   │   ├── AuthContext.jsx
+│   │   │   ├── NotificationContext.jsx
+│   │   │   └── SecretsContext.jsx
+│   │   ├── data
+│   │   │   └── marketplaceData.js
+│   │   ├── files
+│   │   │   ├── constants.js
+│   │   │   ├── dialogHandlers.js
+│   │   │   ├── errorUtils.js
+│   │   │   ├── fileOperations.js
+│   │   │   ├── useSocket.js
+│   │   │   └── utils.js
+│   │   ├── helpers
+│   │   │   └── authHelper.jsx
+│   │   ├── hooks
+│   │   │   └── useFileManager.js
+│   │   ├── index.css
+│   │   ├── index.jsx
+│   │   ├── logo.svg
+│   │   ├── main.jsx
+│   │   ├── pages
+│   │   │   ├── Auth
+│   │   │   ├── Files.jsx
+│   │   │   ├── Marketplace.jsx
+│   │   │   ├── oauth
+│   │   │   │   ├── [repo].js
+│   │   │   │   ├── callback.js
+│   │   │   │   └── index.js
+│   │   │   ├── S3StoragePage.jsx
+│   │   │   ├── service-worker.js
+│   │   │   ├── WidgetDashboard.jsx
+│   │   │   ├── WorkflowManager.jsx
+│   │   │   ├── WorkflowPage.jsx
+│   │   │   └── workspace.code-workspace
+│   │   ├── reportWebVitals.js
+│   │   ├── routes
+│   │   │   └── ProtectedRoute.jsx
+│   │   ├── services
+│   │   │   ├── api.js
+│   │   │   ├── authService.js
+│   │   │   ├── folderPermissionsService.js
+│   │   │   ├── storageService.js
+│   │   │   └── workflow-service.js
+│   │   ├── setupTests.js
+│   │   ├── styles
+│   │   │   ├── AiPerformanceLogs.css
+│   │   │   ├── components
+│   │   │   │   ├── About.css
+│   │   │   │   ├── AddStorage.css
+│   │   │   │   ├── Admin.css
+│   │   │   │   ├── AdminDashboard.css
+│   │   │   │   ├── AdminReview.css
+│   │   │   │   ├── AIAnalytics.css
+│   │   │   │   ├── AIAssistant.css
+│   │   │   │   ├── AIBenchmark.css
+│   │   │   │   ├── AICommandBar.css
+│   │   │   │   ├── AIExecutionConsole.css
+│   │   │   │   ├── AIGroupManager.css
+│   │   │   │   ├── AIGroups.css
+│   │   │   │   ├── AIMetrics.css
+│   │   │   │   ├── AIOptimizationPanel.css
+│   │   │   │   ├── AiPerformanceLogs.css
+│   │   │   │   ├── AIQuery.css
+│   │   │   │   ├── AIQueryPanel.css
+│   │   │   │   ├── AIRecommendations.css
+│   │   │   │   ├── AITools.css
+│   │   │   │   ├── AITrainingPanel.css
+│   │   │   │   ├── Analytics.css
+│   │   │   │   ├── App.css
+│   │   │   │   ├── AuthContex.css
+│   │   │   │   ├── Card.css
+│   │   │   │   ├── ChangePassword.css
+│   │   │   │   ├── Collaboration.css
+│   │   │   │   ├── CollaborationDialog.css
+│   │   │   │   ├── CollaborationPanel.css
+│   │   │   │   ├── ConfirmDialog.css
+│   │   │   │   ├── Contact.css
+│   │   │   │   ├── CredentialManager.css
+│   │   │   │   ├── Credentials.css
+│   │   │   │   ├── Dashboard.css
+│   │   │   │   ├── DragAndDrop.css
+│   │   │   │   ├── ErrorBoundary.css
+│   │   │   │   ├── ErrorPage.css
+│   │   │   │   ├── Fallback.css
+│   │   │   │   ├── FileExplorer.css
+│   │   │   │   ├── FileList.css
+│   │   │   │   ├── FileManager.css
+│   │   │   │   ├── FilePreviewModal.css
+│   │   │   │   ├── Files.css
+│   │   │   │   ├── FileSearch.css
+│   │   │   │   ├── FileSearchReplace.css
+│   │   │   │   ├── FileUpload.css
+│   │   │   │   ├── FileUploadProgress.css
+│   │   │   │   ├── FolderPermissions.css
+│   │   │   │   ├── Footer.css
+│   │   │   │   ├── Header.css
+│   │   │   │   ├── Help.css
+│   │   │   │   ├── Home.css
+│   │   │   │   ├── InsightsDashboard.css
+│   │   │   │   ├── Loading.css
+│   │   │   │   ├── Login.css
+│   │   │   │   ├── Marketplace.css
+│   │   │   │   ├── MetadataDialog.css
+│   │   │   │   ├── Modal.css
+│   │   │   │   ├── Navbar.css
+│   │   │   │   ├── NotificationLog.css
+│   │   │   │   ├── Notifications.css
+│   │   │   │   ├── OAuthManager.css
+│   │   │   │   ├── Onboarding.css
+│   │   │   │   ├── OptimizationApproval.css
+│   │   │   │   ├── OptimizationReview.css
+│   │   │   │   ├── PerformanceDashboard.css
+│   │   │   │   ├── Profile.css
+│   │   │   │   ├── Recommendations.css
+│   │   │   │   ├── ResetPassword.css
+│   │   │   │   ├── SearchBar.css
+│   │   │   │   ├── Settings.css
+│   │   │   │   ├── ShareDialog.css
+│   │   │   │   ├── Signup.css
+│   │   │   │   ├── StorageForm.css
+│   │   │   │   ├── StorageManagement.css
+│   │   │   │   ├── StorageManager.css
+│   │   │   │   ├── styles.css
+│   │   │   │   ├── TeamManagement.css
+│   │   │   │   ├── TemplateCloner.css
+│   │   │   │   ├── Troubleshooting.css
+│   │   │   │   ├── ui
+│   │   │   │   ├── VersionHistoryDialog.css
+│   │   │   │   ├── WidgetDashboard.css
+│   │   │   │   └── WorkflowForm.css
+│   │   │   └── global
+│   │   │       ├── Global.css
+│   │   │       ├── index.css
+│   │   │       ├── reset.css
+│   │   │       └── typography.css
+│   │   └── utils
+│   │       ├── AIUtils.js
+│   │       ├── api-helpers.js
+│   │       ├── api.js
+│   │       ├── auth.js
+│   │       ├── authUtils.js
+│   │       ├── awsCognitoClient.js
+│   │       ├── axiosClient.js
+│   │       ├── credentialService.js
+│   │       ├── credentialUtils.js
+│   │       ├── fetchTestUsers.js
+│   │       ├── formatFileSize.js
+│   │       ├── generateSecretHash.js
+│   │       ├── HelmetConfig.js
+│   │       ├── initializeApp.js
+│   │       ├── logging
+│   │       │   ├── ErrorBoundary.jsx
+│   │       │   ├── index.js
+│   │       │   ├── logging.js
+│   │       │   ├── migration.md
+│   │       │   └── README.md
+│   │       ├── migration-scripts
+│   │       │   ├── migrate-logging.js
+│   │       │   ├── README.md
+│   │       │   ├── remove-old-files.sh
+│   │       │   ├── update-function-calls.sh
+│   │       │   └── update-imports.sh
+│   │       ├── networkUtils.js
+│   │       ├── platformService.js
+│   │       ├── refreshTokens.js
+│   │       ├── storageUtils.js
+│   │       ├── tests
+│   │       │   └── authUtils.test.js
+│   │       ├── tokenManager.js
+│   │       ├── tokenUtils.js
+│   │       ├── updateCognitoSecret.js
+│   │       └── validation.js
+│   ├── tailwind.config.js
+│   └── vite.config.js
+├── frontend_error.log
+├── frontend_structure.txt
+├── generate_secret_hash.py
+├── info.plist
+├── jest.config.js
+├── jest.setup.cjs
+├── jest.teardown.js
+├── KEYS
+├── loading_issues.md
+├── logs
+│   ├── activity-2025-01-01.log
+│   ├── activity-2025-01-04.log
+│   ├── activity-2025-01-12.log
+│   ├── activity-2025-01-13.log
+│   ├── activity-2025-01-18.log
+│   ├── activity-2025-01-19.log
+│   ├── activity-2025-01-20.log
+│   ├── app.log
+│   ├── audit.log-2025-01-01.log
+│   ├── audit.log-2025-01-04.log
+│   ├── audit.log-2025-01-12.log
+│   ├── audit.log-2025-01-13.log
+│   ├── audit.log-2025-01-18.log
+│   ├── audit.log-2025-01-19.log
+│   ├── audit.log-2025-01-20.log
+│   ├── combined.log
+│   └── error.log
+├── pushAll.sh
+├── README.md
+├── RenameCognitoVariables.cjs
+├── Scripts
+│   ├── createSettingsTable.js
+│   └── reorganize_backend.py
+├── sentry-project
+│   ├── createSentryProject.js
+│   └── package.json
+├── serverless
+│   └── teralynk
+│       ├── handler.js
+│       ├── README.md
+│       └── serverless.yml
+├── setup_instructions.md
+├── teralynk-env.json 
+├── test_pg_connection.sh
+├── test-file.txt
+├── testEnv.js
+├── user-pool-config.json
+└── workflow-fixes.md
+
+83 directories, 813 files

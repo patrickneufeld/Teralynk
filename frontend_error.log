@@ -1,0 +1,104 @@
+Error: [31m  Failed to scan for dependencies from entries:
+  /Users/patrick/Projects/Teralynk/frontend/index.html
+
+  [39m[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNo matching export in "src/components/ui/Button.jsx" for import "Button"[0m
+
+    src/components/Notifications.jsx:5:9:
+[37m      5 │ import { [32mButton[37m } from "../components/ui/Button";
+        ╵          [32m~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNo matching export in "src/components/ui/Select.jsx" for import "SelectItem"[0m
+
+    src/components/Notifications.jsx:6:17:
+[37m      6 │ import Select, { [32mSelectItem[37m } from "../components/ui/Select";
+        ╵                  [32m~~~~~~~~~~[0m
+
+
+    at failureErrorWithLog (/Users/patrick/Projects/Teralynk/frontend/node_modules/esbuild/lib/main.js:1649:15)
+    at /Users/patrick/Projects/Teralynk/frontend/node_modules/esbuild/lib/main.js:1058:25
+    at runOnEndCallbacks (/Users/patrick/Projects/Teralynk/frontend/node_modules/esbuild/lib/main.js:1484:45)
+    at buildResponseToResult (/Users/patrick/Projects/Teralynk/frontend/node_modules/esbuild/lib/main.js:1056:7)
+    at /Users/patrick/Projects/Teralynk/frontend/node_modules/esbuild/lib/main.js:1068:9
+    at new Promise (<anonymous>)
+    at requestCallbacks.on-end (/Users/patrick/Projects/Teralynk/frontend/node_modules/esbuild/lib/main.js:1067:54)
+    at handleRequest (/Users/patrick/Projects/Teralynk/frontend/node_modules/esbuild/lib/main.js:729:19)
+    at handleIncomingPacket (/Users/patrick/Projects/Teralynk/frontend/node_modules/esbuild/lib/main.js:755:7)
+    at Socket.readFromStdout (/Users/patrick/Projects/Teralynk/frontend/node_modules/esbuild/lib/main.js:679:7)
+Failed to resolve import "../ui/Card" from "src/components/AdminDashboard.jsx". Does the file exist?
+[2m11:40:52 AM[22m [31m[1m[vite][22m[39m [31mInternal server error: Failed to resolve import "../ui/Button" from "src/components/AITools.jsx". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36m/Users/patrick/Projects/Teralynk/frontend/src/components/AITools.jsx[39m:6:19
+[33m  19 |  import axios from "axios";
+  20 |  import { Card, CardContent } from "../components/ui/Card";
+  21 |  import Button from "../ui/Button";
+     |                      ^
+  22 |  import Alert from "../ui/Alert";
+  23 |  import Loader from "./ui/Loader";[39m
+      at formatError (file:///Users/patrick/Projects/Teralynk/frontend/node_modules/vite/dist/node/chunks/dep-3936e161.js:44065:46)
+      at TransformContext.error (file:///Users/patrick/Projects/Teralynk/frontend/node_modules/vite/dist/node/chunks/dep-3936e161.js:44061:19)
+      at normalizeUrl (file:///Users/patrick/Projects/Teralynk/frontend/node_modules/vite/dist/node/chunks/dep-3936e161.js:41845:33)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async file:///Users/patrick/Projects/Teralynk/frontend/node_modules/vite/dist/node/chunks/dep-3936e161.js:41999:47
+      at async Promise.all (index 6)
+      at async TransformContext.transform (file:///Users/patrick/Projects/Teralynk/frontend/node_modules/vite/dist/node/chunks/dep-3936e161.js:41915:13)
+      at async Object.transform (file:///Users/patrick/Projects/Teralynk/frontend/node_modules/vite/dist/node/chunks/dep-3936e161.js:44355:30)
+      at async loadAndTransform (file:///Users/patrick/Projects/Teralynk/frontend/node_modules/vite/dist/node/chunks/dep-3936e161.js:55029:29)
+Failed to resolve import "../ui/Button" from "src/components/AITools.jsx". Does the file exist?
+[2m11:40:52 AM[22m [31m[1m[vite][22m[39m [31mInternal server error: Failed to resolve import "../ui/Card" from "src/components/AdminDashboard.jsx". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36m/Users/patrick/Projects/Teralynk/frontend/src/components/AdminDashboard.jsx[39m:6:34
+[33m  17 |  var _s = $RefreshSig$();
+  18 |  import { useEffect, useState } from "react";
+  19 |  import { Card, CardContent } from "../ui/Card";
+     |                                     ^
+  20 |  import Button from "../ui/Button";
+  21 |  import Alert from "../ui/Alert";[39m
+      at formatError (file:///Users/patrick/Projects/Teralynk/frontend/node_modules/vite/dist/node/chunks/dep-3936e161.js:44065:46)
+      at TransformContext.error (file:///Users/patrick/Projects/Teralynk/frontend/node_modules/vite/dist/node/chunks/dep-3936e161.js:44061:19)
+      at normalizeUrl (file:///Users/patrick/Projects/Teralynk/frontend/node_modules/vite/dist/node/chunks/dep-3936e161.js:41845:33)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async file:///Users/patrick/Projects/Teralynk/frontend/node_modules/vite/dist/node/chunks/dep-3936e161.js:41999:47
+      at async Promise.all (index 4)
+      at async TransformContext.transform (file:///Users/patrick/Projects/Teralynk/frontend/node_modules/vite/dist/node/chunks/dep-3936e161.js:41915:13)
+      at async Object.transform (file:///Users/patrick/Projects/Teralynk/frontend/node_modules/vite/dist/node/chunks/dep-3936e161.js:44355:30)
+      at async loadAndTransform (file:///Users/patrick/Projects/Teralynk/frontend/node_modules/vite/dist/node/chunks/dep-3936e161.js:55029:29)
+      at async viteTransformMiddleware (file:///Users/patrick/Projects/Teralynk/frontend/node_modules/vite/dist/node/chunks/dep-3936e161.js:64617:32)
+[2m11:40:53 AM[22m [31m[1m[vite][22m[39m [31mInternal server error: Failed to resolve import "../ui/Card" from "src/components/AdminDashboard.jsx". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36m/Users/patrick/Projects/Teralynk/frontend/src/components/AdminDashboard.jsx[39m:6:34
+[33m  17 |  var _s = $RefreshSig$();
+  18 |  import { useEffect, useState } from "react";
+  19 |  import { Card, CardContent } from "../ui/Card";
+     |                                     ^
+  20 |  import Button from "../ui/Button";
+  21 |  import Alert from "../ui/Alert";[39m
+      at formatError (file:///Users/patrick/Projects/Teralynk/frontend/node_modules/vite/dist/node/chunks/dep-3936e161.js:44065:46)
+      at TransformContext.error (file:///Users/patrick/Projects/Teralynk/frontend/node_modules/vite/dist/node/chunks/dep-3936e161.js:44061:19)
+      at normalizeUrl (file:///Users/patrick/Projects/Teralynk/frontend/node_modules/vite/dist/node/chunks/dep-3936e161.js:41845:33)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async file:///Users/patrick/Projects/Teralynk/frontend/node_modules/vite/dist/node/chunks/dep-3936e161.js:41999:47
+      at async Promise.all (index 4)
+      at async TransformContext.transform (file:///Users/patrick/Projects/Teralynk/frontend/node_modules/vite/dist/node/chunks/dep-3936e161.js:41915:13)
+      at async Object.transform (file:///Users/patrick/Projects/Teralynk/frontend/node_modules/vite/dist/node/chunks/dep-3936e161.js:44355:30)
+      at async loadAndTransform (file:///Users/patrick/Projects/Teralynk/frontend/node_modules/vite/dist/node/chunks/dep-3936e161.js:55029:29)
+Failed to resolve import "../ui/Card" from "src/components/AdminDashboard.jsx". Does the file exist?
+[2m11:40:53 AM[22m [31m[1m[vite][22m[39m [31mInternal server error: Failed to resolve import "../ui/Button" from "src/components/AITools.jsx". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36m/Users/patrick/Projects/Teralynk/frontend/src/components/AITools.jsx[39m:6:19
+[33m  19 |  import axios from "axios";
+  20 |  import { Card, CardContent } from "../components/ui/Card";
+  21 |  import Button from "../ui/Button";
+     |                      ^
+  22 |  import Alert from "../ui/Alert";
+  23 |  import Loader from "./ui/Loader";[39m
+      at formatError (file:///Users/patrick/Projects/Teralynk/frontend/node_modules/vite/dist/node/chunks/dep-3936e161.js:44065:46)
+      at TransformContext.error (file:///Users/patrick/Projects/Teralynk/frontend/node_modules/vite/dist/node/chunks/dep-3936e161.js:44061:19)
+      at normalizeUrl (file:///Users/patrick/Projects/Teralynk/frontend/node_modules/vite/dist/node/chunks/dep-3936e161.js:41845:33)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async file:///Users/patrick/Projects/Teralynk/frontend/node_modules/vite/dist/node/chunks/dep-3936e161.js:41999:47
+      at async Promise.all (index 6)
+      at async TransformContext.transform (file:///Users/patrick/Projects/Teralynk/frontend/node_modules/vite/dist/node/chunks/dep-3936e161.js:41915:13)
+      at async Object.transform (file:///Users/patrick/Projects/Teralynk/frontend/node_modules/vite/dist/node/chunks/dep-3936e161.js:44355:30)
+      at async loadAndTransform (file:///Users/patrick/Projects/Teralynk/frontend/node_modules/vite/dist/node/chunks/dep-3936e161.js:55029:29)
+Failed to resolve import "../ui/Button" from "src/components/AITools.jsx". Does the file exist?

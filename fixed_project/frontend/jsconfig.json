@@ -1,0 +1,39 @@
+{
+  "compilerOptions": {
+    // Base directory to resolve non-relative module names
+    "baseUrl": "src",
+    
+    // Path mapping for module resolution
+    "paths": {
+      // Example: Map '@components/*' to 'src/components/*'
+      "@components/*": ["components/*"],
+      "@utils/*": ["utils/*"]
+    },
+    
+    // Enable all strict type-checking options
+    "strict": true,
+    
+    // Allow default imports from modules with no default export
+    "esModuleInterop": true,
+    
+    // Skip type checking of all declaration files (*.d.ts)
+    "skipLibCheck": true,
+    
+    // Specify ECMAScript target version
+    "target": "ESNext",
+    
+    // Specify module code generation
+    "module": "ESNext",
+    
+    // Enable source maps for debugging
+    "sourceMap": true,
+    
+    // Specify the root directory of input files
+    "rootDir": "src",
+    
+    // Specify the output directory for compiled files
+    "outDir": "dist"
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
+}

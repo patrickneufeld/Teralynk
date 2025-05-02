@@ -1,0 +1,541 @@
+REVIEW AI FILESCAN.TXT
+(base) patrick@Patricks-MacBook-Pro scripts % node debugLoginWithAI.js
+❌ API request failed: 400 {"requestId":"3d9c2470-c6c6-4877-9832-4b2b009a9d62","statusCode":400,"timestamp":"2025-04-11T17:31:16.246Z","path":"/v1/chat/completions","message":"{\"message\":\"This model's maximum context length is 8192 tokens. However, your messages resulted in 9933 tokens. Please reduce the length of the messages.\",\"type\":\"invalid_request_error\",\"param\":\"messages\",\"code\":\"context_length_exceeded\"}"}
+(base) patrick@Patricks-MacBook-Pro scripts % node debugLoginWithAI.js
+🔍 Scanning frontend directory for auth-related files...
+📦 Found 616 files, sending 29 chunk(s) to AI...
+
+--- Sending Chunk 1 of 29 ---
+
+🧠 AI Debug Suggestion:
+
+Here are the issues grouped by category. It is important to note that these are potential issues, which may not necessarily lead to login failures, token issues, or redirect logic errors, but are rather likely scenarios that require attention:
+
+1. **Token Issues**
+    - The tokens might not be being set correctly or at all. 
+    - The scripts contain a lot of hardcoded strings, such as 'apiKey', 'userPool', 'iam', 'oidc', 'lambda', 'none' etc. This can increase the chance of unexpected behaviour, due to typos or misconfiguration.
+    - Token expiration might not be handled correctly. We see that tokens are being set with expiration dates, but there are no checks whether the token is still valid.
+
+2. **Login Failures**
+    - The user might not be getting authenticated correctly because of missing or incorrect credentials.
+    - It's important to check that all necessary fields, such as username and password, are being included and validated. Looking through the code, authorization is being done based on access tokens, API key, or custom authorization, but it's unclear where and how these tokens and API keys are being validated.
+    - Validation Exceptions are being thrown in case of empty sign-in passwords, but it's unclear if there are other forms of input validation happening. 
+
+3. **Redirect Logic Errors**
+    - There doesn't appear to be any specific code handling redirects on successful login according to the provided files. So, its difficult to comment specifically on redirection issues without seeing the code handling routing.
+    - If after a successful login a user is not being redirected, it could also be due to missing or incorrect user session storage.  
+
+Having said that, isolation and testing would be the conclusive way to identify and resolve the issues, given the multiple dependencies and methods, and the asynchronous nature of networking code in these instances.
+
+--- Sending Chunk 2 of 29 ---
+
+🧠 AI Debug Suggestion:
+
+From the scripts provided, there are no implementations of the usual authentication components such as a login function, usage of tokens for authorizations, or appropriate redirect methods.
+
+However, we can highlight potential issues based on the typical requirements of an authentication system:
+
+1. JSON Web Tokens (JWT): Secure token-based authentication systems usually use JWT, and these tokens need to be stored securely. There's no implementation visible for JWT here.
+
+2. Login Function: An authentication system should have a login function that takes in user credentials and returns a token upon successful validation. It seems to be missing in the given code.
+
+3. Token verification: Secure systems will usually include middleware to verify the token passed in the header of HTTP requests, and will only return data if the token is verified. There isn't a visible implementation for this in the provided code.
+
+4. Redirects: After successful login, users should be redirected to a dashboard or other relevant page. There's no mention or implementation of redirection logic in the provided code.
+
+5. Password Hashing: For security reasons, passwords should be hashed before being stored in a database. However, this information isn't visible within the given files.
+
+The code appears to be part of a larger system, and may not be functional or secure if used in isolation. For a complete audit, access to all related scripts would be needed, including server-side implementations.
+
+--- Sending Chunk 3 of 29 ---
+
+🧠 AI Debug Suggestion:
+
+Based on the provided information and code, it seems like you're using AWS Amplify's library for authentication with React. However, it's challenging to identify the specific source of the problem without more context. Some general issues might include:
+
+1. Lack of redirection: This might occur if the component handling redirection upon login is not correctly set up or if your app is failing to modify the router history.
+
+2. Token issue: JWT tokens provided by Cognito could be invalid for various reasons like expiration, being malformed, etc., causing login failures.
+
+3. Configuration issue: You might not correctly set up the Cognito user pool, which could disrupt the entire authentication process.
+
+Here are some steps you could take to further investigate this issue:
+
+- Try using React's debugging and inspection tools to see how your app's state changes when the login button is clicked.
+
+- Look at the Network tab in developer tools to monitor the requests made by your app. If Cognito is returning errors, you should be able to see the API response messages here.
+
+- Closely trace the logic and review the complex AWS Amplify authentication flow. Check if the signInWithUserAuth function is getting the input it expects and if it's making the correct calls to the AWS Amplify API.
+
+- Check your Cognito configurations in AWS console. Make sure the App client, User pool ID, and other required fields are correctly configured.
+
+- Try adding more specific error handling in your code. This can give more useful information about why your authentication flow is failing.
+
+--- Sending Chunk 4 of 29 ---
+❌ API Error: {
+  "requestId": "11b1c6cc-753e-4974-bd0f-6d52b127c7ce",
+  "statusCode": 400,
+  "timestamp": "2025-04-11T17:36:19.312Z",
+  "path": "/v1/chat/completions",
+  "message": "{\"message\":\"This model's maximum context length is 8192 tokens. However, you requested 8616 tokens (8104 in the messages, 512 in the completion). Please reduce the length of the messages or completion.\",\"type\":\"invalid_request_error\",\"param\":\"messages\",\"code\":\"context_length_exceeded\"}"
+}
+
+--- Sending Chunk 5 of 29 ---
+
+🧠 AI Debug Suggestion:
+
+I'm sorry, but in order to properly debug this for you, I need to see the React components or server-side code where the authentication or redirection issue could originate from. The files you posted are core files from the AWS Amplify library, which shouldn't be directly modified and don't really indicate where your problem might be.
+
+The issue you described could be caused by a variety of things, such as:
+
+1. Incorrectly configured routes or protected routes in your React application. Check your routing logic if it is properly handling redirects when login status change.
+
+2. Issues with the authentication function or logic used for logging in. Check if there's an issue with your `Auth.signin` function or whatever method you're using to log the user in.
+
+3. Problems with the setting or retrieval of authentication tokens. 
+
+4. Persistence issues, where the authentication state isn't properly maintained after a page refresh or navigation.
+
+Please provide more specific relevant parts of your codebase where the issue would more likely lie. This might include:
+
+- Login component or Login hook
+- Route setup (if using `react-router` or similar)
+- Auth service or auth contexts/hooks
+- Any custom hooks or components related to setting/retrieving tokens
+- Redirection logic after login
+- Any custom Amplify configurations
+
+That will help me understand your issue better and provide a more detailed potential solution.
+
+--- Sending Chunk 6 of 29 ---
+❌ API Error: {
+  "requestId": "53b81270-ec76-4550-88b4-8d26e2913efc",
+  "statusCode": 400,
+  "timestamp": "2025-04-11T17:36:34.854Z",
+  "path": "/v1/chat/completions",
+  "message": "{\"message\":\"This model's maximum context length is 8192 tokens. However, you requested 8334 tokens (7822 in the messages, 512 in the completion). Please reduce the length of the messages or completion.\",\"type\":\"invalid_request_error\",\"param\":\"messages\",\"code\":\"context_length_exceeded\"}"
+}
+
+--- Sending Chunk 7 of 29 ---
+
+🧠 AI Debug Suggestion:
+
+Based on the above code, here are my observations:
+1. The code does not show how the login function handles an error on the client side. Implementing proper error handling in the login function could solve this issue.
+2. The react website might not be connecting correctly to the AWS Cognito service. Ensure your react app is correctly set up to make CORS requests and that the Cognito service is correctly configured to accept those requests.
+3. Check if the redirect on login is working properly. It could be that the user does get logged in, but the redirect to the dashboard isn't functioning as expected.
+4. The JWT returned from AWS Cognito could be stored incorrectly or not stored at all. Make sure that the token is being stored in a secure place and it is accessible when needed.
+5. The app might not have the logic to check the validity of the token. Check if the token is expired and refresh it as needed.
+6. The button might not be triggering the login function at all. Make sure the button correctly calls the login function upon being clicked.
+
+Without having the specific React.js files used for authentication logic and event handling, it's harder to provide a more precise solution. Check the points above in your code to find out what the error is.
+
+--- Sending Chunk 8 of 29 ---
+❌ API Error: {
+  "requestId": "a6378cdd-ec6b-413f-9db6-32219215ff07",
+  "statusCode": 400,
+  "timestamp": "2025-04-11T17:36:49.788Z",
+  "path": "/v1/chat/completions",
+  "message": "{\"message\":\"This model's maximum context length is 8192 tokens. However, your messages resulted in 9109 tokens. Please reduce the length of the messages.\",\"type\":\"invalid_request_error\",\"param\":\"messages\",\"code\":\"context_length_exceeded\"}"
+}
+
+--- Sending Chunk 9 of 29 ---
+❌ API Error: {
+  "requestId": "ca1f9b95-428c-4539-8059-3f57a247519f",
+  "statusCode": 400,
+  "timestamp": "2025-04-11T17:36:50.093Z",
+  "path": "/v1/chat/completions",
+  "message": "{\"message\":\"This model's maximum context length is 8192 tokens. However, your messages resulted in 9541 tokens. Please reduce the length of the messages.\",\"type\":\"invalid_request_error\",\"param\":\"messages\",\"code\":\"context_length_exceeded\"}"
+}
+
+--- Sending Chunk 10 of 29 ---
+❌ API Error: {
+  "requestId": "64403fd5-162a-4397-b536-d1928bb9f9e1",
+  "statusCode": 400,
+  "timestamp": "2025-04-11T17:36:50.412Z",
+  "path": "/v1/chat/completions",
+  "message": "{\"message\":\"This model's maximum context length is 8192 tokens. However, you requested 8536 tokens (8024 in the messages, 512 in the completion). Please reduce the length of the messages or completion.\",\"type\":\"invalid_request_error\",\"param\":\"messages\",\"code\":\"context_length_exceeded\"}"
+}
+
+--- Sending Chunk 11 of 29 ---
+❌ API Error: {
+  "requestId": "e60d6b4b-b5cd-4f36-834d-8fca37e04229",
+  "statusCode": 400,
+  "timestamp": "2025-04-11T17:36:50.864Z",
+  "path": "/v1/chat/completions",
+  "message": "{\"message\":\"This model's maximum context length is 8192 tokens. However, your messages resulted in 8363 tokens. Please reduce the length of the messages.\",\"type\":\"invalid_request_error\",\"param\":\"messages\",\"code\":\"context_length_exceeded\"}"
+}
+
+--- Sending Chunk 12 of 29 ---
+❌ API Error: {
+  "requestId": "59f521d6-ce45-4238-b5df-c11c6eaca3cf",
+  "statusCode": 400,
+  "timestamp": "2025-04-11T17:36:51.317Z",
+  "path": "/v1/chat/completions",
+  "message": "{\"message\":\"This model's maximum context length is 8192 tokens. However, your messages resulted in 8682 tokens. Please reduce the length of the messages.\",\"type\":\"invalid_request_error\",\"param\":\"messages\",\"code\":\"context_length_exceeded\"}"
+}
+
+--- Sending Chunk 13 of 29 ---
+❌ API Error: {
+  "requestId": "9023a80e-4818-48c7-be25-3a14a8f986a4",
+  "statusCode": 400,
+  "timestamp": "2025-04-11T17:36:51.654Z",
+  "path": "/v1/chat/completions",
+  "message": "{\"message\":\"This model's maximum context length is 8192 tokens. However, your messages resulted in 8284 tokens. Please reduce the length of the messages.\",\"type\":\"invalid_request_error\",\"param\":\"messages\",\"code\":\"context_length_exceeded\"}"
+}
+
+--- Sending Chunk 14 of 29 ---
+
+🧠 AI Debug Suggestion:
+
+The debugger session doesn't have any specific portion of code that relates to clicking a login button or handling a redirection to the dashboard. 
+
+Most of the provided sections contain various JavaScript and TypeScript related codes, including:
+- Babel TokenMap constructor for Syntax Tree traversal,
+- Middleware for handling the HTTP authentication scheme,
+- The function for getting the Smithy middleware context,
+- Libraries for dealing with SSO token operations, mostly from `@smithy` package,
+- Some utility functions from `@smithy` package, 
+
+It doesn't seem like any of these code snippets are related to a login button or redirection. 
+
+In order to debug the login and redirect issue, we need to examine the specific part of the code where clicking the login button triggers the login process, and where the logic for a successful login redirects to the dashboard. This might not necessarily be a problem with React or the authentication, but how these codes are used in your specific app context. 
+
+Please provide more details or actual code snippets handling the user authentication and redirection logic.
+
+--- Sending Chunk 15 of 29 ---
+❌ API Error: {
+  "requestId": "324bd407-c168-42e5-9309-d3248a6ba4c2",
+  "statusCode": 400,
+  "timestamp": "2025-04-11T17:37:05.851Z",
+  "path": "/v1/chat/completions",
+  "message": "{\"message\":\"This model's maximum context length is 8192 tokens. However, your messages resulted in 17858 tokens. Please reduce the length of the messages.\",\"type\":\"invalid_request_error\",\"param\":\"messages\",\"code\":\"context_length_exceeded\"}"
+}
+
+--- Sending Chunk 16 of 29 ---
+❌ API Error: {
+  "requestId": "fb786639-b4c4-4f74-8604-d60d821b7224",
+  "statusCode": 400,
+  "timestamp": "2025-04-11T17:37:06.169Z",
+  "path": "/v1/chat/completions",
+  "message": "{\"message\":\"This model's maximum context length is 8192 tokens. However, you requested 8350 tokens (7838 in the messages, 512 in the completion). Please reduce the length of the messages or completion.\",\"type\":\"invalid_request_error\",\"param\":\"messages\",\"code\":\"context_length_exceeded\"}"
+}
+
+--- Sending Chunk 17 of 29 ---
+
+🧠 AI Debug Suggestion:
+
+The provided code is just a utility file that handles the JWT access token functionalities such as getting the jwt token, setting new value for the token, getting the token's expiration, getting username from the payload, and decoding the payload of the token.
+
+If you're having an issue with redirecting to the dashboard after clicking the login button, the problem is most likely located in your authentication logic where the button click event is handled, or where the redirecting logic is implemented, not in this utility file.
+
+You can debug following these steps:
+
+1. Verify the click event handler attached to the login button. If there's something wrong, the function may not be called properly.
+  
+2. Check the authentication logic. Make sure the authentication request is made properly and the response is handled correctly.
+
+3. Check the token auto-save logic. Upon a successful login, the JWT token should be saved automatically in a secure place like HttpOnly cookies or the localStorage.
+
+4. Check the redirecting logic after successful login. There could be some conditions that prevent the redirecting.
+
+5. Check the network tab in the developer's console. Look for any failed requests -- if there are any, these could be causing the issues.
+
+Since there isn't a problem directly with your `CognitoAccessToken.js` file, these files aren't causing your redirection problem. However, if you think this file is causing your issue, please provide more context.
+
+--- Sending Chunk 18 of 29 ---
+
+🧠 AI Debug Suggestion:
+
+The provided code seems to be a large part of the Amazon Cognito Auth SDK for JavaScript, which handles user authentication and token managing, among other things. 
+
+However, to find the reason why the user isn't redirected to the dashboard, we need to see the code where:
+
+- The instantiation of the `CognitoAuth` object happens.
+- The calls to its methods like `signIn`, `signOut`, `getSession`, etc., are made.
+- Your callback functions are implemented to handle successful or unsuccessful authentication.
+- How these are tied together with your routing and/or state management logic, etc.
+
+Common issues might involve:
+
+- Misconfiguration, for example, incorrect User Pool Id, App client Id, Identity pool Id etc.
+- Incorrect redirect URLs.
+- Issues in your custom logic in the response handler for the `getSession` function.
+- Not properly handling promise, if you're using async/await make sure to properly catch errors.
+
+Please provide these details and the specific error (if available in your browser's console) to further assist in identifying the problem.
+
+--- Sending Chunk 19 of 29 ---
+
+🧠 AI Debug Suggestion:
+
+The provided files are part of the Amazon Cognito Auth SDK for JavaScript, and are needed to handle user authentication.
+
+However, you haven't shared any code or sample files related to the actual code of React where you are handling the login, setting tokens and redirection process to the dashboard. Given that, it's nearly impossible to provide a solution or a debug for your situation. 
+
+It may also be beneficial to provide details like:
+- The exact error message(s) you are encountering
+- If the issue is observed every time or intermittently
+- The portion of the code where you think the error might be
+- Configuration related to Apache or Nginx, if any
+- Any other relevant information or code
+
+Relevant factors that can impact redirection after login may include: 
+
+1. Incorrectly handling authentication state: Make sure you are properly managing and updating the user's authentication state in your app after successful login. 
+
+2. Incorrect redirect logic: Check your code to ensure you are properly redirecting to the dashboard post login. You can use react-router's `<Redirect>` for this purpose.
+
+3. Invalid tokens or token expiry: Make sure the tokens received post login are stored correctly and are valid. You can use the `isValid()` method provided in the `CognitoAuthSession` class to verify if the session is still valid.
+
+4. CORS and Server on which your application is running: Check your server configurations, local settings, or CORS policies as sometimes these can also cause issues in performing successful redirects after login.
+
+You should check all these factors in your actual code.
+
+--- Sending Chunk 20 of 29 ---
+❌ API Error: {
+  "requestId": "5e2ee3ca-416b-4d1a-b742-b74f65ee10e5",
+  "statusCode": 400,
+  "timestamp": "2025-04-11T17:37:50.169Z",
+  "path": "/v1/chat/completions",
+  "message": "{\"message\":\"This model's maximum context length is 8192 tokens. However, you requested 8219 tokens (7707 in the messages, 512 in the completion). Please reduce the length of the messages or completion.\",\"type\":\"invalid_request_error\",\"param\":\"messages\",\"code\":\"context_length_exceeded\"}"
+}
+
+--- Sending Chunk 21 of 29 ---
+
+🧠 AI Debug Suggestion:
+
+Based on the provided code alone, it's difficult to diagnose your problem as it doesn't include any React components or Routes that would likely be involved in handling the login and redirect logic. However, I can give some general advice that may help you identify the problem:
+
+1. Verify the response from your API: Ensure that the API that authenticates and logs in the user is behaving as expected and not throwing any errors.
+ 
+2. Check Token Storage: Make sure that the tokens (id, access, and refresh tokens) obtained after successful login are stored correctly, Ref: CognitoAuthSession.js. If the storing fails, the authentication status will not be persisted making the application consider the user as not logged in.
+
+3. Validate Tokens: Ensure the tokens are validated correctly using the "isValid()" function inside CognitoAuthSession.js. If the tokens are not valid, the login will be unsuccessful.
+
+4. Verify redirect logic: The logic that performs the redirect operation should be triggered after the login is successful. Confirm that this logic is set up correctly in your app.
+
+5. Review Routing: React router "Redirect" API can be used for redirection but the code provided doesn't show how you've added routing and redirection. Ensure routes are properly configured to allow redirection.
+
+Please provide the React component code handling login and redirect for a more specific answer.
+
+--- Sending Chunk 22 of 29 ---
+
+🧠 AI Debug Suggestion:
+
+The provided code is a part of the authentication module for the Amazon Cognito service used in a React application. Here are some possible reasons why the redirection to the dashboard is not occurring when the login button is clicked:
+
+- The RedirectUriSignIn and RedirectUriSignOut parameters might not be set correctly. They could either be expired, invalid or might not have the correct redirection endpoint to the dashboard in your React app.
+- The login could be failing due to an incorrect AppWebDomain, UserPoolId, or ClientId.
+- The scopes in the TokenScopesArray might not be set correctly or might not have the required permissions.
+- Unexpected errors or exceptions could be getting thrown in the code and you might not be catching them which are stopping the execution of the code causing the user not being redirected.
+- If there's any API call that requires network request, it might be failing due to CORS issue.
+- User session might not be persisted properly due to issues with the SavingTo/RetrievingFrom storage.
+- If refresh token is used to maintain the session, it might have been expired.
+- Session state might not be managed correctly causing session not to persist.
+
+Debugging steps can include:
+
+- Check the parameters passed into the constructor of the CognitoAuth class.
+- Check if the method `launchUri()` is working as expected. This is the method which actually redirects the user.
+- Monitor the success and failure callbacks for the login attempt to check if you're getting valid results from authentication.
+- Check browser's console and network tab for any error message or warning.
+- Check the application logs for any error details during authentication.
+- Verify that all the tokens (id, access, refresh) are successfully fetched and saved in local storage.
+- Test all the edge cases handling.
+- Use debugging breakpoints or `console.log()` to trace through the flow of the login process.
+- Check the validity of the user session and the tokens.
+
+--- Sending Chunk 23 of 29 ---
+
+🧠 AI Debug Suggestion:
+
+This question deals with a lot of code and it's unclear about the specific concerns or issues being faced. Ideally, more specific information should be provided such as the specific error messages being experienced if any, the expected vs actual outcome, a narrowed down snippet or segment of the code where the issue is suspected to lie, or any relevant steps taken so far to debug the issue.
+
+Nevertheless, I can still provide a general direction on how to debug login, token and redirect issues in an application using React and authentication:
+
+1. Login Failures: Check if the login API endpoint is correctly configured. Also, make sure the right method (GET, POST, etc) is used. Check if the correct body or parameters are being sent with the request. You can use browser's DevTools network tab for these checks.
+
+2. Token Issues: If the tokens are not being set, check if the login API response contains these tokens. If the tokens are not being retrieved from wherever they are being stored, make sure they are correctly saved in the correct location (like cookies, localStorage, etc) after login. 
+
+3. Redirect Logic Errors: Check if the conditions for redirection are being met. If using react-router or similar libraries, verify the correctness of the 'to' prop being passed to the "Redirect" component. Additionally, ensure that "history.push" or "history.replace" method is being used correctly.
+
+4. Use console.log: Use console.log extensively to log data at various points in your React components and auth flow to understand the state and props at those particular points in time.
+
+5. React and Redux DevTools: If you're using Redux for state management, the Redux DevTools Extension can be an excellent tool for tracking state changes. React DevTools can also help you to inspect your React components and their props.
+
+Remember, Stack traces are extremely useful when debugging. Always pay attention to any error or warning messages in your console.
+
+For a more specific solution, please provide more information or context about the actual issue you are facing.
+
+--- Sending Chunk 24 of 29 ---
+
+🧠 AI Debug Suggestion:
+
+It's unclear exactly what could be causing the issue without a clear understanding of your authentication workflow, the code for your login component, or any error messages you might be receiving. However, the problem may lie in one of several potential areas:
+
+1. Authentication Syntax: Check your authentication procedure for the validity of the syntax. Make sure your tokens are correctly generated and received, and that they are properly passed between the server and client. 
+
+2. Authentication Token: Your token may not be parsed correctly, or it may have been invalidated. Check whether the token is correctly stored and passed. Be sure to validate and parse the authentication token properly in your code.
+
+3. Routing: You might have an error in the routing logic controlling the redirection to the dashboard. When the login is successful, the routing may not be effected to the dashboard.
+
+4. State management: React components usually redirect on updates to the state or props. If your state isn't updating as expected (or if you're not using state to manage your auth status), you may not observe the expected redirect behaviour.
+
+5. Component should update: If you are using a lifecycle method like `shouldComponentUpdate` or `getDerivedStateFromProps`, the login status could be neglected. Therefore, it could prevent the component from updating the state or props, leading to update issues.
+
+6. Login function: Your login function may not be running at all, or it may not be running as expected. If you're not getting any console errors, try throwing some console logs into your login function to make sure it's being initiated and that all of its logic is running as expected.
+
+7. Incorrect HTTP Status Codes: It could be possible the server response's HTTP status code doesn't correspond to conventional authentication outcomes, which might be causing the unexpected behavior in your authentication flow.
+
+Please provide more information or code snippets related to your issue for more precise debugging.
+
+
+--- Sending Chunk 25 of 29 ---
+
+🧠 AI Debug Suggestion:
+
+It seems I have an incorrect assumption of your application's structure. Nonetheless, I am not able to correctly identify the login issue since the actual login logic, including the redirection to the dashboard, was not provided. For instance, you mostly have configuration files, utility scripts, and some encryption tokenizer files. Specifically, the redirection code performed after successful login is missing. 
+
+Normally, issues like this might be tied to various error possibilities such as:
+
+1. Misconfiguration in the React Router: Misconfigured routes can lead to issues with redirection not working as expected.
+
+2. Wrong redirection path: The redirection path might be wrong, trying to redirect to a path that doesn't exist.
+
+3. Conditional Rendering: When not properly implemented, conditional rendering can prevent redirections from happening.
+
+4. Authentication state might not be properly set, leading to redirects not being authorized.
+
+5. API request for Login isn't handling the response properly or doesn't trigger the desired redirection on successful login. 
+
+In order to correctly determine the issue, the relevant part of the application dealing with the user login process, especially the redirection code, should be provided. 
+
+However, you have provided a comprehensive suite for error checking, token setting, and API callback handling. That is, in the case of 'authActions.js' "/src/actions", a catch block is in place to manage Errors from the Login process and set appropriate error messages. Similarly, 'authApi.js' does a great job in modularizing your API call functions out separately which makes code readability and debugging easier. 
+
+Unfortunately, we don't have the important and relative parts of the login functionality such as Components responsible for handling Login processes (Like Input Forms, LoginButtons, etc.) and negotiation with these provided (actions & API) utility functions also your Redux store or Context setup for providing and manipulating global states particularly the Auth state is missing. 
+
+Required files being:
+
+1. Component files responsible for rendering and managing Login functionality.
+
+2. Routing Configuration (If applicable).
+
+3. Redux Store Configuration/ React Context Set-up, where global states like the auth state are managed. 
+
+4. Selector functions file (if any).
+
+5. Control flow graph (a representation of all paths that might be traversed through a program during its execution) of your application, which is helpful in understanding how these modularized blocks are put together. 
+
+Conclusively, these suggestions are useful when dealing with any form of misbehavior exhibited by your application, more information will be needed to give accurate debug suggestions.
+
+--- Sending Chunk 26 of 29 ---
+
+🧠 AI Debug Suggestion:
+
+Without knowing the specific error being faced during login functionality debugging, I'll cover common issues:
+
+1. Redirection isn't Triggered: This points to an issue in the `handleSuccessfulLogin()` function. Upon successful login, it's supposed to redirect to the `/dashboard`. Could be an issue with the `useNavigate` hook from `react-router-dom` or more likely because the `loggedIn` state from your `useAuth` context isn't actually being set to `true` upon successful login. 
+
+2. Async Calls: There could be a problem with the promise you are trying to resolve with your login functions like `login(formData.email, formData.password)` and `loginWithProvider(provider)`. Make sure these functions return a promise, as `await` is used with them.
+
+3. Asynchronous Side Effects: useEffect's dependency array might not be properly configured. This might cause unexpected issues, for example, you are passing `loggedIn` and `handleSuccessfulLogin` to your `useEffect` which triggers the redirection. If `handleSuccessfulLogin` changes before `loggedIn` becomes `true`, it could cause inconsistencies.
+
+4. Role-based Redirections: In case there is role-based dashboard redirection, ensure the user's role is set correctly before redirecting.
+
+5. Duplication of Implementations: From the code provided, there are multiple independent implementations of a login form component ('Login.jsx' and 'LoginComponent.jsx'). If these components are used in different parts of the application, ensure the correct implementation is used in each case.
+
+6. Network Requests: Inspect network requests with your browser's developer tools to see if there's a failing request or if responses have the expected data format.
+
+7. Authentication Flow: Validate JWT or token logic flow in your authentication methods.
+
+8. Credentials Validity: Ensure stored credentials are correct including stored states, tokens, or third-party OAuth credentials
+
+9. Validation: Verify whether your client-side validation scripts are functioning correctly. Incorrect validation implementation could return validation error states, even when the format of input is correct.
+
+Remember the best way to debug issues like these is to narrow down where the problem could be coming from and then gradually eliminate possible causes.
+
+--- Sending Chunk 27 of 29 ---
+
+🧠 AI Debug Suggestion:
+
+It seems like your login mechanism is well written and does not have authentication or redirect issues at first glance. There are however a number of factors that could lead to inconsistencies or issues:
+
+1. `handleLogin`: This function successfully handles the logging in process including error handling and dispatching of actions. Ensure that your `api.post` method is successfully returning the user information along with the token.
+
+2. Token storage: You are storing the token using `tokenManager.setToken`. Ensure that this operation does not fail and the token is stored correctly. You may try logging the token here to validate it.
+
+3. Navigation: After successful login, you are redirecting to the dashboard using `navigate('/dashboard', { replace: true });`. Ensure that '/dashboard' route is correctly configured in your React Router setup.
+
+4. Server/API: Check your server or the API that is handling the login request. Ensure that the API is returning correct results on successful login. Also, make sure that this API is correctly validating the user credentials.
+
+5. Application state: Ensure that your application or Redux state is updating properly to reflect the login status. You may need to monitor the state of your application upon login and ensure it gets properly updated.
+
+6. Check your protected routes: If the routes are protected before the user has been successfully authenticated, the user might be redirected back to the login page even though the login was successful.
+
+7. Network issues: Sometimes intermittent network issues can cause AJAX calls to fail sporadically. Check that your network is stable and consistent.
+
+8. Browser or Local Storage: If the tokens are being correctly generated and sent to the client but not being stored correctly in the browser (for instance, if the local storage is full or the token is being deleted by another process) then the user would not be authenticated on their next request. Check that the storage area of the browser where the tokens are being stored is functioning correctly.
+
+Without further specific details about the issue and its occurrences or the complete code of the application, it's a bit difficult to precisely pinpoint the cause of the issue you're facing.
+
+--- Sending Chunk 28 of 29 ---
+
+🧠 AI Debug Suggestion:
+
+From the provided files, the main reason that after logging in to the system it fails to redirect to the dashboard isn't visible. The necessary files which contain the logic for the redirection after login (perhaps the login component and routing logic) aren't provided. 
+
+However, while observing the provided files, some potential issues and improvements are as follows:
+
+1. `src/services/authService.js`: The `loginUser` function saves the access token to a cookie. If you work with JWT and handle sessions inside your app, it might be safer to store this token inside a JavaScript variable or in the state of your app due to vulnerabilities that permit https://owasp.org/www-community/attacks/csrf to steal your session information from cookies.
+
+2. `src/services/aws/auth.js`: The `loginUser` function here removes all tokens whenever an error is thrown. Depending on where this error happens, this might log out the user unintentionally.
+
+3. `src/utils/authUtils.js`: It contains methods for managing session handling which can cause issues if not used properly at the time of login and logout.
+
+Please check:
+
+- If the `login` method from the `src/utils/auth.js` file is used somewhere and if it handles redirect after success.
+
+- Also, check if after success of login/logout methods the session storage or cookies are being manipulated properly.
+
+- Make sure correct environments and API endpoints are being used during the API requests.
+
+- Ensure exception handling is done properly during API requests.
+
+- If the `normalizeUserData` from `src/utils/authUtils.js` is being used for the user information, check if it's mapping properties correctly from the response to the user state.
+
+Also, errors could exist in a component's `useEffect` or in any lifecycle methods (if class components are used) which could be causing re-rendering issues. An exact cause can only be determined once those parts of the code are presented.
+
+--- Sending Chunk 29 of 29 ---
+
+🧠 AI Debug Suggestion:
+
+The following potential points of failure can be deduced from the provided files:
+
+## File: src/utils/sessionManager.js
+
+1. The library useEffect is not imported from react, so it can't be used within the setupSessionManagement function.
+2. The check `if(timeUntilExpiry <= 0)` might be problematic if timeUntilExpiry is null or undefined, it should have a separate check for these cases.
+3. "log.warn("Token already expired - forcing logout"); onLogout();" force logout and again re-initializes the session. It is somewhat ambiguous or confusing. It is quite possible that the application is stuck in a loop of initializing, finding token expiry, logging out and re-initializing.
+4. The async function 'attemptTokenRefresh` used in 'scheduleTokenRefresh' might not always be successful (Network issues, server unavailable). There should be a mechanism to deal with failed retries (stop retrying after a certain number of attempts or after a certain time period.)
+5. The setupSessionManagement function should handle the case where the token is invalid or expired at the very beginning and should not continue further initialization.
+6. There might be some issues with the activity tracking mechanism as it looks for a physical user activity to keep the user logged in. If a user leaves the computer during a long process (like file upload), it might log the user out which can be unwanted behavior.
+
+## File: src/utils/tests/authUtils.test.js
+
+1. The mocked functions extractUserId, extractEmail, extractRole are not restored back to their original state after each test. This might influence subsequent tests.
+2. All the error messages are logged but there are no assertions for these specific error cases.
+
+## File: src/utils/tokenManager.js
+
+1. If the environment variable SECURITY_KEY isn't properly set, this will result in a failure to encrypt or decrypt the token. (This is a potential point of failure if not an actual error)
+2. In the setToken function, decryption is attempted without checking if the token exists and is a valid encrypted string.
+3. The logic to check if token expired `Date.now() > expiry` could fail if `expiry` is null, undefined, or not a number.
+4. The function 'getTimeUntilExpiry' doesn't handle if 'expiry' is NaN.
+
+## File: src/utils/tokenUtils.js
+
+1. The encryption process does not have a mechanism to check if the encryption secret key is defined or valid.
+2. In 'tokenUtils', method 'getToken' invokes
+(base) patrick@Patricks-MacBook-Pro scripts % 
