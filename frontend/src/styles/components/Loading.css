@@ -1,0 +1,45 @@
+/* ✅ FILE: /src/styles/components/Loading.css */
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    height: 100vh;
+    background-color: #f8f9fa; /* Matches app's branding */
+    color: #007bff;
+  }
+  
+  .spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #e9ecef;
+    border-top: 5px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  .loading-message {
+    margin-top: 1rem;
+    font-size: 1.2rem;
+    font-weight: 500;
+  }
+  
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  /* Size variations */
+  .loading-small .spinner {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .loading-large .spinner {
+    width: 70px;
+    height: 70px;
+  }
+  

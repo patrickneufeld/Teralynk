@@ -1,0 +1,29 @@
+/* File: /Users/patrick/Projects/Teralynk/frontend/src/styles/components/FileList.css */
+
+.file-list {
+    margin-top: 1rem;
+  }
+  
+  .file-list-header {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+  }
+  
+  .file-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.4rem 0.6rem;
+    border-bottom: 1px solid #ccc;
+    font-size: 0.95rem;
+  }
+  
+  .file-name {
+    flex: 2;
+  }
+  
+  .file-size,
+  .file-date {
+    flex: 1;
+    text-align: right;
+  }
+  

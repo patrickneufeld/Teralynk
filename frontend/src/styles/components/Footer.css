@@ -1,0 +1,30 @@
+/* ✅ Glassmorphic Footer */
+
+.footer {
+  width: 100%;
+  padding: 1rem 2rem;
+  margin-top: auto;
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #4b5563;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  transition: background 0.3s ease;
+}
+
+.dark .footer {
+  background: rgba(30, 30, 30, 0.2);
+  color: #d1d5db;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.footer strong {
+  color: #111827;
+}
+
+.dark .footer strong {
+  color: #f9fafb;
+}

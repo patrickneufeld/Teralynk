@@ -1,0 +1,3288 @@
+Here's how we can implement the Dashboard:
+
+// src/components/dashboard/DashboardView.jsx
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Clock, FileText, Users, Activity, Sparkles } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import StatCard from '../ui/StatCard';
+import ActivityTimeline from './ActivityTimeline';
+import StorageInsights from './StorageInsights';
+import AIAssistantPanel from './AIAssistantPanel';
+import WelcomeCard from './WelcomeCard';
+import ErrorBoundary from '../ErrorBoundary';
+const DashboardView = () => {
+  const { user } = useAuth();
+  const [stats, setStats] = useState({
+    files: 0,
+    collaborators: 0,
+    recentActivity: 0,
+    storageUsed: 0
+  });
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    // Fetch dashboard data
+    const fetchDashboardData = async () => {
+      try {
+        // Replace with actual API call
+        const response = await fetch('/api/user-data');
+        const data = await response.json();
+        
+        setStats({
+          files: data.fileCount || 0,
+          collaborators: data.collaboratorCount || 0,
+          recentActivity: data.recentActivityCount || 0,
+          storageUsed: data.storageUsed || 0
+        });
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDashboardData();
+  }, []);
+  return (
+    <div className="p-6 space-y-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <ErrorBoundary>
+          <WelcomeCard 
+            userName={user?.name || 'User'} 
+            lastLogin={user?.lastLogin}
+          />
+        </ErrorBoundary>
+        
+        <AIAssistantPanel />
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <ErrorBoundary>
+          <StatCard 
+            title="Files" 
+            value={stats.files}
+            icon={<FileText className="h-5 w-5 text-blue-500" />}
+            loading={loading}
+          />
+        </ErrorBoundary>
+        
+        <ErrorBoundary>
+          <StatCard 
+            title="Team Members" 
+            value={stats.collaborators}
+            icon={<Users className="h-5 w-5 text-green-500" />}
+            loading={loading}
+          />
+        </ErrorBoundary>
+        
+        <ErrorBoundary>
+          <StatCard 
+            title="Recent Activity" 
+            value={stats.recentActivity}
+            icon={<Activity className="h-5 w-5 text-purple-500" />}
+            loading={loading}
+          />
+        </ErrorBoundary>
+        
+        <ErrorBoundary>
+          <StatCard 
+            title="Storage Used" 
+            value={`${(stats.storageUsed / 1024).toFixed(2)} GB`}
+            icon={<Clock className="h-5 w-5 text-amber-500" />}
+            loading={loading}
+          />
+        </ErrorBoundary>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <ErrorBoundary>
+            <ActivityTimeline />
+          </ErrorBoundary>
+        </div>
+        
+        <div>
+          <ErrorBoundary>
+            <StorageInsights />
+          </ErrorBoundary>
+        </div>
+      </div>
+    </div>
+  );
+};
+export default DashboardView;
+Now, let's create the supporting components:
+
+// src/components/ui/StatCard.jsx
+import React from 'react';
+import { Skeleton } from './Skeleton';
+const StatCard = ({ title, value, icon, loading }) => {
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-4 border border-gray-100 dark:border-gray-700">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</h3>
+        <span className="rounded-full bg-gray-100 dark:bg-gray-700 p-2">{icon}</span>
+      </div>
+      
+      {loading ? (
+        <Skeleton className="h-8 w-24 mt-2" />
+      ) : (
+        <p className="text-2xl font-semibold mt-2">{value}</p>
+      )}
+    </div>
+  );
+};
+export default StatCard;
+// src/components/dashboard/WelcomeCard.jsx
+import React from 'react';
+import { Sparkles } from 'lucide-react';
+const WelcomeCard = ({ userName, lastLogin }) => {
+  const formattedDate = lastLogin ? new Date(lastLogin).toLocaleDateString() : 'N/A';
+  const formattedTime = lastLogin ? new Date(lastLogin).toLocaleTimeString() : '';
+  
+  return (
+    <div className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-2xl shadow-md p-6">
+      <div className="flex items-center">
+        <Sparkles className="h-8 w-8 mr-3" />
+        <h2 className="text-2xl font-bold">Welcome back, {userName}!</h2>
+      </div>
+      
+      <p className="mt-2 opacity-90">
+        Last login: {formattedDate} {formattedTime}
+      </p>
+      
+      <div className="mt-4">
+        <button className="bg-white/20 hover:bg-white/30 transition rounded-lg px-4 py-2 text-sm">
+          Check Your Updates
+        </button>
+      </div>
+    </div>
+  );
+};
+export default WelcomeCard;
+// src/components/dashboard/AIAssistantPanel.jsx
+import React, { useState } from 'react';
+import { MessageSquare, Send } from 'lucide-react';
+const AIAssistantPanel = () => {
+  const [input, setInput] = useState('');
+  
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Implement AI assistant interaction
+    console.log('AI assistant query:', input);
+    setInput('');
+  };
+  
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-4 border border-gray-100 dark:border-gray-700">
+      <div className="flex items-center mb-4">
+        <MessageSquare className="h-5 w-5 text-purple-500 mr-2" />
+        <h3 className="text-lg font-medium">AI Assistant</h3>
+      </div>
+      
+      <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 mb-3 text-sm">
+        <p className="text-gray-600 dark:text-gray-300">
+          How can I help you today? Ask me about file organization, collaborations, or AI-powered features.
+        </p>
+      </div>
+      
+      <form onSubmit={handleSubmit} className="flex items-center">
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Ask your assistant..."
+          className="flex-1 px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 rounded-l-lg border-0 focus:ring-2 focus:ring-purple-500 outline-none"
+        />
+        <button 
+          type="submit"
+          className="bg-purple-500 text-white px-3 py-2 rounded-r-lg hover:bg-purple-600 transition"
+        >
+          <Send className="h-4 w-4" />
+        </button>
+      </form>
+    </div>
+  );
+};
+export default AIAssistantPanel;
+// src/components/dashboard/ActivityTimeline.jsx
+import React, { useState, useEffect } from 'react';
+import { FileText, Users, Trash, Share, Clock } from 'lucide-react';
+const activityIcons = {
+  'file_upload': FileText,
+  'file_share': Share,
+  'file_delete': Trash,
+  'team_join': Users,
+  'login': Clock
+};
+const ActivityTimeline = () => {
+  const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    // Fetch activity data
+    const fetchActivities = async () => {
+      try {
+        // Replace with actual API call
+        const response = await fetch('/api/activities');
+        const data = await response.json();
+        setActivities(data.activities || []);
+      } catch (error) {
+        console.error('Error fetching activities:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchActivities();
+  }, []);
+  
+  if (loading) {
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-4 border border-gray-100 dark:border-gray-700">
+        <h3 className="text-lg font-medium mb-4">Recent Activity</h3>
+        <div className="space-y-4">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="flex items-start animate-pulse">
+              <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 mr-3"></div>
+              <div className="flex-1">
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
+                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-4 border border-gray-100 dark:border-gray-700">
+      <h3 className="text-lg font-medium mb-4">Recent Activity</h3>
+      
+      {activities.length === 0 ? (
+        <p className="text-gray-500 dark:text-gray-400 text-sm py-4 text-center">
+          No recent activities to display
+        </p>
+      ) : (
+        <div className="space-y-4">
+          {activities.map((activity) => {
+            const IconComponent = activityIcons[activity.type] || Clock;
+            
+            return (
+              <div key={activity.id} className="flex items-start">
+                <div className="rounded-full bg-gray-100 dark:bg-gray-700 p-2 mr-3">
+                  <IconComponent className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                </div>
+                
+                <div>
+                  <p className="text-sm font-medium">{activity.description}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    {new Date(activity.timestamp).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+export default ActivityTimeline;
+// src/components/dashboard/StorageInsights.jsx
+import React, { useState, useEffect } from 'react';
+import { PieChart, File, Image, Video, Archive, Database } from 'lucide-react';
+const StorageInsights = () => {
+  const [storageData, setStorageData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    // Fetch storage data
+    const fetchStorageData = async () => {
+      try {
+        // Replace with actual API call
+        const response = await fetch('/api/storage-insights');
+        const data = await response.json();
+        setStorageData(data);
+      } catch (error) {
+        console.error('Error fetching storage data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchStorageData();
+  }, []);
+  
+  if (loading) {
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-4 border border-gray-100 dark:border-gray-700">
+        <h3 className="text-lg font-medium mb-4 flex items-center">
+          <PieChart className="h-5 w-5 mr-2 text-blue-500" />
+          Storage Insights
+        </h3>
+        <div className="animate-pulse space-y-3">
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+          <div className="h-36 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+        </div>
+      </div>
+    );
+  }
+  
+  const storageTypes = [
+    { type: 'Documents', icon: File, color: 'text-blue-500', bgColor: 'bg-blue-100 dark:bg-blue-900' },
+    { type: 'Images', icon: Image, color: 'text-green-500', bgColor: 'bg-green-100 dark:bg-green-900' },
+    { type: 'Videos', icon: Video, color: 'text-red-500', bgColor: 'bg-red-100 dark:bg-red-900' },
+    { type: 'Archives', icon: Archive, color: 'text-amber-500', bgColor: 'bg-amber-100 dark:bg-amber-900' },
+    { type: 'Other', icon: Database, color: 'text-purple-500', bgColor: 'bg-purple-100 dark:bg-purple-900' }
+  ];
+  
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-4 border border-gray-100 dark:border-gray-700">
+      <h3 className="text-lg font-medium mb-4 flex items-center">
+        <PieChart className="h-5 w-5 mr-2 text-blue-500" />
+        Storage Insights
+      </h3>
+      
+      <div className="text-sm mb-3">
+        <span className="font-medium">{((storageData?.used || 0) / 1024).toFixed(2)} GB</span>
+        <span className="text-gray-500 dark:text-gray-400"> of </span>
+        <span className="font-medium">{((storageData?.total || 0) / 1024).toFixed(2)} GB</span>
+        <span className="text-gray-500 dark:text-gray-400"> used</span>
+      </div>
+      
+      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mb-4">
+        <div 
+          className="bg-blue-600 h-2.5 rounded-full" 
+          style={{ width: `${((storageData?.used || 0) / (storageData?.total || 1)) * 100}%` }}
+        ></div>
+      </div>
+      
+      <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">By File Type</h4>
+      
+      <div className="space-y-3">
+        {storageTypes.map((item, index) => {
+          const IconComponent = item.icon;
+          const percentage = storageData?.byType?.[item.type.toLowerCase()]?.percentage || 0;
+          
+          return (
+            <div key={index} className="flex items-center">
+              <div className={`${item.bgColor} rounded-lg p-1.5 mr-3`}>
+                <IconComponent className={`h-4 w-4 ${item.color}`} />
+              </div>
+              
+              <div className="flex-1">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-sm font-medium">{item.type}</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">{percentage}%</span>
+                </div>
+                
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                  <div 
+                    className={`h-1.5 rounded-full ${item.color.replace('text-', 'bg-')}`} 
+                    style={{ width: `${percentage}%` }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+export default StorageInsights;
+Now, let's create a skeleton component for loading states:
+
+// src/components/ui/Skeleton.jsx
+import React from 'react';
+export const Skeleton = ({ className = '', ...props }) => {
+  return (
+    <div
+      className={`animate-pulse rounded bg-gray-200 dark:bg-gray-700 ${className}`}
+      {...props}
+    />
+  );
+};
+2. Integrating the Dashboard with Your Existing Layout
+You'll need to incorporate this dashboard into your existing layout structure:
+
+// Update your routes/config.js to include the new dashboard
+import DashboardView from '../components/dashboard/DashboardView';
+// In your route configuration
+const routes = [
+  {
+    path: '/dashboard',
+    element: <DashboardView />,
+    // other route properties
+  },
+  // other routes
+];
+3. Next Steps After Dashboard Implementation
+Once the dashboard is complete, we should focus on:
+
+File Manager with Grid/List View:
+Implement a modern file manager with toggle between grid and list views
+Add drag-and-drop functionality
+Implement tagging and filtering
+Dialog System:
+Ensure all dialogs follow a consistent design language
+Implement the required dialogs: Upload, Rename, Delete Confirmation, Access Control, Version History
+User Settings:
+Implement theme switcher with dark/light mode
+Add language preferences
+Security settings (2FA)
+Integration management
+Team Management:
+Role-based permissions interface
+User invitation system
+Audit logs viewer
+Would you like me to provide implementation details for any of these next steps? Or would you prefer to see more specific code for any part of the dashboard components I've outlined?
+
+Also, I noticed you mentioned a mix of styling approaches (CSS Modules, Ant Design, and Tailwind). Do you have a preference for which styling approach to use for the new components?
+remember, I want drag and drop functionality, full RBAC ability for individual users to share and collaborate with teams of their choosing etc.
+4 hours ago
+PN
+
+PatrickNeufeld
+I'll focus on implementing the drag and drop functionality and robust Role-Based Access Control (RBAC) for collaboration features. These are critical aspects of the Teralynk platform that enable seamless file sharing and team collaboration.
+
+1. File Manager with Drag and Drop Functionality
+Let's implement a modern file manager component with drag and drop capabilities:
+
+// src/components/filemanager/FileManager.jsx
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { Grid, List, Search, Filter, FolderPlus, Upload, SortAsc, MoreVertical } from 'lucide-react';
+import FileGrid from './FileGrid';
+import FileList from './FileList';
+import FolderTree from './FolderTree';
+import FileUploadDialog from '../dialogs/FileUploadDialog';
+import FileActionMenu from './FileActionMenu';
+import ErrorBoundary from '../ErrorBoundary';
+const FileManager = () => {
+  const [files, setFiles] = useState([]);
+  const [folders, setFolders] = useState([]);
+  const [currentFolder, setCurrentFolder] = useState('root');
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [showUploadDialog, setShowUploadDialog] = useState(false);
+  const [sortBy, setSortBy] = useState('name'); // 'name', 'date', 'size'
+  const [sortOrder, setSortOrder] = useState('asc'); // 'asc' or 'desc'
+  const [loading, setLoading] = useState(true);
+  const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, fileId: null });
+  
+  const navigate = useNavigate();
+  // Fetch files and folders
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Replace with actual API calls
+        const filesResponse = await fetch(`/api/files?folder=${currentFolder}`);
+        const foldersResponse = await fetch('/api/folders');
+        
+        const filesData = await filesResponse.json();
+        const foldersData = await foldersResponse.json();
+        
+        setFiles(filesData.files || []);
+        setFolders(foldersData.folders || []);
+      } catch (error) {
+        console.error('Error fetching files and folders:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, [currentFolder]);
+  
+  // Handle file selection
+  const handleFileSelect = (fileId, isMultiSelect = false) => {
+    if (isMultiSelect) {
+      // Multi-select with Ctrl/Cmd key
+      setSelectedFiles(prev => 
+        prev.includes(fileId)
+          ? prev.filter(id => id !== fileId)
+          : [...prev, fileId]
+      );
+    } else {
+      // Single select
+      setSelectedFiles(prev => 
+        prev.length === 1 && prev[0] === fileId ? [] : [fileId]
+      );
+    }
+  };
+  
+  // Handle folder navigation
+  const handleFolderOpen = (folderId) => {
+    setCurrentFolder(folderId);
+    setSelectedFiles([]);
+  };
+  
+  // Handle file drag
+  const handleFileDrop = async (fileId, targetFolderId) => {
+    try {
+      // Replace with actual API call
+      await fetch('/api/files/move', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fileId,
+          targetFolderId,
+        }),
+      });
+      
+      // Update files list
+      setFiles(prev => prev.filter(file => file.id !== fileId));
+    } catch (error) {
+      console.error('Error moving file:', error);
+    }
+  };
+  
+  // Handle context menu
+  const handleContextMenu = (e, fileId) => {
+    e.preventDefault();
+    setContextMenu({
+      visible: true,
+      x: e.clientX,
+      y: e.clientY,
+      fileId,
+    });
+  };
+  
+  // Close context menu
+  const closeContextMenu = () => {
+    setContextMenu({ visible: false, x: 0, y: 0, fileId: null });
+  };
+  
+  // Filter files based on search query
+  const filteredFiles = files.filter(file => 
+    file.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  
+  // Sort files
+  const sortedFiles = [...filteredFiles].sort((a, b) => {
+    let comparison = 0;
+    
+    if (sortBy === 'name') {
+      comparison = a.name.localeCompare(b.name);
+    } else if (sortBy === 'date') {
+      comparison = new Date(a.modifiedDate) - new Date(b.modifiedDate);
+    } else if (sortBy === 'size') {
+      comparison = a.size - b.size;
+    }
+    
+    return sortOrder === 'asc' ? comparison : -comparison;
+  });
+  return (
+    <DndProvider backend={HTML5Backend}>
+      <div className="h-full flex flex-col">
+        {/* Toolbar */}
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="relative flex-1 min-w-[200px]">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <Search className="h-4 w-4 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                className="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5"
+                placeholder="Search files and folders..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <button
+                className={`p-2 rounded-lg ${viewMode === 'grid' ? 'bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+                onClick={() => setViewMode('grid')}
+                title="Grid view"
+              >
+                <Grid className="h-5 w-5" />
+              </button>
+              
+              <button
+                className={`p-2 rounded-lg ${viewMode === 'list' ? 'bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+                onClick={() => setViewMode('list')}
+                title="List view"
+              >
+                <List className="h-5 w-5" />
+              </button>
+              
+              <div className="h-6 border-r border-gray-300 dark:border-gray-600 mx-1"></div>
+              
+              <button
+                className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                title={`Sort ${sortOrder === 'asc' ? 'ascending' : 'descending'}`}
+              >
+                <SortAsc className={`h-5 w-5 ${sortOrder === 'desc' ? 'transform rotate-180' : ''}`} />
+              </button>
+              
+              <select
+                className="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+              >
+                <option value="name">Name</option>
+                <option value="date">Date</option>
+                <option value="size">Size</option>
+              </select>
+              
+              <div className="h-6 border-r border-gray-300 dark:border-gray-600 mx-1"></div>
+              
+              <button
+                className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => setShowUploadDialog(true)}
+                title="Upload files"
+              >
+                <Upload className="h-5 w-5" />
+              </button>
+              
+              <button
+                className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                title="Create folder"
+              >
+                <FolderPlus className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        {/* Main content */}
+        <div className="flex-1 flex overflow-hidden">
+          {/* Folder sidebar */}
+          <div className="w-64 border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 overflow-y-auto p-4">
+            <ErrorBoundary>
+              <FolderTree 
+                folders={folders}
+                currentFolder={currentFolder}
+                onFolderSelect={handleFolderOpen}
+                onFileDrop={handleFileDrop}
+              />
+            </ErrorBoundary>
+          </div>
+          
+          {/* Files area */}
+          <div className="flex-1 overflow-auto p-4">
+            <ErrorBoundary>
+              {viewMode === 'grid' ? (
+                <FileGrid 
+                  files={sortedFiles}
+                  selectedFiles={selectedFiles}
+                  onFileSelect={handleFileSelect}
+                  onContextMenu={handleContextMenu}
+                  loading={loading}
+                />
+              ) : (
+                <FileList 
+                  files={sortedFiles}
+                  selectedFiles={selectedFiles}
+                  onFileSelect={handleFileSelect}
+                  onContextMenu={handleContextMenu}
+                  loading={loading}
+                  sortBy={sortBy}
+                  sortOrder={sortOrder}
+                  onSort={(newSortBy) => {
+                    if (sortBy === newSortBy) {
+                      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+                    } else {
+                      setSortBy(newSortBy);
+                      setSortOrder('asc');
+                    }
+                  }}
+                />
+              )}
+            </ErrorBoundary>
+          </div>
+        </div>
+        
+        {/* Dialogs */}
+        {showUploadDialog && (
+          <FileUploadDialog 
+            currentFolder={currentFolder}
+            onClose={() => setShowUploadDialog(false)}
+            onSuccess={() => {
+              setShowUploadDialog(false);
+              // Refresh files
+              // You could implement an optimistic update here
+            }}
+          />
+        )}
+        
+        {/* Context Menu */}
+        {contextMenu.visible && (
+          <FileActionMenu
+            x={contextMenu.x}
+            y={contextMenu.y}
+            fileId={contextMenu.fileId}
+            onClose={closeContextMenu}
+            onShare={() => {
+              closeContextMenu();
+              // Open share dialog with RBAC controls
+              // Implementation will come in the next section
+            }}
+          />
+        )}
+      </div>
+    </DndProvider>
+  );
+};
+export default FileManager;
+Let's implement the supporting components for the File Manager:
+
+// src/components/filemanager/FileGrid.jsx
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useDrag } from 'react-dnd';
+import { File, FileText, Image, Video, Music, Archive, MoreVertical } from 'lucide-react';
+import { Skeleton } from '../ui/Skeleton';
+// File item component with drag capability
+const FileItem = ({ file, isSelected, onSelect, onContextMenu }) => {
+  const navigate = useNavigate();
+  
+  // Set up drag source
+  const [{ isDragging }, drag] = useDrag({
+    type: 'FILE',
+    item: { id: file.id, type: 'file' },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+  
+  // Get appropriate icon based on file type
+  const getFileIcon = () => {
+    const extension = file.name.split('.').pop().toLowerCase();
+    
+    if (['jpg', 'jpeg', 'png', 'gif', 'svg'].includes(extension)) {
+      return <Image className="h-8 w-8 text-blue-500" />;
+    } else if (['mp4', 'mov', 'avi', 'mkv'].includes(extension)) {
+      return <Video className="h-8 w-8 text-purple-500" />;
+    } else if (['mp3', 'wav', 'ogg'].includes(extension)) {
+      return <Music className="h-8 w-8 text-green-500" />;
+    } else if (['zip', 'rar', 'tar', 'gz'].includes(extension)) {
+      return <Archive className="h-8 w-8 text-amber-500" />;
+    } else if (['doc', 'docx', 'txt', 'pdf'].includes(extension)) {
+      return <FileText className="h-8 w-8 text-red-500" />;
+    } else {
+      return <File className="h-8 w-8 text-gray-500" />;
+    }
+  };
+  
+  return (
+    <div
+      ref={drag}
+      className={`relative p-4 rounded-xl border ${isSelected ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'} cursor-pointer transition-all duration-150 ${isDragging ? 'opacity-50' : 'opacity-100'}`}
+      onClick={(e) => {
+        onSelect(file.id, e.ctrlKey || e.metaKey);
+      }}
+      onContextMenu={(e) => onContextMenu(e, file.id)}
+      style={{ opacity: isDragging ? 0.5 : 1 }}
+    >
+      <div className="flex flex-col items-center text-center">
+        <div className="mb-2">
+          {file.thumbnailUrl ? (
+            <img 
+              src={file.thumbnailUrl} 
+              alt={file.name} 
+              className="h-24 w-24 object-cover rounded-lg"
+            />
+          ) : (
+            <div className="h-24 w-24 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg">
+              {getFileIcon()}
+            </div>
+          )}
+        </div>
+        
+        <h3 className="text-sm font-medium truncate w-full">{file.name}</h3>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          {file.size < 1024 * 1024
+            ? `${(file.size / 1024).toFixed(1)} KB`
+            : `${(file.size / (1024 * 1024)).toFixed(1)} MB`}
+        </p>
+      </div>
+      
+      {isSelected && (
+        <div className="absolute top-2 right-2 h-5 w-5 bg-blue-500 rounded-full flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-white" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+          </svg>
+        </div>
+      )}
+    </div>
+  );
+};
+const FileGrid = ({ files, selectedFiles, onFileSelect, onContextMenu, loading }) => {
+  if (loading) {
+    return (
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        {Array.from({ length: 10 }).map((_, index) => (
+          <div key={index} className="p-4 rounded-xl border border-gray-200 dark:border-gray-700">
+            <div className="flex flex-col items-center">
+              <Skeleton className="h-24 w-24 rounded-lg mb-2" />
+              <Skeleton className="h-4 w-32 mb-2" />
+              <Skeleton className="h-3 w-16" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  
+  if (files.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-gray-500 dark:text-gray-400">
+        <File className="h-16 w-16 mb-4 opacity-20" />
+        <p className="text-lg">No files found</p>
+        <p className="text-sm mt-2">Upload files or create a new folder to get started</p>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+      {files.map((file) => (
+        <FileItem
+          key={file.id}
+          file={file}
+          isSelected={selectedFiles.includes(file.id)}
+          onSelect={onFileSelect}
+          onContextMenu={onContextMenu}
+        />
+      ))}
+    </div>
+  );
+};
+export default FileGrid;
+// src/components/filemanager/FileList.jsx
+import React from 'react';
+import { useDrag } from 'react-dnd';
+import { File, FileText, Image, Video, Music, Archive, ChevronUp, ChevronDown } from 'lucide-react';
+import { Skeleton } from '../ui/Skeleton';
+// File row component with drag capability
+const FileRow = ({ file, isSelected, onSelect, onContextMenu }) => {
+  // Set up drag source
+  const [{ isDragging }, drag] = useDrag({
+    type: 'FILE',
+    item: { id: file.id, type: 'file' },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+  
+  // Get appropriate icon based on file type
+  const getFileIcon = () => {
+    const extension = file.name.split('.').pop().toLowerCase();
+    
+    if (['jpg', 'jpeg', 'png', 'gif', 'svg'].includes(extension)) {
+      return <Image className="h-5 w-5 text-blue-500" />;
+    } else if (['mp4', 'mov', 'avi', 'mkv'].includes(extension)) {
+      return <Video className="h-5 w-5 text-purple-500" />;
+    } else if (['mp3', 'wav', 'ogg'].includes(extension)) {
+      return <Music className="h-5 w-5 text-green-500" />;
+    } else if (['zip', 'rar', 'tar', 'gz'].includes(extension)) {
+      return <Archive className="h-5 w-5 text-amber-500" />;
+    } else if (['doc', 'docx', 'txt', 'pdf'].includes(extension)) {
+      return <FileText className="h-5 w-5 text-red-500" />;
+    } else {
+      return <File className="h-5 w-5 text-gray-500" />;
+    }
+  };
+  
+  return (
+    <tr
+      ref={drag}
+      className={`${isSelected ? 'bg-blue-50 dark:bg-blue-900/30' : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'} cursor-pointer transition-colors ${isDragging ? 'opacity-50' : 'opacity-100'}`}
+      onClick={(e) => onSelect(file.id, e.ctrlKey || e.metaKey)}
+      onContextMenu={(e) => onContextMenu(e, file.id)}
+    >
+      <td className="py-3 pl-4 pr-3">
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={() => {}}
+            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3"
+          />
+          <div className="mr-3">{getFileIcon()}</div>
+          <span className="font-medium">{file.name}</span>
+        </div>
+      </td>
+      <td className="px-3 py-3 text-sm text-gray-500 dark:text-gray-400">
+        {new Date(file.modifiedDate).toLocaleDateString()}
+      </td>
+      <td className="px-3 py-3 text-sm text-gray-500 dark:text-gray-400">
+        {file.owner}
+      </td>
+      <td className="px-3 py-3 text-sm text-gray-500 dark:text-gray-400">
+        {file.size < 1024 * 1024
+          ? `${(file.size / 1024).toFixed(1)} KB`
+          : `${(file.size / (1024 * 1024)).toFixed(1)} MB`}
+      </td>
+    </tr>
+  );
+};
+const FileList = ({ 
+  files, 
+  selectedFiles, 
+  onFileSelect, 
+  onContextMenu, 
+  loading,
+  sortBy,
+  sortOrder,
+  onSort
+}) => {
+  // Render sorting icon
+  const renderSortIcon = (column) => {
+    if (sortBy !== column) return null;
+    
+    return sortOrder === 'asc' ? (
+      <ChevronUp className="h-4 w-4 ml-1" />
+    ) : (
+      <ChevronDown className="h-4 w-4 ml-1" />
+    );
+  };
+  
+  if (loading) {
+    return (
+      <div className="overflow-x-auto shadow rounded-lg">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead className="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Name</th>
+              <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Modified</th>
+              <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Owner</th>
+              <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Size</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <tr key={index}>
+                <td className="py-3 pl-4 pr-3">
+                  <div className="flex items-center">
+                    <Skeleton className="h-5 w-5 mr-3" />
+                    <Skeleton className="h-4 w-48" />
+                  </div>
+                </td>
+                <td className="px-3 py-3"><Skeleton className="h-4 w-24" /></td>
+                <td className="px-3 py-3"><Skeleton className="h-4 w-20" /></td>
+                <td className="px-3 py-3"><Skeleton className="h-4 w-16" /></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+  
+  if (files.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-gray-500 dark:text-gray-400">
+        <File className="h-16 w-16 mb-4 opacity-20" />
+        <p className="text-lg">No files found</p>
+        <p className="text-sm mt-2">Upload files or create a new folder to get started</p>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="overflow-x-auto shadow rounded-lg">
+      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <thead className="bg-gray-50 dark:bg-gray-700">
+          <tr>
+            <th 
+              className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white cursor-pointer"
+              onClick={() => onSort('name')}
+            >
+              <div className="flex items-center">
+                Name
+                {renderSortIcon('name')}
+              </div>
+            </th>
+            <th 
+              className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white cursor-pointer"
+              onClick={() => onSort('date')}
+            >
+              <div className="flex items-center">
+                Modified
+                {renderSortIcon('date')}
+              </div>
+            </th>
+            <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+              Owner
+            </th>
+            <th 
+              className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white cursor-pointer"
+              onClick={() => onSort('size')}
+            >
+              <div className="flex items-center">
+                Size
+                {renderSortIcon('size')}
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+          {files.map((file) => (
+            <FileRow
+              key={file.id}
+              file={file}
+              isSelected={selectedFiles.includes(file.id)}
+              onSelect={onFileSelect}
+              onContextMenu={onContextMenu}
+            />
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+export default FileList;
+// src/components/filemanager/FolderTree.jsx
+import React, { useState } from 'react';
+import { useDrop } from 'react-dnd';
+import { ChevronRight, ChevronDown, Folder, FolderOpen } from 'lucide-react';
+const FolderNode = ({ folder, level = 0, currentFolder, onFolderSelect, onFileDrop }) => {
+  const [isOpen, setIsOpen] = useState(folder.id === currentFolder || folder.parentId === currentFolder);
+  
+  // Setup drop target
+  const [{ isOver, canDrop }, drop] = useDrop({
+    accept: 'FILE',
+    drop: (item) => {
+      if (item.type === 'file') {
+        onFileDrop(item.id, folder.id);
+      }
+    },
+    collect: (monitor) => ({
+      isOver: monitor.isOver(),
+      canDrop: monitor.canDrop(),
+    }),
+  });
+  
+  const isActive = folder.id === currentFolder;
+  
+  const toggleOpen = (e) => {
+    e.stopPropagation();
+    setIsOpen(!isOpen);
+  };
+  
+  return (
+    <div className="select-none">
+      <div
+        ref={drop}
+        className={`flex items-center py-1 px-2 rounded cursor-pointer ${isActive ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200' : 'hover:bg-gray-100 dark:hover:bg-gray-800'} ${isOver && canDrop ? 'bg-blue-50 dark:bg-blue-900/50' : ''}`}
+        style={{ paddingLeft: `${level * 12 + 8}px` }}
+        onClick={() => onFolderSelect(folder.id)}
+      >
+        {folder.children && folder.children.length > 0 ? (
+          <button 
+            onClick={toggleOpen} 
+            className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+          >
+            {isOpen ? (
+              <ChevronDown className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
+            ) : (
+              <ChevronRight className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
+            )}
+          </button>
+        ) : (
+          <div className="w-5.5"></div>
+        )}
+        
+        {isActive ? (
+          <FolderOpen className="h-4.5 w-4.5 text-blue-600 dark:text-blue-400 ml-1 mr-2" />
+        ) : (
+          <Folder className="h-4.5 w-4.5 text-gray-500 dark:text-gray-400 ml-1 mr-2" />
+        )}
+        
+        <span className="truncate text-sm">{folder.name}</span>
+      </div>
+      
+      {isOpen && folder.children && folder.children.length > 0 && (
+        <div className="ml-5">
+          {folder.children.map((childFolder) => (
+            <FolderNode
+              key={childFolder.id}
+              folder={childFolder}
+              level={level + 1}
+              currentFolder={currentFolder}
+              onFolderSelect={onFolderSelect}
+              onFileDrop={onFileDrop}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+const FolderTree = ({ folders, currentFolder, onFolderSelect, onFileDrop }) => {
+  // Recursive function to build the folder tree
+  const buildFolderTree = (items) => {
+    const map = {};
+    const roots = [];
+    
+    // Create a mapping of id to folder with children array
+    items.forEach(folder => {
+      map[folder.id] = { ...folder, children: [] };
+    });
+    
+    // Add children to their parents
+    items.forEach(folder => {
+      if (folder.parentId && map[folder.parentId]) {
+        map[folder.parentId].children.push(map[folder.id]);
+      } else {
+        roots.push(map[folder.id]);
+      }
+    });
+    
+    return roots;
+  };
+  
+  const folderTree = buildFolderTree(folders);
+  
+  return (
+    <div className="space-y-1">
+      {folderTree.map((folder) => (
+        <FolderNode
+          key={folder.id}
+          folder={folder}
+          currentFolder={currentFolder}
+          onFolderSelect={onFolderSelect}
+          onFileDrop={onFileDrop}
+        />
+      ))}
+    </div>
+  );
+};
+export default FolderTree;
+// src/components/filemanager/FileActionMenu.jsx
+import React, { useEffect, useRef } from 'react';
+import { Share, Download, Trash, Edit, Copy, Eye } from 'lucide-react';
+const FileActionMenu = ({ x, y, fileId, onClose, onShare }) => {
+  const menuRef = useRef(null);
+  
+  useEffect(() => {
+    // Close menu when clicking outside
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [onClose]);
+  
+  // Adjust position if menu would go outside viewport
+  const adjustedPosition = () => {
+    if (!menuRef.current) return { left: x, top: y };
+    
+    const rect = menuRef.current.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    
+    let adjustedX = x;
+    let adjustedY = y;
+    
+    if (x + rect.width > viewportWidth) {
+      adjustedX = viewportWidth - rect.width - 10;
+    }
+    
+    if (y + rect.height > viewportHeight) {
+      adjustedY = viewportHeight - rect.height - 10;
+    }
+    
+    return { left: adjustedX, top: adjustedY };
+  };
+  
+  const position = adjustedPosition();
+  
+  const menuItems = [
+    { icon: <Eye className="h-4 w-4 mr-3" />, label: 'Preview', action: () => console.log('Preview file', fileId) },
+    { icon: <Download className="h-4 w-4 mr-3" />, label: 'Download', action: () => console.log('Download file', fileId) },
+    { icon: <Share className="h-4 w-4 mr-3" />, label: 'Share', action: onShare },
+    { icon: <Edit className="h-4 w-4 mr-3" />, label: 'Rename', action: () => console.log('Rename file', fileId) },
+    { icon: <Copy className="h-4 w-4 mr-3" />, label: 'Make a copy', action: () => console.log('Copy file', fileId) },
+    { icon: <Trash className="h-4 w-4 mr-3" />, label: 'Delete', action: () => console.log('Delete file', fileId), danger: true }
+  ];
+  
+  return (
+    <div
+      ref={menuRef}
+      className="absolute z-50 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 w-52"
+      style={{ left: position.left, top: position.top }}
+    >
+      {menuItems.map((item, index) => (
+        <button
+          key={index}
+          className={`w-full text-left px-4 py-2 text-sm flex items-center ${item.danger ? 'text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+          onClick={() => {
+            item.action();
+            onClose();
+          }}
+        >
+          {item.icon}
+          {item.label}
+        </button>
+      ))}
+    </div>
+  );
+};
+export default FileActionMenu;
+2. Role-Based Access Control (RBAC) for Collaboration
+Next, let's implement the RBAC components for sharing and collaborating with teams:
+
+// src/components/dialogs/ShareDialog.jsx
+import React, { useState, useEffect } from 'react';
+import { X, Users, Search, Plus, Lock, Globe, UserPlus, Info } from 'lucide-react';
+const permissionLevels = [
+  { id: 'viewer', label: 'Viewer', description: 'Can view and download' },
+  { id: 'commenter', label: 'Commenter', description: 'Can comment and suggest' },
+  { id: 'editor', label: 'Editor', description: 'Can edit but not share' },
+  { id: 'manager', label: 'Manager', description: 'Can edit and share' },
+  { id: 'owner', label: 'Owner', description: 'Full control' }
+];
+const ShareDialog = ({ fileId, fileName, onClose }) => {
+  const [accessLevel, setAccessLevel] = useState('restricted'); // 'restricted', 'anyone', 'organization'
+  const [linkCopied, setLinkCopied] = useState(false);
+  const [sharedUsers, setSharedUsers] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [selectedPermission, setSelectedPermission] = useState('viewer');
+  const [isAddingUsers, setIsAddingUsers] = useState(false);
+  
+  // Fetch current sharing settings
+  useEffect(() => {
+    const fetchSharingSettings = async () => {
+      try {
+        // Replace with actual API call
+        const response = await fetch(`/api/files/${fileId}/sharing`);
+        const data = await response.json();
+        
+        setAccessLevel(data.accessLevel || 'restricted');
+        setSharedUsers(data.sharedUsers || []);
+      } catch (error) {
+        console.error('Error fetching sharing settings:', error);
+      }
+    };
+    
+    fetchSharingSettings();
+  }, [fileId]);
+  
+  // Search users when query changes
+  useEffect(() => {
+    if (searchQuery.trim().length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    
+    const searchUsers = async () => {
+      try {
+        // Replace with actual API call
+        const response = await fetch(`/api/users/search?q=${searchQuery}`);
+        const data = await response.json();
+        
+        setSearchResults(data.users || []);
+      } catch (error) {
+        console.error('Error searching users:', error);
+      }
+    };
+    
+    const timeoutId = setTimeout(searchUsers, 300);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
+  
+  // Handle adding user with permission
+  const handleAddUser = async (userId) => {
+    try {
+      // Replace with actual API call
+      await fetch(`/api/files/${fileId}/share`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          permission: selectedPermission
+        }),
+      });
+      
+      // Optimistic update
+      const userToAdd = searchResults.find(user => user.id === userId);
+      if (userToAdd) {
+        setSharedUsers([...sharedUsers, {
+          ...userToAdd,
+          permission: selectedPermission
+        }]);
+      }
+      
+      setSearchQuery('');
+      setSearchResults([]);
+    } catch (error) {
+      console.error('Error adding user:', error);
+    }
+  };
+  
+  // Handle changing user permission
+  const handleChangePermission = async (userId, newPermission) => {
+    try {
+      // Replace with actual API call
+      await fetch(`/api/files/${fileId}/share`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          permission: newPermission
+        }),
+      });
+      
+      // Update local state
+      setSharedUsers(sharedUsers.map(user => 
+        user.id === userId ? { ...user, permission: newPermission } : user
+      ));
+    } catch (error) {
+      console.error('Error changing permission:', error);
+    }
+  };
+  
+  // Handle removing user
+  const handleRemoveUser = async (userId) => {
+    try {
+      // Replace with actual API call
+      await fetch(`/api/files/${fileId}/share`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId }),
+      });
+      
+      // Update local state
+      setSharedUsers(sharedUsers.filter(user => user.id !== userId));
+    } catch (error) {
+      console.error('Error removing user:', error);
+    }
+  };
+  
+  // Handle changing access level
+  const handleChangeAccessLevel = async (newLevel) => {
+    try {
+      // Replace with actual API call
+      await fetch(`/api/files/${fileId}/access-level`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ accessLevel: newLevel }),
+      });
+      
+      // Update local state
+      setAccessLevel(newLevel);
+    } catch (error) {
+      console.error('Error changing access level:', error);
+    }
+  };
+  
+  // Copy link to clipboard
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(`https://teralynk.com/files/${fileId}`);
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2000);
+  };
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 p-4">
+          <h2 className="text-xl font-semibold">Share "{fileName}"</h2>
+          <button 
+            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+            onClick={onClose}
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-6">
+          {/* People section */}
+          <div>
+            <h3 className="text-lg font-medium mb-3 flex items-center">
+              <Users className="h-5 w-5 mr-2" />
+              People with access
+            </h3>
+            
+            {isAddingUsers ? (
+              <div className="space-y-3">
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <Search className="h-4 w-4 text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    className="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5"
+                    placeholder="Search for people or groups..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+                
+                {searchResults.length > 0 && (
+                  <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800 shadow-sm">
+                    {searchResults.map((user) => (
+                      <div 
+                        key={user.id}
+                        className="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-200 dark:border-gray-700 last:border-b-0"
+                      >
+                        <div className="flex items-center">
+                          {user.avatarUrl ? (
+                            <img src={user.avatarUrl} alt={user.name} className="h-8 w-8 rounded-full mr-3" />
+                          ) : (
+                            <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 mr-3 flex items-center justify-center">
+                              <span className="text-gray-600 dark:text-gray-300 text-sm font-medium">
+                                {user.name.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                          )}
+                          <div>
+                            <p className="text-sm font-medium">{user.name}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">{user.email}</p>
+                          </div>
+                        </div>
+                        
+                        <button
+                          className="bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 text-sm font-medium px-3 py-1.5 rounded-lg"
+                          onClick={() => handleAddUser(user.id)}
+                        >
+                          Add
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                <div className="flex space-x-2">
+                  <button
+                    className="text-gray-500 dark:text-gray-400 text-sm hover:text-gray-700 dark:hover:text-gray-200"
+                    onClick={() => setIsAddingUsers(false)}
+                  >
+                    Cancel
+                  </button>
+                  
+                  <select
+                    value={selectedPermission}
+                    onChange={(e) => setSelectedPermission(e.target.value)}
+                    className="text-sm bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2"
+                  >
+                    {permissionLevels.map((level) => (
+                      <option key={level.id} value={level.id}>
+                        {level.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <button
+                  className="flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 mb-4"
+                  onClick={() => setIsAddingUsers(true)}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add people or groups
+                </button>
+              </div>
+            )}
+            
+            {sharedUsers.length > 0 && (
+              <div className="space-y-3 mt-4">
+                {sharedUsers.map((user) => (
+                  <div 
+                    key={user.id}
+                    className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
+                  >
+                    <div className="flex items-center">
+                      {user.avatarUrl ? (
+                        <img src={user.avatarUrl} alt={user.name} className="h-8 w-8 rounded-full mr-3" />
+                      ) : (
+                        <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-600 mr-3 flex items-center justify-center">
+                          <span className="text-gray-600 dark:text-gray-300 text-sm font-medium">
+                            {user.name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-sm font-medium">{user.name}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{user.email}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center">
+                      <select
+                        value={user.permission}
+                        onChange={(e) => handleChangePermission(user.id, e.target.value)}
+                        className="text-sm bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 mr-2"
+                      >
+                        {permissionLevels.map((level) => (
+                          <option key={level.id} value={level.id}>
+                            {level.label}
+                          </option>
+                        ))}
+                      </select>
+                      
+                      <button
+                        className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600"
+                        onClick={() => handleRemoveUser(user.id)}
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          
+          {/* General access section */}
+          <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+            <h3 className="text-lg font-medium mb-3">General access</h3>
+            
+            <div className="space-y-3">
+              <div 
+                className={`flex items-center justify-between p-3 rounded-lg ${accessLevel === 'restricted' ? 'bg-blue-50 dark:bg-blue-900/30 border-2 border-blue-200 dark:border-blue-800' : 'bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+                onClick={() => handleChangeAccessLevel('restricted')}
+              >
+                <div className="flex items-center">
+                  <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-600 mr-3 flex items-center justify-center">
+                    <Lock className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">Restricted</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Only people with access can open</p>
+                  </div>
+                </div>
+                
+                <div className="h-4 w-4 rounded-full border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center">
+                  {accessLevel === 'restricted' && (
+                    <div className="h-2 w-2 rounded-full bg-blue-600 dark:bg-blue-400"></div>
+                  )}
+                </div>
+              </div>
+              
+              <div 
+                className={`flex items-center justify-between p-3 rounded-lg ${accessLevel === 'organization' ? 'bg-blue-50 dark:bg-blue-900/30 border-2 border-blue-200 dark:border-blue-800' : 'bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+                onClick={() => handleChangeAccessLevel('organization')}
+              >
+                <div className="flex items-center">
+                  <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-600 mr-3 flex items-center justify-center">
+                    <Users className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">Organization</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Anyone in your organization with the link can access</p>
+                  </div>
+                </div>
+                
+                <div className="h-4 w-4 rounded-full border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center">
+                  {accessLevel === 'organization' && (
+                    <div className="h-2 w-2 rounded-full bg-blue-600 dark:bg-blue-400"></div>
+                  )}
+                </div>
+              </div>
+              
+              <div 
+                className={`flex items-center justify-between p-3 rounded-lg ${accessLevel === 'anyone' ? 'bg-blue-50 dark:bg-blue-900/30 border-2 border-blue-200 dark:border-blue-800' : 'bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+                onClick={() => handleChangeAccessLevel('anyone')}
+              >
+                <div className="flex items-center">
+                  <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-600 mr-3 flex items-center justify-center">
+                    <Globe className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">Anyone with the link</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Anyone on the internet with the link can access</p>
+                  </div>
+                </div>
+                
+                <div className="h-4 w-4 rounded-full border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center">
+                  {accessLevel === 'anyone' && (
+                    <div className="h-2 w-2 rounded-full bg-blue-600 dark:bg-blue-400"></div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Copy link section */}
+          {accessLevel !== 'restricted' && (
+            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-medium mb-3">Link to share</h3>
+              
+              <div className="flex items-center">
+                <input
+                  type="text"
+                  readOnly
+                  value={`https://teralynk.com/files/${fileId}`}
+                  className="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-l-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                />
+                <button
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-r-lg text-sm px-4 py-2.5"
+                  onClick={handleCopyLink}
+                >
+                  {linkCopied ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* Footer */}
+        <div className="border-t border-gray-200 dark:border-gray-700 p-4 flex justify-end space-x-2">
+          <button
+            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg"
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          
+          <button
+            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg"
+            onClick={onClose}
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+export default ShareDialog;
+Let's also create a dialog for managing team settings:
+
+// src/components/dialogs/TeamManagementDialog.jsx
+import React, { useState, useEffect } from 'react';
+import { X, Users, Search, Plus, UserMinus, Settings, Shield } from 'lucide-react';
+const roleDefinitions = [
+  { id: 'admin', label: 'Admin', description: 'Full control over team and content' },
+  { id: 'manager', label: 'Manager', description: 'Can manage content and some team settings' },
+  { id: 'member', label: 'Member', description: 'Can view and edit content based on permissions' },
+  { id: 'guest', label: 'Guest', description: 'Limited access to specific content only' }
+];
+const TeamManagementDialog = ({ teamId, teamName, onClose }) => {
+  const [members, setMembers] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isAddingMembers, setIsAddingMembers] = useState(false);
+  const [selectedRole, setSelectedRole] = useState('member');
+  
+  // Fetch team members
+  useEffect(() => {
+    const fetchTeamMembers = async () => {
+      try {
+        // Replace with actual API call
+        const response = await fetch(`/api/teams/${teamId}/members`);
+        const data = await response.json();
+        
+        setMembers(data.members || []);
+      } catch (error) {
+        console.error('Error fetching team members:', error);
+      }
+    };
+    
+    fetchTeamMembers();
+  }, [teamId]);
+  
+  // Search users when query changes
+  useEffect(() => {
+    if (searchQuery.trim().length < 2 || !isAddingMembers) {
+      setSearchResults([]);
+      return;
+    }
+    
+    const searchUsers = async () => {
+      try {
+        // Replace with actual API call
+        const response = await fetch(`/api/users/search?q=${searchQuery}`);
+        const data = await response.json();
+        
+        // Filter out users who are already members
+        const filteredResults = (data.users || []).filter(
+          user => !members.some(member => member.id === user.id)
+        );
+        
+        setSearchResults(filteredResults);
+      } catch (error) {
+        console.error('Error searching users:', error);
+      }
+    };
+    
+    const timeoutId = setTimeout(searchUsers, 300);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, isAddingMembers, members]);
+  
+  // Handle adding member with role
+  const handleAddMember = async (userId) => {
+    try {
+      // Replace with actual API call
+      await fetch(`/api/teams/${teamId}/members`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          role: selectedRole
+        }),
+      });
+      
+      // Optimistic update
+      const userToAdd = searchResults.find(user => user.id === userId);
+      if (userToAdd) {
+        setMembers([...members, {
+          ...userToAdd,
+          role: selectedRole
+        }]);
+      }
+      
+      setSearchQuery('');
+      setSearchResults([]);
+    } catch (error) {
+      console.error('Error adding member:', error);
+    }
+  };
+  
+  // Handle changing member role
+  const handleChangeRole = async (userId, newRole) => {
+    try {
+      // Replace with actual API call
+      await fetch(`/api/teams/${teamId}/members/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          role: newRole
+        }),
+      });
+      
+      // Update local state
+      setMembers(members.map(member => 
+        member.id === userId ? { ...member, role: newRole } : member
+      ));
+    } catch (error) {
+      console.error('Error changing role:', error);
+    }
+  };
+  
+  // Handle removing member
+  const handleRemoveMember = async (userId) => {
+    try {
+      // Replace with actual API call
+      await fetch(`/api/teams/${teamId}/members/${userId}`, {
+        method: 'DELETE'
+      });
+      
+      // Update local state
+      setMembers(members.filter(member => member.id !== userId));
+    } catch (error) {
+      console.error('Error removing member:', error);
+    }
+  };
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 p-4">
+          <h2 className="text-xl font-semibold flex items-center">
+            <Users className="h-5 w-5 mr-2 text-blue-500" />
+            {teamName} - Team Management
+          </h2>
+          <button 
+            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+            onClick={onClose}
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-6">
+          {/* Team members section */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium">Team Members</h3>
+              
+              <button
+                className="flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                onClick={() => setIsAddingMembers(!isAddingMembers)}
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Add Members
+              </button>
+            </div>
+            
+            {isAddingMembers && (
+              <div className="space-y-3 mb-4">
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <Search className="h-4 w-4 text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    className="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5"
+                    placeholder="Search for users..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+                
+                {searchResults.length > 0 && (
+                  <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800 shadow-sm">
+                    {searchResults.map((user) => (
+                      <div 
+                        key={user.id}
+                        className="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-200 dark:border-gray-700 last:border-b-0"
+                      >
+                        <div className="flex items-center">
+                          {user.avatarUrl ? (
+                            <img src={user.avatarUrl} alt={user.name} className="h-8 w-8 rounded-full mr-3" />
+                          ) : (
+                            <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 mr-3 flex items-center justify-center">
+                              <span className="text-gray-600 dark:text-gray-300 text-sm font-medium">
+                                {user.name.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                          )}
+                          <div>
+                            <p className="text-sm font-medium">{user.name}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">{user.email}</p>
+                          </div>
+                        </div>
+                        
+                        <button
+                          className="bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 text-sm font-medium px-3 py-1.5 rounded-lg"
+                          onClick={() => handleAddMember(user.id)}
+                        >
+                          Add
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                <div className="flex space-x-2">
+                  <select
+                    value={selectedRole}
+                    onChange={(e) => setSelectedRole(e.target.value)}
+                    className="text-sm bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2"
+                  >
+                    {roleDefinitions.map((role) => (
+                      <option key={role.id} value={role.id}>
+                        {role.label}
+                      </option>
+                    ))}
+                  </select>
+                  
+                  <button
+                    className="text-gray-500 dark:text-gray-400 text-sm hover:text-gray-700 dark:hover:text-gray-200"
+                    onClick={() => setIsAddingMembers(false)}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            {members.length > 0 ? (
+              <div className="overflow-hidden border border-gray-200 dark:border-gray-700 rounded-lg">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        User
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Role
+                      </th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    {members.map((member) => (
+                      <tr key={member.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <td className="px-4 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            {member.avatarUrl ? (
+                              <img src={member.avatarUrl} alt={member.name} className="h-8 w-8 rounded-full mr-3" />
+                            ) : (
+                              <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 mr-3 flex items-center justify-center">
+                                <span className="text-gray-600 dark:text-gray-300 text-sm font-medium">
+                                  {member.name.charAt(0).toUpperCase()}
+                                </span>
+                              </div>
+                            )}
+                            <div>
+                              <p className="text-sm font-medium">{member.name}</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">{member.email}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap">
+                          <select
+                            value={member.role}
+                            onChange={(e) => handleChangeRole(member.id, e.target.value)}
+                            className="text-sm bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2"
+                          >
+                            {roleDefinitions.map((role) => (
+                              <option key={role.id} value={role.id}>
+                                {role.label}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-right">
+                          <button
+                            className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20"
+                            onClick={() => handleRemoveMember(member.id)}
+                          >
+                            <UserMinus className="h-5 w-5" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-700 rounded-lg p-8">
+                <Users className="h-12 w-12 text-gray-400 mb-3" />
+                <p className="text-lg font-medium mb-2">No team members yet</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-4">
+                  Add members to start collaborating on projects together
+                </p>
+                <button
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm"
+                  onClick={() => setIsAddingMembers(true)}
+                >
+                  Add First Member
+                </button>
+              </div>
+            )}
+          </div>
+          
+          {/* Role descriptions */}
+          <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+            <h3 className="text-lg font-medium mb-3 flex items-center">
+              <Shield className="h-5 w-5 mr-2 text-green-500" />
+              Role Definitions
+            </h3>
+            
+            <div className="space-y-3">
+              {roleDefinitions.map((role) => (
+                <div 
+                  key={role.id}
+                  className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
+                >
+                  <p className="text-sm font-medium">{role.label}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{role.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        
+        {/* Footer */}
+        <div className="border-t border-gray-200 dark:border-gray-700 p-4 flex justify-end space-x-2">
+          <button
+            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg"
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          
+          <button
+            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg"
+            onClick={onClose}
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+export default TeamManagementDialog;
+3. Integration and Next Steps
+Connect the File Manager to Your Routes:
+// Update your routes/config.js 
+import FileManager from '../components/filemanager/FileManager';
+// In your route configuration
+const routes = [
+  {
+    path: '/files',
+    element: <FileManager />,
+    // other route properties
+  },
+  // other routes
+];
+Add Share Dialog to File Action Menu:
+// Update src/components/filemanager/FileActionMenu.jsx to include sharing
+import React, { useState } from 'react';
+import ShareDialog from '../dialogs/ShareDialog';
+// In your FileActionMenu component, add state for share dialog
+const [showShareDialog, setShowShareDialog] = useState(false);
+// Then in the component's return, add:
+{showShareDialog && (
+  <ShareDialog
+I'll focus on implementing those critical features next, particularly the drag and drop functionality and full RBAC (Role-Based Access Control) for collaboration. Let's implement the File Manager with these capabilities:
+
+File Manager with Drag and Drop & RBAC Collaboration
+Here's how we can implement a modern file manager with drag and drop functionality and robust permission controls:
+
+// src/components/fileManager/FileManagerView.jsx
+import React, { useState, useEffect } from 'react';
+import { useDropzone } from 'react-dropzone';
+import { Grid, List, Search, Filter, Upload, Share, Settings, MoreHorizontal, FolderPlus } from 'lucide-react';
+import FileGrid from './FileGrid';
+import FileList from './FileList';
+import UploadDialog from '../dialogs/UploadDialog';
+import ShareDialog from '../dialogs/ShareDialog';
+import AccessControlDialog from '../dialogs/AccessControlDialog';
+import { useAuth } from '../../contexts/AuthContext';
+const FileManagerView = () => {
+  const { user } = useAuth();
+  const [files, setFiles] = useState([]);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterOptions, setFilterOptions] = useState({ type: 'all', dateRange: 'all' });
+  const [showUploadDialog, setShowUploadDialog] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const [showAccessControl, setShowAccessControl] = useState(false);
+  const [loading, setLoading] = useState(true);
+  // Dropzone setup for drag and drop
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop: acceptedFiles => {
+      setShowUploadDialog(true);
+      // Pass the accepted files to the upload dialog
+    },
+    noClick: true, // Prevent opening file dialog on click
+  });
+  useEffect(() => {
+    // Fetch files data
+    const fetchFiles = async () => {
+      try {
+        // Replace with actual API call
+        const response = await fetch('/api/files');
+        const data = await response.json();
+        setFiles(data.files || []);
+      } catch (error) {
+        console.error('Error fetching files:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFiles();
+  }, []);
+  const handleSearch = (e) => {
+    setSearchQuery(e.target.value);
+  };
+  const handleFileSelection = (fileId) => {
+    setSelectedFiles(prev => {
+      if (prev.includes(fileId)) {
+        return prev.filter(id => id !== fileId);
+      } else {
+        return [...prev, fileId];
+      }
+    });
+  };
+  const handleMultiSelect = (fileIds) => {
+    setSelectedFiles(fileIds);
+  };
+  const handleCreateFolder = () => {
+    // Implement folder creation logic
+  };
+  const filteredFiles = files.filter(file => {
+    // Apply search query filter
+    if (searchQuery && !file.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+      return false;
+    }
+    
+    // Apply type filter
+    if (filterOptions.type !== 'all' && file.type !== filterOptions.type) {
+      return false;
+    }
+    
+    // Apply date filter (implementation would depend on your date structure)
+    
+    return true;
+  });
+  return (
+    <div 
+      {...getRootProps()} 
+      className={`p-6 h-full ${isDragActive ? 'bg-blue-50 dark:bg-blue-900/20 border-2 border-dashed border-blue-300 dark:border-blue-700 rounded-lg' : ''}`}
+    >
+      <input {...getInputProps()} />
+      
+      {isDragActive && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/5 dark:bg-white/5 z-10">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 text-center">
+            <Upload className="h-12 w-12 mx-auto text-blue-500 mb-3" />
+            <h3 className="text-lg font-medium mb-1">Drop files to upload</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Your files will be uploaded to the current folder</p>
+          </div>
+        </div>
+      )}
+      
+      {/* Toolbar */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+        <div className="relative w-full sm:w-80">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={handleSearch}
+            placeholder="Search files and folders"
+            className="pl-9 pr-4 py-2 w-full bg-gray-100 dark:bg-gray-800 rounded-lg border-0 focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        
+        <div className="flex items-center space-x-2 w-full sm:w-auto">
+          <button 
+            onClick={() => setFilterOptions(prev => ({ ...prev }))} 
+            className="inline-flex items-center px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-lg transition"
+          >
+            <Filter className="h-4 w-4 mr-2" />
+            Filters
+          </button>
+          
+          <div className="bg-gray-200 dark:bg-gray-700 rounded-lg flex">
+            <button 
+              onClick={() => setViewMode('grid')}
+              className={`p-2 rounded-l-lg ${viewMode === 'grid' ? 'bg-white dark:bg-gray-600 shadow-sm' : ''}`}
+            >
+              <Grid className="h-4 w-4" />
+            </button>
+            <button 
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded-r-lg ${viewMode === 'list' ? 'bg-white dark:bg-gray-600 shadow-sm' : ''}`}
+            >
+              <List className="h-4 w-4" />
+            </button>
+          </div>
+          
+          <button 
+            onClick={() => setShowUploadDialog(true)}
+            className="inline-flex items-center px-3 py-2 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition"
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            Upload
+          </button>
+          
+          <button 
+            onClick={handleCreateFolder}
+            className="inline-flex items-center px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-lg transition"
+          >
+            <FolderPlus className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+      
+      {/* Selection Actions - Only shown when files are selected */}
+      {selectedFiles.length > 0 && (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-2 mb-4 flex items-center justify-between">
+          <div className="text-sm font-medium pl-2">
+            {selectedFiles.length} {selectedFiles.length === 1 ? 'item' : 'items'} selected
+          </div>
+          
+          <div className="flex items-center space-x-1">
+            <button 
+              onClick={() => setShowShareDialog(true)}
+              className="p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition"
+              title="Share selected items"
+            >
+              <Share className="h-4 w-4" />
+            </button>
+            
+            <button 
+              onClick={() => setShowAccessControl(true)}
+              className="p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition"
+              title="Manage permissions"
+            >
+              <Settings className="h-4 w-4" />
+            </button>
+            
+            <button 
+              className="p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition"
+              title="More actions"
+            >
+              <MoreHorizontal className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+      
+      {/* File display - conditionally render grid or list view */}
+      {viewMode === 'grid' ? (
+        <FileGrid 
+          files={filteredFiles} 
+          selectedFiles={selectedFiles}
+          onSelect={handleFileSelection}
+          onMultiSelect={handleMultiSelect}
+          loading={loading}
+        />
+      ) : (
+        <FileList 
+          files={filteredFiles} 
+          selectedFiles={selectedFiles}
+          onSelect={handleFileSelection}
+          onMultiSelect={handleMultiSelect}
+          loading={loading}
+        />
+      )}
+      
+      {/* Dialogs */}
+      {showUploadDialog && (
+        <UploadDialog onClose={() => setShowUploadDialog(false)} />
+      )}
+      
+      {showShareDialog && (
+        <ShareDialog 
+          selectedFiles={selectedFiles}
+          files={files.filter(file => selectedFiles.includes(file.id))}
+          onClose={() => setShowShareDialog(false)} 
+        />
+      )}
+      
+      {showAccessControl && (
+        <AccessControlDialog 
+          selectedFiles={selectedFiles}
+          files={files.filter(file => selectedFiles.includes(file.id))}
+          onClose={() => setShowAccessControl(false)} 
+        />
+      )}
+    </div>
+  );
+};
+export default FileManagerView;
+Now let's implement the File Grid component:
+
+// src/components/fileManager/FileGrid.jsx
+import React from 'react';
+import { File, Folder, Trash, Download, MoreHorizontal, Image, FileText, Video, Music, Archive } from 'lucide-react';
+import { Skeleton } from '../ui/Skeleton';
+// File type icon mapping
+const fileTypeIcons = {
+  folder: Folder,
+  image: Image,
+  document: FileText,
+  video: Video,
+  audio: Music,
+  archive: Archive,
+  default: File
+};
+const FileGrid = ({ files, selectedFiles, onSelect, onMultiSelect, loading }) => {
+  if (loading) {
+    return (
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+        {[...Array(12)].map((_, i) => (
+          <div key={i} className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+            <Skeleton className="h-24 w-full rounded-xl mb-3" />
+            <Skeleton className="h-5 w-3/4 mb-2" />
+            <Skeleton className="h-4 w-1/2" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (files.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <File className="h-12 w-12 mx-auto text-gray-400 mb-3" />
+        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">No files found</h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          Upload files or create a folder to get started
+        </p>
+      </div>
+    );
+  }
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+      {files.map((file) => {
+        const isSelected = selectedFiles.includes(file.id);
+        const IconComponent = fileTypeIcons[file.type] || fileTypeIcons.default;
+        
+        return (
+          <div 
+            key={file.id}
+            className={`relative bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border ${
+              isSelected 
+                ? 'border-blue-500 ring-2 ring-blue-500/20' 
+                : 'border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600'
+            } transition cursor-pointer group`}
+            onClick={() => onSelect(file.id)}
+          >
+            {/* Selection indicator */}
+            <div 
+              className={`absolute top-2 right-2 h-4 w-4 rounded-full border ${
+                isSelected 
+                  ? 'bg-blue-500 border-blue-500' 
+                  : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 group-hover:border-gray-400 dark:group-hover:border-gray-500'
+              }`}
+            >
+              {isSelected && (
+                <svg className="text-white h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </div>
+            
+            {/* File preview */}
+            <div className="mb-3 p-2 bg-gray-100 dark:bg-gray-700 rounded-xl flex items-center justify-center h-24">
+              {file.type === 'image' && file.thumbnailUrl ? (
+                <img 
+                  src={file.thumbnailUrl} 
+                  alt={file.name} 
+                  className="max-h-full max-w-full object-contain rounded"
+                />
+              ) : (
+                <IconComponent className="h-12 w-12 text-gray-500 dark:text-gray-400" />
+              )}
+            </div>
+            
+            {/* File info */}
+            <h3 className="text-sm font-medium truncate mb-1" title={file.name}>
+              {file.name}
+            </h3>
+            
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                {file.size ? `${(file.size / 1024).toFixed(2)} KB` : '--'}
+              </span>
+              
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
+                <button className="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+                  <Download className="h-3 w-3" />
+                </button>
+                <button className="p-1 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400">
+                  <Trash className="h-3 w-3" />
+                </button>
+                <button className="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+                  <MoreHorizontal className="h-3 w-3" />
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+export default FileGrid;
+Now let's implement the File List view:
+
+// src/components/fileManager/FileList.jsx
+import React from 'react';
+import { File, Folder, Download, Share, Trash, MoreHorizontal, Image, FileText, Video, Music, Archive } from 'lucide-react';
+import { Skeleton } from '../ui/Skeleton';
+// File type icon mapping
+const fileTypeIcons = {
+  folder: Folder,
+  image: Image,
+  document: FileText,
+  video: Video,
+  audio: Music,
+  archive: Archive,
+  default: File
+};
+const FileList = ({ files, selectedFiles, onSelect, onMultiSelect, loading }) => {
+  if (loading) {
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+        <div className="grid grid-cols-12 text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 px-4 py-2">
+          <div className="col-span-6">Name</div>
+          <div className="col-span-2">Owner</div>
+          <div className="col-span-2">Last Modified</div>
+          <div className="col-span-1">Size</div>
+          <div className="col-span-1 text-right">Actions</div>
+        </div>
+        
+        <div className="divide-y divide-gray-100 dark:divide-gray-700">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="grid grid-cols-12 items-center px-4 py-3 animate-pulse">
+              <div className="col-span-6 flex items-center">
+                <Skeleton className="h-6 w-6 mr-3 rounded" />
+                <Skeleton className="h-4 w-40" />
+              </div>
+              <div className="col-span-2">
+                <Skeleton className="h-4 w-20" />
+              </div>
+              <div className="col-span-2">
+                <Skeleton className="h-4 w-24" />
+              </div>
+              <div className="col-span-1">
+                <Skeleton className="h-4 w-12" />
+              </div>
+              <div className="col-span-1 flex justify-end space-x-2">
+                <Skeleton className="h-6 w-6 rounded-full" />
+                <Skeleton className="h-6 w-6 rounded-full" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  if (files.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <File className="h-12 w-12 mx-auto text-gray-400 mb-3" />
+        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">No files found</h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          Upload files or create a folder to get started
+        </p>
+      </div>
+    );
+  }
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+      <div className="grid grid-cols-12 text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 px-4 py-2">
+        <div className="col-span-6">Name</div>
+        <div className="col-span-2">Owner</div>
+        <div className="col-span-2">Last Modified</div>
+        <div className="col-span-1">Size</div>
+        <div className="col-span-1 text-right">Actions</div>
+      </div>
+      
+      <div className="divide-y divide-gray-100 dark:divide-gray-700">
+        {files.map((file) => {
+          const isSelected = selectedFiles.includes(file.id);
+          const IconComponent = fileTypeIcons[file.type] || fileTypeIcons.default;
+          
+          return (
+            <div 
+              key={file.id}
+              className={`grid grid-cols-12 items-center px-4 py-3 ${
+                isSelected 
+                  ? 'bg-blue-50 dark:bg-blue-900/20' 
+                  : 'hover:bg-gray-50 dark:hover:bg-gray-700/30'
+              } transition cursor-pointer`}
+              onClick={() => onSelect(file.id)}
+            >
+              <div className="col-span-6 flex items-center">
+                <div className="relative">
+                  <div 
+                    className={`absolute -top-1 -left-1 h-4 w-4 rounded-full border ${
+                      isSelected 
+                        ? 'bg-blue-500 border-blue-500' 
+                        : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600'
+                    }`}
+                  >
+                    {isSelected && (
+                      <svg className="text-white h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </div>
+                  
+                  <div className="rounded p-1">
+                    <IconComponent className={`h-5 w-5 ${isSelected ? 'text-blue-500' : 'text-gray-500 dark:text-gray-400'}`} />
+                  </div>
+                </div>
+                
+                <span className="ml-3 font-medium truncate" title={file.name}>
+                  {file.name}
+                </span>
+              </div>
+              
+              <div className="col-span-2 text-sm text-gray-500 dark:text-gray-400 truncate">
+                {file.owner?.name || 'You'}
+              </div>
+              
+              <div className="col-span-2 text-sm text-gray-500 dark:text-gray-400">
+                {new Date(file.lastModified).toLocaleDateString()}
+              </div>
+              
+              <div className="col-span-1 text-sm text-gray-500 dark:text-gray-400">
+                {file.size ? `${(file.size / 1024).toFixed(2)} KB` : '--'}
+              </div>
+              
+              <div className="col-span-1 flex justify-end space-x-2">
+                <button className="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+                  <Share className="h-4 w-4" />
+                </button>
+                <button className="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+                  <MoreHorizontal className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+export default FileList;
+Now, let's implement the RBAC-focused ShareDialog:
+
+// src/components/dialogs/ShareDialog.jsx
+import React, { useState, useEffect } from 'react';
+import { X, Search, Users, UserPlus, Shield, Copy, Check } from 'lucide-react';
+const permissionOptions = [
+  { id: 'viewer', label: 'Viewer', description: 'Can view only' },
+  { id: 'commenter', label: 'Commenter', description: 'Can view and comment' },
+  { id: 'editor', label: 'Editor', description: 'Can edit content' },
+  { id: 'owner', label: 'Owner', description: 'Full access including sharing' },
+];
+const ShareDialog = ({ files, selectedFiles, onClose }) => {
+  const [searchValue, setSearchValue] = useState('');
+  const [shareableLink, setShareableLink] = useState('');
+  const [linkCopied, setLinkCopied] = useState(false);
+  const [selectedPermission, setSelectedPermission] = useState('viewer');
+  const [sharedWith, setSharedWith] = useState([]);
+  const [searchResults, setSearchResults] = useState([]);
+  useEffect(() => {
+    // Generate shareable link
+    setShareableLink(`https://teralynk.com/s/${Math.random().toString(36).substring(2, 10)}`);
+    
+    // Fetch current sharing permissions
+    const fetchSharedWith = async () => {
+      try {
+        // Replace with actual API call
+        const response = await fetch(`/api/shared-with?fileIds=${selectedFiles.join(',')}`);
+        const data = await response.json();
+        setSharedWith(data.users || []);
+      } catch (error) {
+        console.error('Error fetching sharing data:', error);
+      }
+    };
+    
+    fetchSharedWith();
+  }, [selectedFiles]);
+  const handleSearch = (e) => {
+    const value = e.target.value;
+    setSearchValue(value);
+    
+    if (value.length > 2) {
+      // Mock search results - replace with actual API call
+      setSearchResults([
+        { id: 1, name: 'Jane Cooper', email: 'jane@example.com', avatar: 'https://i.pravatar.cc/150?u=jane' },
+        { id: 2, name: 'Robert Fox', email: 'robert@example.com', avatar: 'https://i.pravatar.cc/150?u=robert' },
+        { id: 3, name: 'Esther Howard', email: 'esther@example.com', avatar: 'https://i.pravatar.cc/150?u=esther' },
+      ]);
+    } else {
+      setSearchResults([]);
+    }
+  };
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(shareableLink);
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2000);
+  };
+  const handleAddUser = (user) => {
+    if (!sharedWith.some(u => u.id === user.id)) {
+      setSharedWith([...sharedWith, { 
+        ...user, 
+        permission: selectedPermission,
+        dateAdded: new Date().toISOString()
+      }]);
+    }
+    setSearchValue('');
+    setSearchResults([]);
+  };
+  const handleUpdatePermission = (userId, permission) => {
+    setSharedWith(sharedWith.map(user => 
+      user.id === userId ? { ...user, permission } : user
+    ));
+  };
+  const handleRemoveUser = (userId) => {
+    setSharedWith(sharedWith.filter(user => user.id !== userId));
+  };
+  return (
+    <div className="fixed inset-0 bg-black/30 dark:bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden">
+        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-700">
+          <h2 className="text-lg font-semibold">
+            Share {selectedFiles.length > 1 ? `${selectedFiles.length} items` : files[0]?.name}
+          </h2>
+          <button 
+            onClick={onClose}
+            className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        
+        <div className="flex-1 overflow-y-auto p-4">
+          {/* Search users */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium mb-2">Add people or teams</label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <input
+                type="text"
+                value={searchValue}
+                onChange={handleSearch}
+                placeholder="Enter names or email addresses"
+                className="pl-9 pr-4 py-2 w-full bg-gray-100 dark:bg-gray-700 rounded-lg border-0 focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+              
+              {searchResults.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-100 dark:border-gray-700 z-10">
+                  {searchResults.map(user => (
+                    <div 
+                      key={user.id}
+                      className="flex items-center p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                      onClick={() => handleAddUser(user)}
+                    >
+                      <img 
+                        src={user.avatar} 
+                        alt={user.name} 
+                        className="h-8 w-8 rounded-full mr-3"
+                      />
+                      <div>
+                        <div className="font-medium">{user.name}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">{user.email}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            <div className="flex items-center mt-3">
+              <span className="text-sm text-gray-500 dark:text-gray-400 mr-2">Permission:</span>
+              <select 
+                value={selectedPermission}
+                onChange={(e) => setSelectedPermission(e.target.value)}
+                className="text-sm bg-gray-100 dark:bg-gray-700 border-0 rounded-md focus:ring-2 focus:ring-blue-500"
+              >
+                {permissionOptions.map(option => (
+                  <option key={option.id} value={option.id}>
+                    {option.label} — {option.description}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          
+          {/* Shareable link */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium mb-2">Shareable link</label>
+            <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg pr-2">
+              <input
+                type="text"
+                readOnly
+                value={shareableLink}
+                className="flex-1 bg-transparent border-0 focus:ring-0 outline-none py-2 px-3"
+              />
+              <button 
+                onClick={handleCopyLink}
+                className="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition"
+                title={linkCopied ? 'Copied!' : 'Copy link'}
+              >
+                {linkCopied ? (
+                  <Check className="h-5 w-5 text-green-500" />
+                ) : (
+                  <Copy className="h-5 w-5" />
+                )}
+              </button>
+            </div>
+          </div>
+          
+          {/* Currently shared with */}
+          <div>
+            <h3 className="text-sm font-medium mb-3">Shared with</h3>
+            
+            {sharedWith.length === 0 ? (
+              <div className="text-center py-6 border border-dashed border-gray-200 dark:border-gray-700 rounded-lg">
+                <Users className="h-8 w-8 mx-auto text-gray-400 mb-2" />
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  This item isn't shared with anyone yet
+                </p>
+              </div>
+            ) : (
+              <ul className="space-y-3">
+                {sharedWith.map(user => (
+                  <li 
+                    key={user.id}
+                    className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg"
+                  >
+                    <div className="flex items-center">
+                      <img 
+                        src={user.avatar || `https://i.pravatar.cc/150?u=${user.id}`} 
+                        alt={user.name} 
+                        className="h-8 w-8 rounded-full mr-3"
+                      />
+                      <div>
+                        <div className="font-medium">{user.name}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{user.email}</div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center">
+                      <select 
+                        value={user.permission}
+                        onChange={(e) => handleUpdatePermission(user.id, e.target.value)}
+                        className="text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md mr-2"
+                      >
+                        {permissionOptions.map(option => (
+                          <option key={option.id} value={option.id}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                      
+                      <button 
+                        onClick={() => handleRemoveUser(user.id)}
+                        className="p-1 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400"
+                        title="Remove"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+        
+        <div className="p-4 border-t border-gray-100 dark:border-gray-700 flex justify-end">
+          <button 
+            onClick={onClose}
+            className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg mr-2"
+          >
+            Cancel
+          </button>
+          <button 
+            className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg"
+          >
+            Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+export default ShareDialog;
+And finally, let's implement the AccessControlDialog for detailed RBAC settings:
+
+// src/components/dialogs/AccessControlDialog.jsx
+import React, { useState, useEffect } from 'react';
+import { X, Shield, User, UserPlus, Eye, Edit, Star } from 'lucide-react';
+const roleIcons = {
+  viewer: Eye,
+  editor: Edit,
+  owner: Star
+};
+const AccessControlDialog = ({ files, selectedFiles, onClose }) => {
+  const [permissions, setPermissions] = useState([]);
+  const [inheritPermissions, setInheritPermissions] = useState(true);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    // Fetch access control data
+    const fetchPermissions = async () => {
+      try {
+        // Replace with actual API call
+        const response = await fetch(`/api/permissions?fileIds=${selectedFiles.join(',')}`);
+        const data = await response.json();
+        setPermissions(data.permissions || []);
+        setInheritPermissions(data.inheritPermissions || true);
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchPermissions();
+  }, [selectedFiles]);
+  const handleToggleInherit = () => {
+    setInheritPermissions(!inheritPermissions);
+  };
+  const handleAddRole = () => {
+    // Implement role addition logic
+  };
+  const handleRemoveRole = (id) => {
+    setPermissions(permissions.filter(permission => permission.id !== id));
+  };
+  const handleChangePermission = (id, permission) => {
+    setPermissions(permissions.map(p => 
+      p.id === id ? { ...p, permission } : p
+    ));
+  };
+  return (
+    <div className="fixed inset-0 bg-black/30 dark:bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden">
+        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-700">
+          <h2 className="text-lg font-semibold flex items-center">
+            <Shield className="h-5 w-5 mr-2 text-blue-500" />
+            Manage Access
+          </h2>
+          <button 
+            onClick={onClose}
+            className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        
+        <div className="flex-1 overflow-y-auto p-4">
+          <div className="mb-4">
+            <h3 className="text-sm font-medium mb-2">
+              {selectedFiles.length > 1 
+                ? `Managing access for ${selectedFiles.length} items` 
+                : `Managing access for "${files[0]?.name}"`}
+            </h3>
+            
+            {selectedFiles.length > 1 && (
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                Changes will apply to all selected items.
+              </p>
+            )}
+          </div>
+          
+          {/* Inherit permissions toggle (for folders or nested items) */}
+          <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg mb-6">
+            <div>
+              <h4 className="text-sm font-medium">Inherit permissions</h4>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                When enabled, permissions from parent folders will apply
+              </p>
+            </div>
+            
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input 
+                type="checkbox" 
+                checked={inheritPermissions}
+                onChange={handleToggleInherit}
+                className="sr-only peer" 
+              />
+              <div className="w-11 h-6 bg-gray-300 peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+            </label>
+          </div>
+          
+          {/* Roles and Permissions */}
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-medium">Roles & Permissions</h3>
+              <button 
+                onClick={handleAddRole}
+                className="text-xs text-blue-500 hover:text-blue-600 flex items-center"
+              >
+                <UserPlus className="h-3 w-3 mr-1" />
+                Add Role
+              </button>
+            </div>
+            
+            {loading ? (
+              <div className="animate-pulse space-y-3">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="h-12 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                ))}
+              </div>
+            ) : permissions.length === 0 ? (
+              <div className="text-center py-6 border border-dashed border-gray-200 dark:border-gray-700 rounded-lg">
+                <User className="h-8 w-8 mx-auto text-gray-400 mb-2" />
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  No custom roles or permissions
+                </p>
+              </div>
+            ) : (
+              <ul className="space-y-3">
+                {permissions.map(permission => {
+                  const IconComponent = roleIcons[permission.role] || roleIcons.viewer;
+                  
+                  return (
+                    <li 
+                      key={permission.id}
+                      className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg"
+                    >
+                      <div className="flex items-center">
+                        <div className="rounded-full bg-gray-200 dark:bg-gray-700 p-2 mr-3">
+                          <IconComponent className="h-4 w-4 text-gray-700 dark:text-gray-300" />
+                        </div>
+                        
+                        <div>
+                          <div className="font-medium text-sm">{permission.name}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            {permission.type === 'user' ? permission.email : `${permission.memberCount} members`}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center">
+                        <select 
+                          value={permission.role}
+                          onChange={(e) => handleChangePermission(permission.id, e.target.value)}
+                          className="text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md mr-2"
+                        >
+                          <option value="viewer">Viewer</option>
+                          <option value="editor">Editor</option>
+                          <option value="owner">Owner</option>
+                        </select>
+                        
+                        <button 
+                          onClick={() => handleRemoveRole(permission.id)}
+                          className="p-1 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400"
+                          title="Remove"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+          
+          {/* Advanced permissions (if needed) */}
+          <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+            <h3 className="text-sm font-medium mb-2">Advanced Permissions</h3>
+            
+            <div className="space-y-2">
+              <div className="flex items-center">
+                <input 
+                  type="checkbox" 
+                  id="allow_download" 
+                  className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 h-4 w-4"
+                />
+                <label htmlFor="allow_download" className="ml-2 text-sm">
+                  Allow downloading
+                </label>
+              </div>
+              
+              <div className="flex items-center">
+                <input 
+                  type="checkbox" 
+                  id="allow_sharing" 
+                  className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 h-4 w-4"
+                />
+                <label htmlFor="allow_sharing" className="ml-2 text-sm">
+                  Allow sharing with others
+                </label>
+              </div>
+              
+              <div className="flex items-center">
+                <input 
+                  type="checkbox" 
+                  id="allow_copying" 
+                  className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 h-4 w-4"
+                />
+                <label htmlFor="allow_copying" className="ml-2 text-sm">
+                  Allow copying content
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="p-4 border-t border-gray-100 dark:border-gray-700 flex justify-end">
+          <button 
+            onClick={onClose}
+            className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg mr-2"
+          >
+            Cancel
+          </button>
+          <button 
+            className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg"
+          >
+            Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+export default AccessControlDialog;
+Now we can integrate the Upload Dialog with drag and drop functionality:
+
+// src/components/dialogs/UploadDialog.jsx
+import React, { useState, useCallback } from 'react';
+import { useDropzone } from 'react-dropzone';
+import { X, Upload, File, AlertTriangle, CheckCircle, ExternalLink } from 'lucide-react';
+const UploadDialog = ({ onClose }) => {
+  const [files, setFiles] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({});
+  const [uploadResults, setUploadResults] = useState({});
+  const onDrop = useCallback(acceptedFiles => {
+    setFiles(prevFiles => [
+      ...prevFiles,
+      ...acceptedFiles.map(file => Object.assign(file, {
+        id: Math.random().toString(36).substring(2, 10)
+      }))
+    ]);
+  }, []);
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+  const handleUpload = async () => {
+    if (files.length === 0) return;
+    
+    setUploading(true);
+    const results = {};
+    
+    // Simulate file upload for each file
+    for (const file of files) {
+      try {
+        // Initialize progress
+        setUploadProgress(prev => ({ ...prev, [file.id]: 0 }));
+        
+        // Simulate upload progress
+        for (let i = 0; i <= 100; i += 10) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+          setUploadProgress(prev => ({ ...prev, [file.id]: i }));
+        }
+        
+        // Mark as success
+        results[file.id] = { status: 'success', message: 'Uploaded successfully' };
+      } catch (error) {
+        results[file.id] = { status: 'error', message: error.message || 'Upload failed' };
+      }
+    }
+    
+    setUploadResults(results);
+    setUploading(false);
+  };
+  const removeFile = (fileId) => {
+    setFiles(files.filter(file => file.id !== fileId));
+    
+    // Also remove from progress and results if exists
+    setUploadProgress(prev => {
+      const newProgress = { ...prev };
+      delete newProgress[fileId];
+      return newProgress;
+    });
+    
+    setUploadResults(prev => {
+      const newResults = { ...prev };
+      delete newResults[fileId];
+      return newResults;
+    });
+  };
+  return (
+    <div className="fixed inset-0 bg-black/30 dark:bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden">
+        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-700">
+          <h2 className="text-lg font-semibold flex items-center">
+            <Upload className="h-5 w-5 mr-2 text-blue-500" />
+            Upload Files
+          </h2>
+          <button 
+            onClick={onClose}
+            className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        
+        <div className="flex-1 overflow-y-auto p-4">
+          {/* Dropzone */}
+          <div 
+            {...getRootProps()}
+            className={`border-2 border-dashed rounded-xl p-6 text-center mb-4 ${
+              isDragActive 
+                ? 'border-blue-400 bg-blue-50 dark:border-blue-500 dark:bg-blue-500/10' 
+                : 'border-gray-300 dark:border-gray-600'
+            }`}
+          >
+            <input {...getInputProps()} />
+            <Upload className="h-10 w-10 mx-auto text-gray-400 dark:text-gray-500 mb-3" />
+            
+            {isDragActive ? (
+              <p className="text-blue-500 font-medium">Drop the files here...</p>
+            ) : (
+              <>
+                <p className="font-medium mb-1">Drag & drop files here</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">or click to select files</p>
+              </>
+            )}
+          </div>
+          
+          {/* File list */}
+          {files.length > 0 && (
+            <div className="space-y-3 mb-4">
+              <h3 className="text-sm font-medium">
+                {files.length} {files.length === 1 ? 'file' : 'files'} selected
+              </h3>
+              
+              <ul className="space-y-2 max-h-60 overflow-y-auto">
+                {files.map(file => {
+                  const progress = uploadProgress[file.id] || 0;
+                  const result = uploadResults[file.id];
+                  
+                  return (
+                    <li 
+                      key={file.id}
+                      className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg"
+                    >
+                      <div className="flex items-center flex-1 min-w-0">
+                        <File className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-3 flex-shrink-0" />
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium truncate text-sm" title={file.name}>
+                            {file.name}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            {(file.size / 1024).toFixed(2)} KB
+                          </div>
+                          
+                          {uploading && progress < 100 && (
+                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-1.5">
+                              <div 
+                                className="bg-blue-500 h-1.5 rounded-full" 
+                                style={{ width: `${progress}%` }}
+                              ></div>
+                            </div>
+                          )}
+                          
+                          {result && (
+                            <div className={`text-xs mt-1 flex items-center ${
+                              result.status === 'success' ? 'text-green-500' : 'text-red-500'
+                            }`}>
+                              {result.status === 'success' ? (
+                                <CheckCircle className="h-3 w-3 mr-1" />
+                              ) : (
+                                <AlertTriangle className="h-3 w-3 mr-1" />
+                              )}
+                              {result.message}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {!uploading && !result && (
+                        <button 
+                          onClick={() => removeFile(file.id)}
+                          className="p-1 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 ml-2 flex-shrink-0"
+                          title="Remove"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
+          
+          {/* Upload options */}
+          <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+            <h3 className="text-sm font-medium mb-3">Upload Options</h3>
+            
+            <div className="space-y-3">
+              <div className="flex items-center">
+                <input 
+                  type="checkbox" 
+                  id="convert_docs" 
+                  className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 h-4 w-4"
+                />
+                <label htmlFor="convert_docs" className="ml-2 text-sm">
+                  Convert documents to Teralynk format
+                </label>
+              </div>
+              
+              <div className="flex items-center">
+                <input 
+                  type="checkbox" 
+                  id="notify_team" 
+                  className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 h-4 w-4"
+                />
+                <label htmlFor="notify_team" className="ml-2 text-sm">
+                  Notify team members
+                </label>
+              </div>
+              
+              <div className="flex items-center">
+                <input 
+                  type="checkbox" 
+                  id="inherit_permissions" 
+                  defaultChecked 
+                  className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 h-4 w-4"
+                />
+                <label htmlFor="inherit_permissions" className="ml-2 text-sm">
+                  Inherit permissions from folder
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="p-4 border-t border-gray-100 dark:border-gray-700 flex flex-wrap justify-end gap-2">
+          {Object.keys(uploadResults).length > 0 && (
+            <button 
+              onClick={onClose}
+              className="px-4 py-2 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg flex items-center"
+            >
+              <CheckCircle className="h-4 w-4 mr-1" />
+              Done
+            </button>
+          )}
+          
+          {files.length > 0 && !uploading && Object.keys(uploadResults).length === 0 && (
+            <button 
+              onClick={handleUpload}
+              className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg flex items-center"
+            >
+              <Upload className="h-4 w-4 mr-1" />
+              Upload {files.length} {files.length === 1 ? 'file' : 'files'}
+            </button>
+          )}
+          
+          <button 
+            onClick={onClose}
+            className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+          >
+            {Object.keys(uploadResults).length > 0 ? 'Close' : 'Cancel'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+export default UploadDialog;
+Integration with Existing App Structure
+To integrate these new components with your existing app structure, you'll need to:
+
+Add the new file manager route to your route configuration:
+// src/routes/config.js (adjust path as needed)
+import FileManagerView from '../components/fileManager/FileManagerView';
+// In your routes array:
+{
+  path: '/files',
+  element: <FileManagerView />,
+  // other route properties
+},
+Install the necessary dependencies:
+npm install react-dropzone lucide-react
+Update your navigation to include the file manager:
+// In your Sidebar or Header navigation
+<NavLink to="/files" className={({ isActive }) => isActive ? 'active-class' : 'inactive-class'}>
+  <File className="h-5 w-5 mr-2" />
+  <span>Files</span>
+</NavLink>
+Next Steps
+After implementing these core UI components for Teralynk, the next steps would be:
+
+Integrate with your backend storage service - Connect the UI to your actual storage system
+Implement real collaboration features - Add real-time indicators for who's viewing/editing files
+Enhance the AI assistant panel - Connect it to your AI services for intelligent assistance
+Add user settings module - For theme selection, language preferences, and security settings
+Implement notifications system - To alert users about file changes, comments, and shares
+Would you like me to focus on implementing any of these specific features next? Or would you like more details on any particular aspect of what I've provided so far?
+do you want to see my current files and the code I have so far? just ask to review the file names you want. Don't forget I have over 60 ai files that will help manage files for individuals and for the platform. Its a self healing AI that can update code etic.

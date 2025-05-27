@@ -1,0 +1,73 @@
+/* ✅ FILE: /src/styles/components/Notifications.css */
+
+.notifications-container {
+  padding: 1.5rem;
+}
+
+.notifications-title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.filter-select {
+  margin-bottom: 1.5rem;
+}
+
+.notifications-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.notification-card {
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.notification-text {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.notification-timestamp {
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.approve-button {
+  background-color: #28a745;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.reject-button {
+  background-color: #dc3545;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.empty-message {
+  font-size: 1rem;
+  color: #6c757d;
+}
+
+.error-message {
+  color: #dc3545;
+  margin-bottom: 1rem;
+}
+
+.loading-message {
+  color: #007bff;
+}

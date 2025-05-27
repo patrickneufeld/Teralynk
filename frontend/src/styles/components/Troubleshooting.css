@@ -1,0 +1,10 @@
+/* Troubleshooting.css */
+.troubleshooting-container {
+    padding: 20px;
+    background-color: #fff;
+}
+
+.troubleshooting-message {
+    font-size: 16px;
+    color: red;
+}

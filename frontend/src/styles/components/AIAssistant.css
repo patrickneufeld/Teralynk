@@ -1,0 +1,162 @@
+/* ✅ AIAssistant Styles */
+.ai-assistant-container {
+    padding: 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+    font-family: "Segoe UI", sans-serif;
+    color: #222;
+  }
+  
+  .ai-title {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+  }
+  
+  .ai-form-group {
+    margin-bottom: 1.5rem;
+  }
+  
+  .ai-form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  
+  .ai-form-group input,
+  .ai-form-group select,
+  .ai-form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+  }
+  
+  .suggestions-list {
+    margin-top: 0.5rem;
+    list-style: none;
+    padding: 0;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background-color: #f9f9f9;
+    max-height: 180px;
+    overflow-y: auto;
+  }
+  
+  .suggestions-list li {
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .suggestions-list li:hover {
+    background-color: #e6f0ff;
+  }
+  
+  .token-estimate {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 0.25rem;
+  }
+  
+  .ai-response-box {
+    margin-top: 2rem;
+    padding: 1.25rem;
+    background-color: #f8f8ff;
+    border-left: 4px solid #4c6ef5;
+    border-radius: 6px;
+  }
+  
+  .ai-response-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+  }
+  
+  .ai-response-content {
+    font-size: 1rem;
+    white-space: pre-wrap;
+    color: #333;
+  }
+  
+  .ai-toolbar {
+    margin-top: 2rem;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+  
+  .ai-history {
+    margin-top: 1.5rem;
+    background: #fafafa;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+  }
+  
+  .ai-history h3 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  
+  .ai-history ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .ai-history li {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    border-bottom: 1px solid #eee;
+    background-color: #fff;
+    border-radius: 6px;
+  }
+  
+  .ai-meta {
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 1rem;
+    display: flex;
+    gap: 2rem;
+    justify-content: flex-start;
+    align-items: center;
+  }
+  
+  .follow-up-suggestions {
+    margin-top: 1.25rem;
+  }
+  
+  .follow-up-suggestions h4 {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  
+  .follow-up-suggestions ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .follow-up-suggestions button {
+    background-color: #eef4ff;
+    border: 1px solid #ccc;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+  }
+  
+  .follow-up-suggestions button:hover {
+    background-color: #dbe7ff;
+  }
+  

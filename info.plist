@@ -1,0 +1,9 @@
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>com.yourcompany.Teralynk</string> <!-- Replace with your app's scheme -->
+        </array>
+    </dict>
+</array>

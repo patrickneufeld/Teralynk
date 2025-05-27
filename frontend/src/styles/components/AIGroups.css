@@ -1,0 +1,27 @@
+/* ✅ FILE: /styles/components/AIGroups.css */
+
+.ai-groups-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .group-card {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+  }
+  
+  .group-card h3 {
+    margin-bottom: 5px;
+    font-size: 18px;
+    font-weight: bold;
+  }
+  
+  .group-card p {
+    font-size: 14px;
+    color: #555;
+  }
+  

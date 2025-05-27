@@ -1,0 +1,263 @@
+./frontend/src/contexts/AuthContext.jsx:18:import { logInfo, logError, logWarn } from "../utils/logging/logging";
+./frontend/src/contexts/AuthContext.jsx:55:      logError("❌ Token integrity check failed");
+./frontend/src/contexts/AuthContext.jsx:61:      logError("❌ Token decode failed");
+./frontend/src/contexts/AuthContext.jsx:69:      logError("❌ Token expired");
+./frontend/src/contexts/AuthContext.jsx:74:      logError("❌ Token issued in the future");
+./frontend/src/contexts/AuthContext.jsx:80:    logError("❌ Token validation exception", err);
+./frontend/src/contexts/AuthContext.jsx:140:      logError("Security event emission failed", err);
+./frontend/src/contexts/AuthContext.jsx:158:        logError("Security event emission failed", err);
+./frontend/src/contexts/AuthContext.jsx:209:      logError("🔁 Token refresh failed", { attempt, err });
+./frontend/src/contexts/AuthContext.jsx:255:      logError("Auth check failed", err);
+./frontend/src/contexts/AuthContext.jsx:277:          logError("Security startup failed", err);
+./frontend/src/contexts/AuthContext.jsx:289:        logError("Security cleanup error", err);
+./frontend/src/utils/migration-scripts/update-function-calls.sh:16:find ../.. -type f -name "*.js" -o -name "*.jsx" | xargs sed -i '' 's/logError(/logger.error(/g'
+./frontend/src/utils/migration-scripts/update-imports.sh:9:find ../.. -type f -name "*.js" -o -name "*.jsx" | xargs sed -i '' 's/import { logError } from "..\/utils\/ErrorHandler"/import logger from "..\/utils\/logging"/g'
+./frontend/src/utils/migration-scripts/update-imports.sh:18:find ../.. -type f -name "*.js" -o -name "*.jsx" | xargs sed -i '' 's/import { logError } from "..\/utils\/logger"/import { error } from "..\/utils\/logging"/g'
+./frontend/src/utils/migration-scripts/update-imports.sh:23:find ../.. -type f -name "*.js" -o -name "*.jsx" | xargs sed -i '' 's/import { logError } from "..\/utils\/loggingService"/import { error } from "..\/utils\/logging"/g'
+./frontend/src/utils/migration-scripts/migrate-logging.js:31:  logError: /logError\(/g,
+./frontend/src/utils/aiService.js:4:import { logError, getErrorMessage } from "./ErrorHandler";
+./frontend/src/utils/aiService.js:23:    logError(error, "fetchAIModels");
+./frontend/src/utils/aiService.js:39:    logError(error, "fetchAIGroups");
+./frontend/src/utils/aiService.js:57:    logError(error, "saveAIGroup");
+./frontend/src/utils/aiService.js:73:    logError(error, "deleteAIGroup");
+./frontend/src/utils/logger.js:267:export const logError = error;
+./frontend/src/utils/logger.js:365:  logError,
+./frontend/src/utils/networkUtils.js:5:import { logError, logInfo } from './logger';
+./frontend/src/utils/networkUtils.js:93:      logError(`secureFetch failed: ${response.statusText}`, 'Network', errorContext);
+./frontend/src/utils/networkUtils.js:108:    logError(error, 'secureFetch', context);
+./frontend/src/utils/telemetry.js:3:import { logInfo, logError } from './logging';
+./frontend/src/utils/telemetry.js:109:    logError('Failed to emit telemetry', { error, eventName });
+./frontend/src/utils/telemetry.js:144:    logError('Failed to flush telemetry events', { error, traceId: getTraceId() });
+./frontend/src/utils/tokenManager.js:7:import { logInfo, logError, logWarn } from './logging';
+./frontend/src/utils/security/SecurityMonitor.js:4:import { logError, logInfo, logWarn } from '../logging';
+./frontend/src/utils/security/SecurityMonitor.js:84:      logError('Failed to start security monitor', {
+./frontend/src/utils/security/SecurityMonitor.js:120:      logError('Error stopping security monitor', {
+./frontend/src/utils/security/SecurityMonitor.js:174:      logError('Error handling storage event', {
+./frontend/src/utils/security/SecurityMonitor.js:199:    logError('Critical security alert', {
+./frontend/src/utils/security/SecurityMonitor.js:296:      logError(`Security check "${check.name}" failed`, {
+./frontend/src/utils/security/SecurityMonitor.js:346:    logError('Critical security check failure', {
+./frontend/src/utils/security/SecurityMonitor.js:412:        logError('Security monitor listener failed', {
+./frontend/src/utils/security/secureStorage.js:4:import { logError, logInfo } from '@/utils/logging';
+./frontend/src/utils/security/secureStorage.js:38:    logError('Device fingerprint generation failed', { error });
+./frontend/src/utils/security/secureStorage.js:66:      logError('SecureStorage initialization failed', err);
+./frontend/src/utils/security/secureStorage.js:97:      logError(`[SecureStorage:set] ${key} failed`, err);
+./frontend/src/utils/security/secureStorage.js:146:      logError(`[SecureStorage:get] ${key} failed`, err);
+./frontend/src/utils/security/secureStorage.js:169:      logError(`[SecureStorage:remove] ${key} failed`, err);
+./frontend/src/utils/security/secureStorage.js:195:      logError('[SecureStorage:clearAll] failed', err);
+./frontend/src/utils/security/secureStorage.js:211:      logError('[SecureStorage:keys] failed', err);
+./frontend/src/utils/security/secureStorage.js:229:      logError(`[SecureStorage:getMetadata] ${key} failed`, err);
+./frontend/src/utils/security/eventEmitter.js:5:import { logInfo, logError, logWarn } from '../logging';
+./frontend/src/utils/security/eventEmitter.js:128:      logError('Security event emission failed', {
+./frontend/src/utils/security/eventEmitter.js:153:          logError('Security event handler failed', {
+./frontend/src/utils/security/eventEmitter.js:175:      logError('Security event subscription failed', {
+./frontend/src/utils/security/eventEmitter.js:312:        logError(logMessage, logData);
+./frontend/src/utils/authUtils.js:37:import { logError, logInfo } from './logger';
+./frontend/src/utils/authUtils.js:105:    logError('Token decode failed', { error });
+./frontend/src/utils/authUtils.js:120:    logError('Token claims validation failed', { error });
+./frontend/src/utils/authUtils.js:132:    logError('Auth level calculation failed', { error });
+./frontend/src/utils/authUtils.js:161:    logError('Device fingerprint generation failed', { error });
+./frontend/src/utils/authUtils.js:176:    logError('Device ID management failed', { error });
+./frontend/src/utils/authUtils.js:193:    logError('Session ID management failed', { error });
+./frontend/src/utils/authUtils.js:219:    logError('Get current user failed', { error });
+./frontend/src/utils/authUtils.js:241:    logError('Token validation failed', { error });
+./frontend/src/utils/authUtils.js:262:    logError('Session validation failed', { error });
+./frontend/src/utils/authUtils.js:275:    logError('Failed to get security context', { error });
+./frontend/src/utils/authUtils.js:311:    logError('Security context initialization failed', { error });
+./frontend/src/utils/authUtils.js:332:    logError('Security context update failed', { error });
+./frontend/src/utils/authUtils.js:394:    logError('MFA challenge initiation failed', { error, threadId });
+./frontend/src/utils/authUtils.js:456:    logError('MFA verification failed', { error, threadId });
+./frontend/src/utils/authUtils.js:513:    logError('Failed to setup idle monitoring', { error });
+./frontend/src/utils/authUtils.js:676:      logError('Failed to generate auth headers', { error });
+./frontend/src/utils/tracing.js:4:import { logDebug, logError } from './logger.js';
+./frontend/src/utils/tracing.js:16:    logError('tracing.generateTraceId.failure', { error: err.message });
+./frontend/src/utils/auth.js:4:import { logError, logInfo } from "../../utils/logging";
+./frontend/src/utils/auth.js:19:    logError("Login failed", err);
+./frontend/src/utils/auth.js:32:    logError("Logout failed", err);
+./frontend/src/utils/auth.js:47:    logError("Forgot password failed", err);
+./frontend/src/utils/auth.js:68:    logError("Confirm forgot password failed", err);
+./frontend/src/utils/auth.js:82:    logError("Session refresh failed", err);
+./frontend/src/utils/auth.js:96:    logError("Get current user failed", err);
+./frontend/src/utils/ErrorHandler.js:9:export const logError = (error, context = "Unknown Context") => {
+./frontend/src/utils/ErrorHandler.js:71:    logError(err, context);
+./frontend/src/utils/logging/ErrorBoundary.jsx:4:import { logError } from './logging.js';
+./frontend/src/utils/logging/ErrorBoundary.jsx:33:      const errorId = await logError(
+./frontend/src/utils/logging/logging.js:79:const logError = (err, ctx = 'General', meta = {}) => {
+./frontend/src/utils/logging/logging.js:118:  error: (err, meta = {}) => logError(err, scope, meta),
+./frontend/src/utils/logging/logging.js:130:    logError(err, 'TelemetryEmit');
+./frontend/src/utils/logging/logging.js:144:  logError,
+./frontend/src/utils/logging/logging.js:157:  logError,
+./frontend/src/utils/logging/index.js:243:export const logError = error;
+./frontend/src/utils/logging/index.js:321:  logError,
+./frontend/src/utils/logging/migration.md:13:import { logError } from '../utils/ErrorHandler';
+./frontend/src/utils/logging/migration.md:16:import { logInfo, logWarning, logError } from '../utils/loggingService';
+./frontend/src/utils/logging/migration.md:41:logError('ComponentName', error);
+./frontend/src/utils/logging/migration.md:47:logger.logError(error, 'Context');
+./frontend/src/utils/logging/migration.md:52:logError(error, 'Context', 'requestId');
+./frontend/src/utils/logging/migration.md:83:  const errorId = logError('Component', err);
+./frontend/src/utils/logging/README.md:92:   import { logError } from '../utils/ErrorHandler';
+./frontend/src/utils/logging/README.md:104:   logError('Context', error);
+./frontend/src/components/ui/FeedbackForm.jsx:7:import { logError, getErrorMessage } from "../../utils/ErrorHandler";
+./frontend/src/components/ui/FeedbackForm.jsx:24:      logError(err, "FeedbackForm - onSubmit");
+./frontend/src/components/Troubleshooting.jsx:13:import { logError, getErrorMessage } from "../utils/ErrorHandler";
+./frontend/src/components/Troubleshooting.jsx:55:      logError(err, "Troubleshooting - checkSystemStatus");
+./frontend/src/components/Troubleshooting.jsx:75:      logError(err, "Troubleshooting - fetchErrorLogs");
+./frontend/src/components/SecretsFetcher.jsx:5:import { logError, logInfo } from '@/utils/logging/logging';
+./frontend/src/components/SecretsFetcher.jsx:67:        logError("❌ Failed to load secrets:", err);
+./frontend/src/components/SecretsFetcher.jsx:90:        logError("❌ Failed to refresh secrets:", err);
+./frontend/src/components/Insights.jsx:8:import { logError, getErrorMessage } from "../utils/ErrorHandler";
+./frontend/src/components/Insights.jsx:25:        logError(err, "Insights - fetchInsights");
+./frontend/src/components/Insights.jsx:54:      logError(err, "Insights - submitFeedback");
+./frontend/src/components/AIGroups.jsx:10:import { logError, getErrorMessage } from "../utils/ErrorHandler";
+./frontend/src/components/AIGroups.jsx:30:      logError(err, "AIGroups - fetchGroups");
+./frontend/src/components/AIGroups.jsx:40:      logError(err, "AIGroups - fetchAvailableModels");
+./frontend/src/components/AIGroups.jsx:62:      logError(err, "AIGroups - handleCreateGroup");
+./frontend/src/components/FileManager.jsx:37:import { logError, logInfo } from "@/utils/logging/logging";
+./frontend/src/components/FileManager.jsx:197:    logError("Fetch files error:", err);
+./frontend/src/components/FileManager.jsx:225:      logError("AI FileManager suggestion error:", err);
+./frontend/src/components/FileManager.jsx:341:    logError("Upload error:", err);
+./frontend/src/components/FileManager.jsx:416:    logError("Download error:", err);
+./frontend/src/components/FileManager.jsx:480:    logError("Delete error:", err);
+./frontend/src/components/Signup.jsx:7:import { logError, logInfo } from "../utils/logging/logging";
+./frontend/src/components/Signup.jsx:74:      logError(err, "Signup");
+./frontend/src/components/Signup.jsx:94:      logError(err, "Signup.Confirm");
+./frontend/src/components/ResetPassword.jsx:8:import { logError } from "../utils/logging/logging";
+./frontend/src/components/ResetPassword.jsx:69:      logError(err, "ResetPassword.request");
+./frontend/src/components/ResetPassword.jsx:92:      logError(err, "ResetPassword.confirm");
+./frontend/src/components/ErrorBoundary.jsx:5:import { logError } from "../utils/logging/logging";
+./frontend/src/components/ErrorBoundary.jsx:31:    logError(error, "ErrorBoundary", {
+./frontend/src/components/ErrorBoundary.jsx:36:      logError("WebSocket error occurred", "WebSocket", { error });
+./frontend/src/components/AdminDashboard.jsx:11:import { logInfo, logError, logWarn } from "../utils/logging";
+./frontend/src/components/AdminDashboard.jsx:71:          logError('Critical security event detected', event);
+./frontend/src/components/AdminDashboard.jsx:140:        logError('Admin dashboard load failed', err);
+./frontend/src/components/AdminDashboard.jsx:185:      logError('Optimization approval failed', err);
+./frontend/src/components/AdminDashboard.jsx:216:      logError('Log export failed', err);
+./frontend/src/components/AdminDashboard.jsx:244:      logError('Log pruning failed', err);
+./frontend/src/components/AdminDashboard.jsx:260:        logError('Persona fetch failed', err);
+./frontend/src/components/AdminDashboard.jsx:291:      logError('Naming history fetch failed', err);
+./frontend/src/components/AdminDashboard.jsx:332:      logError('Template update failed', err);
+./frontend/src/components/AdminDashboard.jsx:374:      logError('Template deletion failed', err);
+./frontend/src/components/AdminDashboard.jsx:404:      logError('Alert acknowledgment failed', err);
+./frontend/src/components/ShareDialog.jsx:12:import { logInfo, logError } from "@/utils/logging/logging";
+./frontend/src/components/ShareDialog.jsx:80:      logError(err, "InviteCollaborator");
+./frontend/src/components/ShareDialog.jsx:97:      logError(err, "ToggleLinkVisibility");
+./frontend/src/components/ShareDialog.jsx:115:      logError(err, "ExpireShareLink");
+./frontend/src/components/S3FileExplorer.jsx:8:import { logInfo, logError } from "@/utils/logging/logging";
+./frontend/src/components/S3FileExplorer.jsx:37:      logError(err, "LoadObjects");
+./frontend/src/components/S3FileExplorer.jsx:105:      logError(err, "DeleteFile");
+./frontend/src/components/S3FileExplorer.jsx:120:      logError(err, "PreviewFile");
+./frontend/src/components/FileShareManager.jsx:10:import { logInfo, logError } from "@/utils/logging/logging";
+./frontend/src/components/FileShareManager.jsx:42:      logError(err, "FetchShareListError");
+./frontend/src/components/FileShareManager.jsx:54:      logError(err, "FetchAuditHistoryError");
+./frontend/src/components/FileShareManager.jsx:93:      logError(err, "ShareCreationError");
+./frontend/src/components/FileShareManager.jsx:108:      logError(err, "RevokeShareError");
+./frontend/src/components/FileShareManager.jsx:120:      logError(err, "RoleChangeError");
+./frontend/src/components/S3FileUpload.jsx:11:import { logInfo, logError } from "@/utils/logging/logging";
+./frontend/src/components/S3FileUpload.jsx:100:        logError(error, "FileUploadFailure");
+./frontend/src/components/Dashboard.jsx:13:import { logError, logInfo } from "@/utils/logging/logging";
+./frontend/src/components/Dashboard.jsx:125:            logError('Failed to parse WebSocket message', err);
+./frontend/src/components/Dashboard.jsx:130:          logError('WebSocket error:', error);
+./frontend/src/components/Dashboard.jsx:145:        logError('WebSocket setup failed:', err);
+./frontend/src/components/Dashboard.jsx:173:          logError(`API call failed: ${err.message}`);
+./frontend/src/components/Dashboard.jsx:244:      logError("Dashboard fetch failed", err);
+./frontend/src/components/Dashboard.jsx:304:          logError(`Unknown WebSocket message type: ${wsMessage.type}`);
+./frontend/src/components/Dashboard.jsx:307:      logError("WebSocket message processing error", err);
+./frontend/src/components/Dashboard.jsx:332:        logError("Security event processing failed", err);
+./frontend/src/components/Login.jsx:17:import { logError, logInfo } from "../utils/logging/logging";
+./frontend/src/components/Login.jsx:132:      logError(err, "Login.Social");
+./frontend/src/components/Login.jsx:190:      logError(error, "Login.Submit");
+./frontend/src/components/AIExecutionConsole.jsx:8:import { logError, getErrorMessage } from "../utils/ErrorHandler";
+./frontend/src/components/AIExecutionConsole.jsx:36:      logError(err, "AIExecutionConsole - handleRunPrompt");
+./frontend/src/components/FolderPermissions.jsx:18:import { logInfo, logError } from "@/utils/logging/logging"; // ✅ Audit Trail
+./frontend/src/components/FolderPermissions.jsx:39:      logError(err, "FetchPermissions");
+./frontend/src/components/FolderPermissions.jsx:59:      logError(err, "UserSearch");
+./frontend/src/components/FolderPermissions.jsx:87:      logError(err, "CreatePermission");
+./frontend/src/components/FolderPermissions.jsx:127:      logError(err, "UpdatePermission");
+./frontend/src/components/FolderPermissions.jsx:161:      logError(err, "DeletePermission");
+./frontend/src/components/LogPage.jsx:9:import { logError, getErrorMessage } from "../utils/ErrorHandler";
+./frontend/src/components/LogPage.jsx:30:        logError(err, "LogPage - fetchLogs");
+./frontend/src/components/LogPage.jsx:44:      logError(err, "LogPage - downloadLogs");
+./frontend/src/components/Settings.jsx:12:import { logError, getErrorMessage } from "../utils/ErrorHandler";
+./frontend/src/components/Settings.jsx:53:      logError(err, "Settings - fetchSettings");
+./frontend/src/components/Settings.jsx:82:      logError(err, "Settings - saveSettings");
+./frontend/src/components/DashboardMetric.jsx:10:import { logEvent, logError } from "@/utils/logging/logging";
+./frontend/src/components/DashboardMetric.jsx:59:      logError("Insight click handling failed", err);
+./frontend/src/components/StorageManager.jsx:13:import { logInfo, logError } from "@/utils/logging/logging";
+./frontend/src/components/StorageManager.jsx:75:      logError(err, "StorageFetch");
+./frontend/src/components/StorageManager.jsx:89:      logError(err, "StorageUpgrade");
+./frontend/src/components/StorageManager.jsx:106:        logError(err, "ImportPlatforms");
+./frontend/src/components/StorageManager.jsx:125:      logError(err, "ExportPlatforms");
+./frontend/src/components/StorageManager.jsx:146:      logError(err, "SyncToBackend");
+./frontend/src/components/StorageManager.jsx:163:        logError(err, "PingEndpoint");
+./frontend/src/components/StorageManager.jsx:259:      logError(err, "SaveToLocalStorage");
+./frontend/src/components/AIAssistant.jsx:19:import { logError, getErrorMessage } from "../utils/ErrorHandler";
+./frontend/src/components/AIAssistant.jsx:71:        logError(err, "Assistant - fetchData");
+./frontend/src/components/AIAssistant.jsx:169:      logError(err, "Assistant - handleAsk");
+./frontend/src/components/AIAssistant.jsx:189:      logError(err, "Assistant - handleFeedback");
+./frontend/src/components/AIAssistant.jsx:201:    recognition.onerror = (e) => logError(e, "Voice Recognition");
+./frontend/src/main.jsx:15:  logError
+./frontend/src/main.jsx:21:  logError("❌ Missing #root element in DOM. Check your index.html.", "main");
+./frontend/src/App.jsx:25:import { logError } from "./utils/logging/logging";
+./frontend/src/App.jsx:136:        logError(err, "App.LoginHandler");
+./frontend/src/files/dialogHandlers.js:42:   * @param {Function} logError - Function to log errors for debugging.
+./frontend/src/files/dialogHandlers.js:53:    logError,
+./frontend/src/files/dialogHandlers.js:90:      logError(error, "handleVersionAction", { fileId, action, versionId });
+./frontend/src/files/dialogHandlers.js:105:   * @param {Function} logError - Function to log errors for debugging.
+./frontend/src/files/dialogHandlers.js:116:    logError,
+./frontend/src/files/dialogHandlers.js:145:      logError(error, "handleCollaborationAction", { fileId, action, userData });
+./frontend/src/index.jsx:35:export const logError = (error, meta = {}) => {
+./frontend/src/index.jsx:69:  logError,
+./frontend/src/index.jsx:75:    logError: (err, meta = {}) => logError(err, { ...ctx, ...meta }),
+./frontend/src/index.jsx:89:    logError: (err, meta = {}) => logError(err, { ...context, ...meta }),
+./frontend/src/index.jsx:96:      logError: (err, meta = {}) => logError(err, { ...context, ...ctx, ...meta }),
+./frontend/src/api/axiosClient.js:5:import { logInfo, logError } from '../utils/logging/logging';
+./frontend/src/api/axiosClient.js:36:      logError('Request Interceptor Error', error);
+./frontend/src/api/axiosClient.js:41:    logError('Request Configuration Error', error);
+./frontend/src/api/axiosClient.js:62:      logError('API Error', {
+./frontend/src/api/axiosClient.js:97:      logError('Network Error', {
+./frontend/src/api/s3Api.js:25:      await logError(error, "S3 API Error", { action: "listBuckets" });
+./frontend/src/api/s3Api.js:49:      await logError(error, "S3 API Error", { action: "listObjects", bucket, prefix });
+./frontend/src/api/s3Api.js:73:      await logError(error, "S3 API Error", { action: "checkFileExists", bucket, key });
+./frontend/src/api/s3Api.js:111:      await logError(error, "S3 API Error", { action: "uploadFile", bucket, fileName: file.name });
+./frontend/src/api/s3Api.js:134:      await logError(error, "S3 API Error", { action: "deleteFile", bucket, key });
+./frontend/src/api/s3Api.js:159:      await logError(error, "S3 API Error", { action: "getPresignedUrl", bucket, key });
+./frontend/src/api/s3Api.js:181:      await logError(error, "S3 API Error", { action: "getStorageUsage", bucket });
+./frontend/src/routes/guards/RequireAuth.jsx:7:import { logWarn, logError, logInfo, logDebug } from '../../utils/logging/logging';
+./frontend/src/routes/guards/RequireAuth.jsx:59:      logError('Invalid redirect path', { error, redirectPath });
+./frontend/src/routes/guards/RequireAuth.jsx:90:    logError('Security check failed', { error, code });
+./frontend/src/services/dashboardService.js:5:import { logError, logInfo } from '@/utils/logging';
+./frontend/src/services/ai/aiMetaQueryService.js:8:import { logInfo, logError } from '@/utils/logging/logging';
+./frontend/src/services/ai/aiMetaQueryService.js:174:    logError('AI Meta Query Failed', errorContext);
+./frontend/src/services/ai/aiStorageOptimizer.js:7:import { logInfo, logError, logWarn } from '@/utils/logging/logging';
+./frontend/src/services/ai/aiStorageOptimizer.js:39:    logError("Telemetry record failed", error);
+./frontend/src/services/ai/aiFallbackRouter.js:6:import { logError, logInfo, logWarn } from '@/utils/logging/logging';
+./frontend/src/services/ai/aiFallbackRouter.js:297:    logError(`AI fallback query failed`, { error, traceId, engine });
+./frontend/src/services/ai/aiFileAnalyzer.js:8:import { logInfo, logError } from '@/utils/logging/logging';
+./frontend/src/services/ai/aiFileAnalyzer.js:183:    logError("AI Error Debugging Failed", err);
+./frontend/src/services/ai/aiSelfLearningCore.js:8:import { logInfo, logWarn, logError } from '@/utils/logging/logging';
+./frontend/src/services/ai/aiSelfLearningCore.js:145:    logError('Pattern ingestion failed', errorContext);
+./frontend/src/services/ai/aiPatchEngine.js:6:import { logInfo, logError } from '@/utils/logging/logging';
+./frontend/src/services/ai/aiPatchEngine.js:65:    logError(`[❌ Patch Evaluation Failed] ${moduleName}`, error);
+./frontend/src/services/ai/aiPatchEngine.js:92:        logError(`Fallback AI failed during patching`, fallbackError);
+./frontend/src/services/ai/aiSecurityManager.js:8:import { logError } from '@/utils/logging/logging';
+./frontend/src/services/ai/aiSecurityManager.js:90:    logError('Security fix application failed', error);
+./frontend/src/services/ai/aiFileInsights.js:8:import { logError, logInfo } from '@/utils/logging/logging';
+./frontend/src/services/ai/aiFileInsights.js:99:    logError("Batch AI Insight Analysis Failed", error);
+./frontend/src/services/ai/aiFileInsights.js:140:    logError("Initial insight generation failed", error);
+./frontend/src/services/ai/aiPerformanceService.js:7:import { logError, logInfo } from '../../utils/logger';
+./frontend/src/services/ai/aiPerformanceService.js:31:    logError('❌ Failed to fetch user performance metrics', error);
+./frontend/src/services/ai/aiPerformanceService.js:65:    logError('❌ Failed to submit performance feedback', error);
+./frontend/src/services/ai/aiPerformanceService.js:95:    logError('❌ Failed to fetch performance recommendations', error);
+./frontend/src/services/aws/signup.js:10:  import { logInfo, logError } from "../../utils/logging/logging";
+./frontend/src/services/aws/signup.js:48:      logError("❌ Signup failed", err);
+./frontend/src/services/aws/signup.js:75:      logError("❌ Confirm signup failed", err);
+./frontend/src/services/aws/signup.js:100:      logError("❌ Failed to resend confirmation code", err);
+./frontend/src/services/aws/password.js:10:import { logError, logInfo } from "../../utils/logging/logging";
+./frontend/src/services/aws/password.js:24:    logError("Failed to initialize Cognito client", error);
+./frontend/src/services/aws/password.js:62:    logError("Failed to request password reset", { error: err, email });
+./frontend/src/services/aws/password.js:114:    logError("Failed to confirm password reset", { error: err, email });
+./frontend/src/services/aws/password.js:162:    logError("Failed to change password", { error: err });
+./frontend/src/services/mfaService.js:6:import { logError, logInfo } from '../utils/logger';
+./frontend/src/services/mfaService.js:37:      logError('❌ MFA challenge initiation failed', {
+./frontend/src/services/mfaService.js:72:      logError('❌ MFA verification failed', {
+./frontend/src/services/analyticsService.js:34:export const logError = async (errorName, errorData = {}) => {
+./frontend/src/services/analyticsService.js:44:    logger.error('❌ logError failed', 'analyticsService', { error });
