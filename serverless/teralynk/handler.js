@@ -34,7 +34,7 @@ app.get("/users/:userId", async (req, res) => {
     } else {
       res
         .status(404)
-        .json({ error: 'Could not find user with provided "userId"' });
+        .json({ error: "Could not find user with provided "userId"" });
     }
   } catch (error) {
     console.log(error);
@@ -45,9 +45,9 @@ app.get("/users/:userId", async (req, res) => {
 app.post("/users", async (req, res) => {
   const { userId, name } = req.body;
   if (typeof userId !== "string") {
-    res.status(400).json({ error: '"userId" must be a string' });
+    res.status(400).json({ error: ""userId" must be a string" });
   } else if (typeof name !== "string") {
-    res.status(400).json({ error: '"name" must be a string' });
+    res.status(400).json({ error: ""name" must be a string" });
   }
 
   const params = {
