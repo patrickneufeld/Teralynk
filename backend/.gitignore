@@ -1,0 +1,91 @@
+# Node modules
+node_modules/
+
+# Build & distribution folders
+dist/
+build/
+.cache/
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+combined.log
+error.log
+
+# MacOS system files
+.DS_Store
+__MACOSX/
+
+# IDE & OS generated files
+.idea/
+.vscode/
+*.swp
+*.swo
+*.swn
+teralynk-env-fixed.json
+# Coverage reports
+coverage/
+
+# Jest testing output
+jest.*
+# Backend secrets (absolute and relative paths)
+backend/tools/teralynk-env-fixed.json
+**/teralynk-env-fixed.json
+
+# Local serverless builds or AWS artifacts
+.serverless/
+serverless/
+*.serverless/
+
+# Temporary files
+*.local
+*.secret
+*.pem
+*.key
+*.crt
+*.pfx
+
+# Common environment artifact files
+*.env.*
+*.envrc
+.envrc
+
+# Secrets cache
+.npmrc
+*.bak
+*.backup
+*.old
+*.tmp
+*.log.*
+*.log_backup*
+
+# Vite-specific cache
+.vite/
+
+# OS X + swap + lock files (for safety)
+*.lock
+*.swp
+*.swo
+*.swn
+node_modules
+dist/
+build/
+.cache/
+.env
+.env.*
+*.log
+__MACOSX/
+.DS_Store
+.vscode/
+.idea/
+coverage/
+teralynk-env-fixed.json" > .gitignore

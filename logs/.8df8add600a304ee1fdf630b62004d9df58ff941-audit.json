@@ -1,0 +1,40 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 30
+    },
+    "auditLog": "/Users/patrick/Projects/Teralynk/logs/.8df8add600a304ee1fdf630b62004d9df58ff941-audit.json",
+    "files": [
+        {
+            "date": 1735751473836,
+            "name": "/Users/patrick/Projects/Teralynk/logs/activity-2025-01-01.log",
+            "hash": "2cd4f9f69e3b64d8eaed955c5407bbdbde0588683be46ed2a56cdad6eaf6710f"
+        },
+        {
+            "date": 1736738671176,
+            "name": "/Users/patrick/Projects/Teralynk/logs/activity-2025-01-12.log",
+            "hash": "3155f27259679a9eb23e5fb921500590c97ec2258082824e53097fad37e0a997"
+        },
+        {
+            "date": 1736815108540,
+            "name": "/Users/patrick/Projects/Teralynk/logs/activity-2025-01-13.log",
+            "hash": "b2c9569ea67e0e182aab15895dadc1b7251b7aa99ffa79dc5deddaa17477dec1"
+        },
+        {
+            "date": 1737222039601,
+            "name": "/Users/patrick/Projects/Teralynk/logs/activity-2025-01-18.log",
+            "hash": "53dc650b9954f4de9b36a23132f5965c077957da1d107ad5acc97467014b34b9"
+        },
+        {
+            "date": 1737318122075,
+            "name": "/Users/patrick/Projects/Teralynk/logs/activity-2025-01-19.log",
+            "hash": "911194e5fe1206ce4719ae8a849feb645e720f8efee83c328fe5b7e719b8a541"
+        },
+        {
+            "date": 1737382951065,
+            "name": "/Users/patrick/Projects/Teralynk/logs/activity-2025-01-20.log",
+            "hash": "506191b314400dbd02c5df6c5e2ed843090a3681d65d6353400d96e61f6aa927"
+        }
+    ],
+    "hashType": "sha256"
+}

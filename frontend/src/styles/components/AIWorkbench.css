@@ -1,0 +1,31 @@
+.ai-workbench {
+    padding: 2rem;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  
+  .ai-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+  
+  .ai-description {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+  }
+  
+  .ai-panel {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  
+  .ai-tool-card {
+    flex: 1 1 250px;
+    background-color: #f9f9f9;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  

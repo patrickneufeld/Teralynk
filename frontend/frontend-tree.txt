@@ -1,0 +1,433 @@
+.
+├── __mocks__
+├── AmazonQ.md
+├── babel.config.js
+├── certs
+│   ├── localhost-cert.pem
+│   └── localhost-key.pem
+├── config.js
+├── debug_analysis.log
+├── debugxai_output.log
+├── debugXAI.js
+├── eslint.config.mjs
+├── fixImports.js
+├── frontend-tree.txt
+├── generate_css.py
+├── index.html
+├── jsconfig.json
+├── package-lock.json
+├── package.json
+├── postcss.config.cjs
+├── public
+│   ├── assets
+│   │   └── user.png
+│   ├── favicon.ico
+│   ├── images
+│   ├── logo192.png
+│   ├── logo512.png
+│   ├── manifest.json
+│   └── robots.txt
+├── README.md
+├── scripts
+│   └── debugLoginWithAI.js
+├── src
+│   ├── actions
+│   │   └── authActions.js
+│   ├── AdminReview.jsx
+│   ├── amplifyconfiguration.json
+│   ├── api
+│   │   ├── admin.js
+│   │   ├── aiTools.js
+│   │   ├── analytics.js
+│   │   ├── api-client.js
+│   │   ├── apiClient.js
+│   │   ├── authApi.js
+│   │   ├── axiosClient.js
+│   │   ├── axiosInstance.js
+│   │   ├── client.jsx
+│   │   ├── credentials.js
+│   │   ├── files.js
+│   │   ├── folders.js
+│   │   ├── metrics.js
+│   │   ├── notifications.js
+│   │   ├── profile.js
+│   │   ├── s3Api.js
+│   │   ├── s3Storage.js
+│   │   ├── savedResults.js 
+│   │   ├── search.js
+│   │   ├── storage.js
+│   │   ├── team.js
+│   │   ├── webhooks.js
+│   │   └── workflowsApi.js
+│   ├── api.js
+│   ├── App.jsx
+│   ├── App.test.js
+│   ├── auth
+│   │   └── loginTest.js
+│   ├── components
+│   │   ├── About.jsx
+│   │   ├── AddService.jsx
+│   │   ├── AddStorage.jsx
+│   │   ├── AdminDashboard.jsx
+│   │   ├── AdminReview.jsx
+│   │   ├── AIAnalytics.jsx
+│   │   ├── AIAssistant.jsx
+│   │   ├── AIBenchmark.jsx
+│   │   ├── AIExecutionConsole.jsx
+│   │   ├── AIGroupManager.jsx
+│   │   ├── AIGroups.jsx
+│   │   ├── AIIntegration.jsx
+│   │   ├── AIMetrics.jsx
+│   │   ├── AIModelTraining.jsx
+│   │   ├── AIOptimizationPanel.jsx
+│   │   ├── AiPerformanceLogs.jsx
+│   │   ├── AIQuery.jsx
+│   │   ├── AiQueryPanel.jsx
+│   │   ├── AIRecommendations.jsx
+│   │   ├── AITools.jsx
+│   │   ├── AITrainingPanel.jsx
+│   │   ├── AIWorkbench.jsx
+│   │   ├── Analytics.jsx
+│   │   ├── AuditLog.jsx
+│   │   ├── BusinessProposal.jsx
+│   │   ├── Collaboration.jsx
+│   │   ├── CollaborationDialog.jsx
+│   │   ├── common
+│   │   │   ├── Fallback.jsx
+│   │   │   └── Loading.jsx
+│   │   ├── ConfirmResetPassword.jsx
+│   │   ├── Contact.jsx
+│   │   ├── CredentialManager.jsx
+│   │   ├── Dashboard.jsx
+│   │   ├── DataAnalysis.jsx
+│   │   ├── dialogs
+│   │   │   ├── AccessControlDialog.jsx
+│   │   │   ├── CollaborationDialog.jsx
+│   │   │   ├── ConfirmDialog.jsx
+│   │   │   ├── DeleteConfirmationDialog.jsx
+│   │   │   ├── FileUploadProgress.jsx
+│   │   │   ├── MetadataDialog.jsx
+│   │   │   ├── RenameDialog.jsx
+│   │   │   ├── ShareDialog.jsx
+│   │   │   ├── UploadDialog.jsx
+│   │   │   └── VersionHistoryDialog.jsx
+│   │   ├── ErrorBoundary.jsx
+│   │   ├── ErrorFallback.jsx
+│   │   ├── ErrorPage.jsx
+│   │   ├── FileIcon.jsx
+│   │   ├── FileManager.jsx
+│   │   ├── FileMenu.jsx
+│   │   ├── FileSearch.jsx
+│   │   ├── FileSearchReplace.jsx
+│   │   ├── FileSearchReplaceDialog.jsx
+│   │   ├── FileUpload.jsx
+│   │   ├── FileUploadProgress.jsx
+│   │   ├── FileVersioning.jsx
+│   │   ├── FolderPermissions.jsx
+│   │   ├── Footer.jsx
+│   │   ├── forms
+│   │   │   └── WorkflowForm.jsx
+│   │   ├── Header.jsx
+│   │   ├── Help.jsx
+│   │   ├── Home.jsx
+│   │   ├── Insights.jsx
+│   │   ├── InsightsDashboard.jsx
+│   │   ├── LoadingSpinner.tsx
+│   │   ├── Login.jsx
+│   │   ├── LogoutButton.jsx
+│   │   ├── LogPage.jsx
+│   │   ├── Marketplace.jsx
+│   │   ├── MetadataDialog.jsx
+│   │   ├── modals
+│   │   │   └── FilePreviewModal.jsx
+│   │   ├── Navbar.jsx
+│   │   ├── NotificationLog.jsx
+│   │   ├── Notifications.jsx
+│   │   ├── OAuthManager.jsx
+│   │   ├── Onboarding.jsx
+│   │   ├── OptimizationApproval.jsx
+│   │   ├── OptimizationReview.jsx
+│   │   ├── PerformanceDashboard.jsx
+│   │   ├── Profile copy.jsx
+│   │   ├── Profile.jsx
+│   │   ├── Recommendations.jsx
+│   │   ├── ResetPassword.jsx
+│   │   ├── S3FileExplorer.jsx
+│   │   ├── S3FileUpload.jsx
+│   │   ├── SearchBar.jsx
+│   │   ├── SecretsFetcher.jsx
+│   │   ├── Settings.jsx
+│   │   ├── ShareDialog.jsx
+│   │   ├── Signup.jsx
+│   │   ├── StorageForm.jsx
+│   │   ├── StorageManagement.jsx
+│   │   ├── StorageManager.jsx
+│   │   ├── SystemAlerts.jsx
+│   │   ├── TeamManagement.jsx
+│   │   ├── TemplateCloner.jsx
+│   │   ├── Troubleshooting.jsx
+│   │   ├── ui
+│   │   │   ├── Alert.jsx
+│   │   │   ├── Avatar.jsx
+│   │   │   ├── AvatarGroup.jsx
+│   │   │   ├── Badge.jsx
+│   │   │   ├── Button.jsx
+│   │   │   ├── Card.jsx
+│   │   │   ├── CardContent.jsx
+│   │   │   ├── CardFooter.jsx
+│   │   │   ├── CardHeader.jsx
+│   │   │   ├── Dialog.jsx
+│   │   │   ├── DialogActions.jsx
+│   │   │   ├── DialogContent.jsx
+│   │   │   ├── DialogTitle.jsx
+│   │   │   ├── Divider.jsx
+│   │   │   ├── DragAndDrop.jsx
+│   │   │   ├── FeedbackForm.jsx
+│   │   │   ├── FileList.jsx
+│   │   │   ├── Input.jsx
+│   │   │   ├── Label.jsx
+│   │   │   ├── Loader.jsx
+│   │   │   ├── Modal.jsx
+│   │   │   ├── PasswordStrengthMeter.jsx
+│   │   │   ├── Select.jsx
+│   │   │   ├── Skeleton.jsx
+│   │   │   ├── Spinner.jsx
+│   │   │   ├── Textarea.jsx
+│   │   │   └── Tooltip.jsx
+│   │   ├── UserRoles.jsx
+│   │   ├── VersionHistoryDialog.jsx
+│   │   └── WorkflowForm.jsx
+│   ├── config
+│   │   ├── api.js
+│   │   └── options.js
+│   ├── constants
+│   │   └── auth.js
+│   ├── contexts
+│   │   ├── AuthContext.jsx
+│   │   ├── authHooks.js
+│   │   ├── ModalContext.jsx
+│   │   ├── ModalManager.jsx
+│   │   ├── NotificationContext.jsx
+│   │   ├── SecretsContext.jsx
+│   │   └── ThemeContext.jsx
+│   ├── data
+│   │   └── marketplaceData.js
+│   ├── files
+│   │   ├── constants.js
+│   │   ├── dialogHandlers.js
+│   │   ├── errorUtils.js
+│   │   ├── fileOperations.js
+│   │   ├── useSocket.js
+│   │   └── utils.js
+│   ├── hooks
+│   │   ├── useFileManager.js
+│   │   └── useRouteTracking.js
+│   ├── index.jsx
+│   ├── layouts
+│   │   ├── AppLayout.tsx
+│   │   ├── Footer.jsx
+│   │   ├── Header.jsx
+│   │   ├── Sidebar.jsx
+│   │   └── SidebarItem.jsx
+│   ├── logo.svg
+│   ├── main.jsx
+│   ├── pages
+│   │   ├── Auth
+│   │   ├── Marketplace.jsx
+│   │   ├── oauth
+│   │   │   ├── [repo].js
+│   │   │   ├── callback.js
+│   │   │   └── index.js
+│   │   ├── S3StoragePage.jsx
+│   │   ├── service-worker.js
+│   │   ├── WorkflowManager.jsx
+│   │   ├── WorkflowPage.jsx
+│   │   └── workspace.code-workspace
+│   ├── reducers
+│   │   └── authReducer.jsx
+│   ├── reportWebVitals.js
+│   ├── routes
+│   │   ├── config.js
+│   │   ├── config.jsx
+│   │   ├── guards
+│   │   │   └── RequireAuth.jsx
+│   │   ├── index.tsx
+│   │   └── ProtectedRoute.jsx
+│   ├── services
+│   │   ├── api.js
+│   │   ├── authService.js
+│   │   ├── aws
+│   │   │   ├── api.js
+│   │   │   ├── auth.js
+│   │   │   ├── client.js
+│   │   │   ├── config.js
+│   │   │   ├── hash.js
+│   │   │   ├── index.js
+│   │   │   ├── password.js
+│   │   │   ├── profile.js
+│   │   │   ├── refresh.js
+│   │   │   ├── signup.js
+│   │   │   └── token.js
+│   │   ├── folderPermissionsService.js
+│   │   ├── oauth.js
+│   │   ├── security.js
+│   │   ├── storageService.js
+│   │   └── workflow-service.js
+│   ├── setupTests.js
+│   ├── styles
+│   │   ├── components
+│   │   │   ├── About.css
+│   │   │   ├── AddService.css
+│   │   │   ├── AddStorage.css
+│   │   │   ├── Admin.css
+│   │   │   ├── AdminDashboard.css
+│   │   │   ├── AdminReview.css
+│   │   │   ├── AIAnalytics.css
+│   │   │   ├── AIAssistant.css
+│   │   │   ├── AIBenchmark.css
+│   │   │   ├── AIExecutionConsole.css
+│   │   │   ├── AIGroupManager.css
+│   │   │   ├── AIGroups.css
+│   │   │   ├── AIIntegration.css
+│   │   │   ├── AIMetrics.css
+│   │   │   ├── AIModelTraining.css
+│   │   │   ├── AIOptimizationPanel.css
+│   │   │   ├── AIQuery.css
+│   │   │   ├── AIQueryPanel.css
+│   │   │   ├── AIRecommendations.css
+│   │   │   ├── AITools.css
+│   │   │   ├── AITrainingPanel.css
+│   │   │   ├── AIWorkbench.css
+│   │   │   ├── Analytics.css
+│   │   │   ├── App.css
+│   │   │   ├── AuditLog.css
+│   │   │   ├── BusinessProposal.css
+│   │   │   ├── Card.css
+│   │   │   ├── Collaboration.css
+│   │   │   ├── CollaborationDialog.css
+│   │   │   ├── ConfirmDialog.css
+│   │   │   ├── ConfirmResetPassword.css
+│   │   │   ├── Contact.css
+│   │   │   ├── Credentials.css
+│   │   │   ├── Dashboard.css
+│   │   │   ├── DashboardBuilder.css
+│   │   │   ├── DataAnalysis.css
+│   │   │   ├── Dialog.css
+│   │   │   ├── DragAndDrop.css
+│   │   │   ├── DraggableWidget.css
+│   │   │   ├── ErrorBoundary.css
+│   │   │   ├── ErrorPage.css
+│   │   │   ├── Fallback.css
+│   │   │   ├── FileIcon.css
+│   │   │   ├── FileList.css
+│   │   │   ├── FileManager.css
+│   │   │   ├── FilePreviewModal.css
+│   │   │   ├── FileSearch.css
+│   │   │   ├── FileSearchReplace.css
+│   │   │   ├── FilesPage.css
+│   │   │   ├── FileUpload.css
+│   │   │   ├── FileUploadProgress.css
+│   │   │   ├── FileVersioning.css
+│   │   │   ├── FolderPermissions.css
+│   │   │   ├── Footer.css
+│   │   │   ├── Header.css
+│   │   │   ├── Help.css
+│   │   │   ├── Home.css
+│   │   │   ├── Insights.css
+│   │   │   ├── InsightsDashboard.css
+│   │   │   ├── Loading.css
+│   │   │   ├── Login.css
+│   │   │   ├── LogoutButton.css
+│   │   │   ├── LogPage.css
+│   │   │   ├── Marketplace.css
+│   │   │   ├── MetadataDialog.css
+│   │   │   ├── Modal.css
+│   │   │   ├── Navbar.css
+│   │   │   ├── Notifications.css
+│   │   │   ├── OAuthManager.css
+│   │   │   ├── Onboarding.css
+│   │   │   ├── OptimizationApproval.css
+│   │   │   ├── OptimizationReview.css
+│   │   │   ├── PasswordStrengthMeter.css
+│   │   │   ├── PerformanceDashboard.css
+│   │   │   ├── Profile.css
+│   │   │   ├── Recommendations.css
+│   │   │   ├── ResetPassword.css
+│   │   │   ├── S3FileExplorer.css
+│   │   │   ├── S3FileUpload.css
+│   │   │   ├── SearchBar.css
+│   │   │   ├── Settings.css
+│   │   │   ├── ShareDialog.css
+│   │   │   ├── Signup.css
+│   │   │   ├── StorageForm.css
+│   │   │   ├── StorageManagement.css
+│   │   │   ├── StorageManager.css
+│   │   │   ├── styles.css
+│   │   │   ├── SystemAlerts.css
+│   │   │   ├── TeamManagement.css
+│   │   │   ├── TemplateCloner.css
+│   │   │   ├── Troubleshooting.css
+│   │   │   ├── ui
+│   │   │   ├── UserRoles.css
+│   │   │   ├── VersionHistoryDialog.css
+│   │   │   ├── WidgetManager.css
+│   │   │   └── WorkflowForm.css
+│   │   └── global
+│   │       ├── Global.css
+│   │       ├── index.css
+│   │       ├── reset.css
+│   │       ├── typography.css
+│   │       └── Variables.css
+│   ├── types
+│   │   └── auth.types.js
+│   ├── ui
+│   │   ├── DropdownMenu.jsx
+│   │   └── SidebarToggle.jsx
+│   └── utils
+│       ├── aimlClient.js
+│       ├── aiService.js
+│       ├── AIUtils.js
+│       ├── api-helpers.js
+│       ├── api.js
+│       ├── auditLogger.js
+│       ├── auth.js
+│       ├── authUtils.js
+│       ├── credentialService.js
+│       ├── credentialUtils.js
+│       ├── CryptoJS.js
+│       ├── ErrorHandler.js
+│       ├── errorTracking.js
+│       ├── fetchTestUsers.js
+│       ├── formatFileSize.js
+│       ├── HelmetConfig.js
+│       ├── initializeApp.js
+│       ├── logger.jsx
+│       ├── logging
+│       │   ├── ErrorBoundary.jsx
+│       │   ├── index.js
+│       │   ├── logging.js
+│       │   ├── migration.md
+│       │   └── README.md
+│       ├── migration-scripts
+│       │   ├── migrate-logging.js
+│       │   ├── README.md
+│       │   ├── remove-old-files.sh
+│       │   ├── update-function-calls.sh
+│       │   └── update-imports.sh
+│       ├── platformService.js
+│       ├── rateLimit.js
+│       ├── sessionManager.js
+│       ├── tests
+│       │   └── authUtils.test.js
+│       ├── tokenManager.js
+│       ├── tokenUtils.js
+│       ├── updateCognitoSecret.js
+│       ├── validation.js
+│       └── xaiAnalysis.js
+├── tailwind.config.js
+├── tsconfig.json
+├── tsconfig.node.json
+├── vite.config.js
+└── yarn.lock
+
+42 directories, 389 files

@@ -1,0 +1,74 @@
+Let's analyze the errors and suggest fixes:
+
+1. **Error 1: No matching export in "src/components/ui/Button.jsx" for import "Button"**
+
+   The error indicates that you are trying to import `Button` from `src/components/ui/Button.jsx`, but there is no matching export for `Button` in that file.
+
+   **Fix:**
+   - Open `src/components/ui/Button.jsx`.
+   - Ensure that `Button` is exported correctly. It should look something like this:
+
+     ```jsx
+     export const Button = ({ children, ...props }) => {
+       // Button component implementation
+     };
+     ```
+
+     or
+
+     ```jsx
+     export function Button({ children, ...props }) {
+       // Button component implementation
+     };
+     ```
+
+     or if it's a default export:
+
+     ```jsx
+     export default function Button({ children, ...props }) {
+       // Button component implementation
+     };
+     ```
+
+   - If it's a default export, change the import in `src/components/Notifications.jsx` to:
+
+     ```jsx
+     import Button from "../components/ui/Button";
+     ```
+
+2. **Error 2: No matching export in "src/components/ui/Select.jsx" for import "SelectItem"**
+
+   Similarly, you are trying to import `SelectItem` from `src/components/ui/Select.jsx`, but there is no matching export for `SelectItem` in that file.
+
+   **Fix:**
+   - Open `src/components/ui/Select.jsx`.
+   - Ensure that `SelectItem` is exported correctly. It should look something like this:
+
+     ```jsx
+     export const SelectItem = ({ children, ...props }) => {
+       // SelectItem component implementation
+     };
+     ```
+
+     or
+
+     ```jsx
+     export function SelectItem({ children, ...props }) {
+       // SelectItem component implementation
+     };
+     ```
+
+   - If `SelectItem` is not meant to be exported from `Select.jsx`, you need to import it from wherever it is actually exported. For example, if it's in a separate file `SelectItem.jsx`, you would do:
+
+     ```jsx
+     import Select from "../components/ui/Select";
+     import { SelectItem } from "../components/ui/SelectItem";
+     ```
+
+3. **Additional Note:**
+
+   The error message also mentions a failure to scan for dependencies from `index.html`. This could be related to how your build process is configured. Make sure that your `index.html` file is correctly set up in your build configuration, and that all the paths to your JavaScript files are correct.
+
+   If you're using a tool like `esbuild`, ensure that your build script correctly references `index.html` and that all paths to your JavaScript files are correct.
+
+After making these changes, try rebuilding your project. If you encounter any further issues, please provide the updated error messages, and I'll be happy to help further.

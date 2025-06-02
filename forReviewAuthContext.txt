@@ -1,0 +1,727 @@
+// ✅ FILE: /frontend/src/contexts/AuthContext.jsx (Part 1 of 4)
+
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useReducer,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import PropTypes from "prop-types";
+import "react-toastify/dist/ReactToastify.css";
+
+import {
+  authenticateUser,
+  fetchUserProfile,
+  logoutUser,
+  refreshSession,
+  verifyToken,
+} from "../utils/awsCognitoClient";
+
+import * as tokenUtils from "../utils/tokenUtils";
+
+import {
+  normalizeUserData,
+  createActivityLog,
+  getClientId,
+  getSessionId,
+  shouldRefreshToken,
+  hasPermission as checkPermission,
+  validateUserData,
+  AUTH_CONSTANTS,
+} from "../utils/authUtils";
+
+import ErrorBoundary from "../utils/logging/ErrorBoundary";
+import logger from "../utils/logging";
+import apiClient from "../api/apiClient";
+
+export const AUTH_EVENTS = {
+  LOGIN: "LOGIN",
+  LOGOUT: "LOGOUT",
+  TOKEN_REFRESH: "TOKEN_REFRESH",
+  PROFILE_UPDATE: "PROFILE_UPDATE",
+  SETTINGS_UPDATE: "SETTINGS_UPDATE",
+  SESSION_EXPIRED: "SESSION_EXPIRED",
+  PERMISSION_DENIED: "PERMISSION_DENIED",
+};
+
+export const AUTH_ROLES = {
+  USER: "user",
+  ADMIN: "admin",
+  SUPER_ADMIN: "super_admin",
+};
+
+export const AUTH_STATUS = {
+  IDLE: "IDLE",
+  AUTHENTICATING: "AUTHENTICATING",
+  AUTHENTICATED: "AUTHENTICATED",
+  ERROR: "ERROR",
+};
+
+const log = logger.createLogger("AuthContext");
+
+const initialState = {
+  user: null,
+  loggedIn: false,
+  loading: true,
+  error: null,
+  errorDetails: null,
+  services: [],
+  settings: {},
+  lastAuthenticated: null,
+  status: AUTH_STATUS.IDLE,
+  permissions: [],
+  sessionExpiry: null,
+};
+
+const AuthContext = createContext(null);
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};
+
+const authReducer = (state, action) => {
+  switch (action.type) {
+    case "LOGIN":
+      return {
+        ...state,
+        user: action.user,
+        loggedIn: true,
+        loading: false,
+        error: null,
+        services: action.services || [],
+        settings: action.settings || {},
+        lastAuthenticated: new Date().toISOString(),
+        status: AUTH_STATUS.AUTHENTICATED,
+        permissions: action.permissions || [],
+        sessionExpiry: action.sessionExpiry,
+      };
+    case "LOGOUT":
+      return {
+        ...initialState,
+        loading: false,
+        status: AUTH_STATUS.IDLE,
+      };
+    case "SET_LOADING":
+      return {
+        ...state,
+        loading: action.loading,
+        status: action.loading ? AUTH_STATUS.AUTHENTICATING : state.status,
+      };
+    case "SET_ERROR":
+      return {
+        ...state,
+        error: action.error,
+        errorDetails: action.errorDetails,
+        status: AUTH_STATUS.ERROR,
+      };
+    case "CLEAR_ERROR":
+      return {
+        ...state,
+        error: null,
+        errorDetails: null,
+        status: state.loggedIn ? AUTH_STATUS.AUTHENTICATED : AUTH_STATUS.IDLE,
+      };
+    case "UPDATE_SETTINGS":
+      return {
+        ...state,
+        settings: { ...state.settings, ...action.settings },
+      };
+    case "UPDATE_SERVICES":
+      return {
+        ...state,
+        services: action.services,
+      };
+    case "UPDATE_USER":
+      return {
+        ...state,
+        user: { ...state.user, ...action.userData },
+      };
+    case "UPDATE_PERMISSIONS":
+      return {
+        ...state,
+        permissions: action.permissions,
+      };
+    case "UPDATE_SESSION":
+      return {
+        ...state,
+        sessionExpiry: action.sessionExpiry,
+        lastAuthenticated: new Date().toISOString(),
+      };
+    default:
+      return state;
+  }
+};
+// ✅ FILE: /frontend/src/contexts/AuthContext.jsx (Part 2 of 4)
+
+export const AuthProvider = ({ children }) => {
+  const navigate = useNavigate();
+  const [state, dispatch] = useReducer(authReducer, initialState);
+  const refreshTimerRef = useRef(null);
+  const activityTimeoutRef = useRef(null);
+
+  const {
+    user,
+    loggedIn,
+    loading,
+    error,
+    services,
+    settings,
+    status,
+    permissions,
+    sessionExpiry,
+  } = state;
+
+  const handleApiError = useCallback(async (error, context) => {
+    log.error(`API Error in ${context}:`, error);
+
+    if (error.response?.status === 401) {
+      try {
+        const refreshed = await refreshSession();
+        if (refreshed?.AccessToken) {
+          tokenUtils.setToken(refreshed.AccessToken, refreshed.ExpiresIn);
+          if (refreshed.RefreshToken) tokenUtils.setRefreshToken(refreshed.RefreshToken);
+          if (refreshed.IdToken) tokenUtils.setIdToken(refreshed.IdToken);
+          return true;
+        }
+      } catch (refreshError) {
+        log.error("Token refresh failed:", refreshError);
+        await logoutWithoutRedirect();
+        return false;
+      }
+    }
+
+    const errorDetails = {
+      context,
+      message: error.message,
+      status: error.response?.status,
+      timestamp: new Date().toISOString(),
+      clientId: getClientId(),
+      sessionId: getSessionId(),
+    };
+
+    dispatch({
+      type: "SET_ERROR",
+      error: `Error in ${context}`,
+      errorDetails,
+    });
+
+    return false;
+  }, []);
+
+  const fetchUserData = async (userId, accessToken, retryCount = 0) => {
+    try {
+      const [servicesRes, settingsRes, permissionsRes] = await Promise.all([
+        apiClient.get(`/users/${userId}/services`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }),
+        apiClient.get(`/users/${userId}/settings`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }),
+        apiClient.get(`/users/${userId}/permissions`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }),
+      ]);
+
+      return {
+        services: servicesRes.data.services,
+        settings: settingsRes.data.settings,
+        permissions: permissionsRes.data.permissions,
+      };
+    } catch (error) {
+      if (retryCount < 2 && error.response?.status === 401) {
+        const refreshed = await refreshSession();
+        if (refreshed?.AccessToken) {
+          return fetchUserData(userId, refreshed.AccessToken, retryCount + 1);
+        }
+      }
+      throw error;
+    }
+  };
+
+  const login = async (email, password) => {
+    log.info("Login attempt", { email: email.substring(0, 3) + "***" });
+    dispatch({ type: "SET_LOADING", loading: true });
+    dispatch({ type: "CLEAR_ERROR" });
+
+    try {
+      const authResult = await authenticateUser(email, password);
+      if (!authResult?.AccessToken) {
+        throw new Error("Authentication failed - no access token");
+      }
+
+      tokenUtils.setToken(authResult.AccessToken, authResult.ExpiresIn);
+      tokenUtils.setRefreshToken(authResult.RefreshToken);
+      tokenUtils.setIdToken(authResult.IdToken);
+
+      const tokenData = tokenUtils.decodeToken(authResult.AccessToken);
+      const sessionExpiry = new Date(tokenData.exp * 1000);
+
+      const [profile, userResponse] = await Promise.all([
+        fetchUserProfile(),
+        apiClient.get("/users/profile", {
+          headers: { Authorization: `Bearer ${authResult.AccessToken}` },
+        }),
+      ]);
+
+      const userData = normalizeUserData(userResponse.data, profile);
+      validateUserData(userData);
+
+      const userDataResult = await fetchUserData(userData.id, tokenUtils.getToken());
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          id: userData.id,
+          email: userData.email,
+          role: userData.role,
+          name: userData.name || userData.displayName || email.split("@")[0],
+          lastLogin: new Date().toISOString(),
+        })
+      );
+
+      dispatch({
+        type: "LOGIN",
+        user: userData,
+        services: userDataResult.services,
+        settings: userDataResult.settings,
+        permissions: userDataResult.permissions,
+        sessionExpiry,
+      });
+
+      await createActivityLog({
+        userId: userData.id,
+        event: AUTH_EVENTS.LOGIN,
+        metadata: {
+          email: userData.email,
+          clientId: getClientId(),
+          sessionId: getSessionId(),
+          timestamp: new Date().toISOString(),
+        },
+      });
+
+      toast.success("✅ Login successful!");
+      log.info("Login successful", { userId: userData.id });
+
+      return userData;
+    } catch (error) {
+      const errorDetails = {
+        context: "login",
+        message: error.message,
+        stack: error.stack,
+        timestamp: new Date().toISOString(),
+        clientId: getClientId(),
+        sessionId: getSessionId(),
+      };
+
+      log.error("Login failed:", errorDetails);
+
+      dispatch({
+        type: "SET_ERROR",
+        error: "Login failed. Please try again.",
+        errorDetails,
+      });
+
+      toast.error("❌ Login failed");
+      throw error;
+    } finally {
+      dispatch({ type: "SET_LOADING", loading: false });
+    }
+  };
+// ✅ FILE: /frontend/src/contexts/AuthContext.jsx (Part 3 of 4)
+
+const logoutWithoutRedirect = async () => {
+  try {
+    if (user?.id) {
+      await createActivityLog({
+        userId: user.id,
+        event: AUTH_EVENTS.LOGOUT,
+        metadata: {
+          email: user.email,
+          clientId: getClientId(),
+          sessionId: getSessionId(),
+          timestamp: new Date().toISOString(),
+        },
+      });
+    }
+
+    if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+    if (activityTimeoutRef.current) clearTimeout(activityTimeoutRef.current);
+
+    tokenUtils.removeTokens();
+    localStorage.removeItem("user");
+
+    dispatch({ type: "LOGOUT" });
+    log.info("Logout successful (without redirect)");
+  } catch (error) {
+    log.error("Logout error:", error);
+  }
+};
+
+const handleLogout = async () => {
+  log.info("Initiating logout", { userId: user?.id });
+  dispatch({ type: "SET_LOADING", loading: true });
+
+  try {
+    await logoutUser();
+    await logoutWithoutRedirect();
+    toast.success("✅ Logged out successfully");
+  } catch (error) {
+    log.error("Logout error:", error);
+    toast.error("❌ Logout error");
+  } finally {
+    dispatch({ type: "SET_LOADING", loading: false });
+    navigate("/login");
+  }
+};
+
+const checkAuthStatus = useCallback(async () => {
+  log.debug("Checking auth status");
+  dispatch({ type: "SET_LOADING", loading: true });
+
+  try {
+    const token = tokenUtils.getToken();
+    if (!token) {
+      log.debug("No token found");
+      dispatch({ type: "LOGOUT" });
+      return false;
+    }
+
+    if (tokenUtils.isTokenExpired()) {
+      log.debug("Token expired, attempting refresh");
+      const refreshed = await refreshSession();
+      if (!refreshed?.AccessToken) throw new Error("Token refresh failed");
+
+      tokenUtils.setToken(refreshed.AccessToken, refreshed.ExpiresIn);
+      if (refreshed.RefreshToken) tokenUtils.setRefreshToken(refreshed.RefreshToken);
+      if (refreshed.IdToken) tokenUtils.setIdToken(refreshed.IdToken);
+    }
+
+    const tokenValid = await verifyToken(tokenUtils.getToken());
+    if (!tokenValid) throw new Error("Token validation failed");
+
+    const [profile, userResponse] = await Promise.all([
+      fetchUserProfile(),
+      apiClient.get("/users/profile", {
+        headers: { Authorization: `Bearer ${tokenUtils.getToken()}` },
+      }),
+    ]);
+
+    const userData = normalizeUserData(userResponse.data, profile);
+    validateUserData(userData);
+
+    const userDataResult = await fetchUserData(userData.id, tokenUtils.getToken());
+
+    dispatch({
+      type: "LOGIN",
+      user: userData,
+      services: userDataResult.services,
+      settings: userDataResult.settings,
+      permissions: userDataResult.permissions,
+      sessionExpiry: new Date(
+        tokenUtils.decodeToken(tokenUtils.getToken()).exp * 1000
+      ),
+    });
+
+    log.debug("Auth check successful", { userId: userData.id });
+    return true;
+  } catch (error) {
+    log.error("Auth check failed:", error);
+    await logoutWithoutRedirect();
+    return false;
+  } finally {
+    dispatch({ type: "SET_LOADING", loading: false });
+  }
+}, []);
+
+const updateUserSettings = async (newSettings) => {
+  if (!user?.id) {
+    log.warn("Cannot update settings: No user ID");
+    return;
+  }
+
+  try {
+    const response = await apiClient.put(
+      `/users/${user.id}/settings`,
+      newSettings,
+      {
+        headers: { Authorization: `Bearer ${tokenUtils.getToken()}` },
+      }
+    );
+
+    dispatch({ type: "UPDATE_SETTINGS", settings: response.data.settings });
+
+    await createActivityLog({
+      userId: user.id,
+      event: AUTH_EVENTS.SETTINGS_UPDATE,
+      metadata: {
+        timestamp: new Date().toISOString(),
+        clientId: getClientId(),
+        sessionId: getSessionId(),
+      },
+    });
+
+    toast.success("✅ Settings updated successfully");
+    log.info("Settings updated", { userId: user.id });
+    return response.data.settings;
+  } catch (error) {
+    log.error("Settings update failed:", error);
+    toast.error("❌ Failed to update settings");
+    throw error;
+  }
+};
+
+const updateUserProfile = async (profileData) => {
+  if (!user?.id) {
+    log.warn("Cannot update profile: No user ID");
+    return;
+  }
+
+  try {
+    const response = await apiClient.put(
+      `/users/${user.id}/profile`,
+      profileData,
+      {
+        headers: { Authorization: `Bearer ${tokenUtils.getToken()}` },
+      }
+    );
+
+    const updatedUser = { ...user, ...response.data };
+    validateUserData(updatedUser);
+
+    dispatch({ type: "UPDATE_USER", userData: response.data });
+
+    const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+    localStorage.setItem(
+      "user",
+      JSON.stringify({
+        ...storedUser,
+        ...response.data,
+        lastUpdated: new Date().toISOString(),
+      })
+    );
+
+    await createActivityLog({
+      userId: user.id,
+      event: AUTH_EVENTS.PROFILE_UPDATE,
+      metadata: {
+        timestamp: new Date().toISOString(),
+        clientId: getClientId(),
+        sessionId: getSessionId(),
+        updates: Object.keys(profileData),
+      },
+    });
+
+    toast.success("✅ Profile updated successfully");
+    log.info("Profile updated", { userId: user.id });
+    return response.data;
+  } catch (error) {
+    log.error("Profile update failed:", error);
+    toast.error("❌ Failed to update profile");
+    throw error;
+  }
+};
+
+const hasPermission = useCallback(
+  (requiredRoles) => {
+    if (!user || !permissions.length) return false;
+    return checkPermission(user, requiredRoles, permissions);
+  },
+  [user, permissions]
+);
+  // ✅ FILE: /frontend/src/contexts/AuthContext.jsx (Part 4 of 4)
+
+  const setupSessionManagement = useCallback(() => {
+    const token = tokenUtils.getToken();
+    if (!token) {
+      log.debug("No token found — skipping session setup.");
+      return;
+    }
+  
+    const timeUntilExpiry = tokenUtils.getTimeUntilExpiry();
+    if (timeUntilExpiry <= 0) {
+      log.warn("Token already expired — logging out.");
+      logoutWithoutRedirect();
+      return;
+    }
+  
+    const refreshThreshold = 5 * 60 * 1000; // 5 minutes before expiry
+    const refreshTime = Math.max(timeUntilExpiry - refreshThreshold, 1000);
+  
+    log.debug("Configuring token refresh", {
+      refreshIn: `${Math.floor(refreshTime / 1000)}s`,
+      expiresIn: `${Math.floor(timeUntilExpiry / 1000)}s`,
+    });
+  
+    refreshTimerRef.current = setTimeout(async () => {
+      try {
+        const refreshed = await refreshSession();
+        if (!refreshed?.AccessToken) throw new Error("Token refresh failed");
+  
+        tokenUtils.setToken(refreshed.AccessToken, refreshed.ExpiresIn);
+        if (refreshed.RefreshToken) tokenUtils.setRefreshToken(refreshed.RefreshToken);
+        if (refreshed.IdToken) tokenUtils.setIdToken(refreshed.IdToken);
+  
+        dispatch({
+          type: "UPDATE_SESSION",
+          sessionExpiry: new Date(
+            tokenUtils.decodeToken(refreshed.AccessToken).exp * 1000
+          ),
+        });
+  
+        if (user?.id) {
+          await createActivityLog({
+            userId: user.id,
+            event: AUTH_EVENTS.TOKEN_REFRESH,
+            metadata: {
+              automatic: true,
+              timestamp: new Date().toISOString(),
+              clientId: getClientId(),
+              sessionId: getSessionId(),
+            },
+          });
+        }
+  
+        log.info("Access token refreshed successfully.");
+        setupSessionManagement(); // re-init session
+      } catch (err) {
+        log.error("Auto-refresh failed. Logging out.", err);
+        await logoutWithoutRedirect();
+      }
+    }, refreshTime);
+  
+    // -----------------------------
+    // Inactivity Timeout Handling
+    // -----------------------------
+    const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+    const resetActivityTimeout = () => {
+      if (activityTimeoutRef.current) clearTimeout(activityTimeoutRef.current);
+      activityTimeoutRef.current = setTimeout(() => {
+        log.warn("Inactivity timeout reached. Logging out.");
+        handleLogout();
+      }, INACTIVITY_TIMEOUT);
+    };
+  
+    const activityEvents = ["mousedown", "keydown", "scroll", "touchstart"];
+    const handleActivity = () => resetActivityTimeout();
+    activityEvents.forEach((event) =>
+      window.addEventListener(event, handleActivity)
+    );
+  
+    resetActivityTimeout();
+  
+    // -----------------------------
+    // Cleanup Function
+    // -----------------------------
+    return () => {
+      if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+      if (activityTimeoutRef.current) clearTimeout(activityTimeoutRef.current);
+      activityEvents.forEach((event) =>
+        window.removeEventListener(event, handleActivity)
+      );
+    };
+  }, [user, dispatch, handleLogout]);
+  
+
+useEffect(() => {
+  let isMounted = true;
+
+  const runCheck = async () => {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (storedUser?.id && isMounted) {
+      await checkAuthStatus();
+    } else if (isMounted) {
+      dispatch({ type: "LOGOUT" });
+    }
+  };
+
+  runCheck();
+
+  return () => {
+    isMounted = false;
+  };
+}, []);
+
+const setUser = (userData) => {
+  dispatch({ type: "UPDATE_USER", userData });
+};
+
+const setPermissions = (permissions) => {
+  dispatch({ type: "UPDATE_PERMISSIONS", permissions });
+};
+
+  // Memoized context value
+  const value = useMemo(
+    () => ({
+      user,
+      loggedIn,
+      loading,
+      error,
+      services,
+      settings,
+      status,
+      permissions,
+      sessionExpiry,
+      login,
+      logout: handleLogout,
+      checkAuthStatus,
+      hasPermission,
+      updateUserSettings,
+      updateUserProfile,
+      setUser,
+      setPermissions,
+      clientId: getClientId(),
+      sessionId: getSessionId(),
+      AUTH_EVENTS,
+      AUTH_ROLES,
+      AUTH_STATUS,
+    }),
+    [
+      user,
+      loggedIn,
+      loading,
+      error,
+      services,
+      settings,
+      status,
+      permissions,
+      sessionExpiry,
+      login,
+      handleLogout,
+      checkAuthStatus,
+      hasPermission,
+      updateUserSettings,
+      updateUserProfile,
+      setUser,
+      setPermissions,
+    ]
+  );
+
+  return (
+    <ErrorBoundary
+      fallback={
+        <div role="alert" className="auth-error">
+          <h3>Authentication Error</h3>
+          <p>Something went wrong with authentication.</p>
+          <button onClick={() => window.location.reload()}>Retry</button>
+        </div>
+      }
+    >
+      <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+    </ErrorBoundary>
+  );
+};
+
+AuthProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+};
+
+export default AuthContext;

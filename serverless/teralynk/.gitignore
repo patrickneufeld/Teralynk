@@ -1,0 +1,9 @@
+node_modules
+.serverless
+*.env
+**/.env
+.env.example
+# Ignore all .java files
+*.java
+**/*.java
+node_modules

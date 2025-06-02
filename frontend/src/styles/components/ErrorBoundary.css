@@ -1,0 +1,51 @@
+/* ✅ FILE: /frontend/src/styles/components/ErrorBoundary.css */
+
+.error-boundary {
+  padding: 2rem;
+  border: 1px solid #e3342f;
+  background-color: #fff5f5;
+  color: #cc1f1a;
+  font-family: "Segoe UI", sans-serif;
+  border-radius: 6px;
+  max-width: 700px;
+  margin: 2rem auto;
+  box-shadow: 0 0 10px rgba(204, 31, 26, 0.2);
+}
+
+.fallback-ui h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.fallback-ui p {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.fallback-ui details {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  background-color: #fff0f0;
+  padding: 0.75rem;
+  border-left: 4px solid #e3342f;
+  border-radius: 4px;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+.reset-button {
+  background-color: #e3342f;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.25rem;
+  font-size: 0.95rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.reset-button:hover {
+  background-color: #cc1f1a;
+}

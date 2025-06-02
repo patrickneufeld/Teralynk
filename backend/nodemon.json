@@ -1,0 +1,10 @@
+{
+  "watch": ["server.mjs", "src"],
+  "ext": "js,json,mjs",
+  "ignore": ["node_modules", "logs", "tests"],
+  "exec": "node --experimental-import-meta-resolve --trace-warnings server.mjs",
+  "env": {
+    "NODE_ENV": "development",
+    "PORT": "5001"
+  }
+}

@@ -1,0 +1,15 @@
+/* ✅ FILE: /Users/patrick/Projects/Teralynk/frontend/src/styles/components/Card.css */
+
+.card {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    margin: 10px 0;
+}
+
+.card-content {
+    padding: 12px;
+    font-size: 14px;
+    color: #333;
+}
