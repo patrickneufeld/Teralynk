@@ -1,0 +1,30 @@
+/* ✅ FILE: /src/styles/components/AdminDashboard.css */
+
+.card {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease-in-out;
+  }
+  
+  .card:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  }
+  
+  .button {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: background-color 0.3s ease-in-out;
+  }
+  
+  .approve-button {
+    background-color: #28a745;
+    color: #fff;
+    cursor: pointer;
+  }
+  
+  .approve-button:hover {
+    background-color: #218838;
+  }
+  

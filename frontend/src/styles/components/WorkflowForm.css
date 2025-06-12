@@ -1,0 +1,115 @@
+/* File Path: frontend/styles/WorkflowForm.css */
+
+/* Workflow Form Container */
+.workflow-form {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+}
+
+/* Form Header */
+.workflow-form h2 {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Input Group */
+.workflow-form .form-group {
+    margin-bottom: 15px;
+}
+
+.workflow-form label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+.workflow-form input[type="text"],
+.workflow-form select,
+.workflow-form textarea {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.workflow-form input[type="text"]:focus,
+.workflow-form select:focus,
+.workflow-form textarea:focus {
+    border-color: #0d6efd;
+    outline: none;
+}
+
+/* Buttons */
+.workflow-form .button-group {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.workflow-form button {
+    padding: 10px 20px;
+    font-size: 16px;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.workflow-form .submit-button {
+    background-color: #0d6efd;
+}
+
+.workflow-form .submit-button:hover {
+    background-color: #0056b3;
+}
+
+.workflow-form .cancel-button {
+    background-color: #6c757d;
+}
+
+.workflow-form .cancel-button:hover {
+    background-color: #5a6268;
+}
+
+/* Error and Success Messages */
+.workflow-form .error-message {
+    color: #dc3545;
+    font-size: 14px;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.workflow-form .success-message {
+    color: #28a745;
+    font-size: 14px;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .workflow-form {
+        padding: 15px;
+    }
+
+    .workflow-form .button-group {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .workflow-form button {
+        width: 100%;
+    }
+}

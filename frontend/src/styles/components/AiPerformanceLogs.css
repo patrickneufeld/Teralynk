@@ -1,0 +1,24 @@
+/* ✅ FILE: /frontend/src/styles/AiPerformanceLogs.css */
+
+.performance-log-card {
+    padding: 1.5rem;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;
+  }
+  
+  .log-title {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: #333;
+  }
+  
+  .log-entry {
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-left: 4px solid #007bff;
+    margin-bottom: 1rem;
+  }
+  

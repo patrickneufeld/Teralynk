@@ -1,0 +1,907 @@
+{
+  "s3": {
+    "client": {
+      "config": {
+        "apiVersion": "2006-03-01",
+        "disableHostPrefix": false,
+        "extensions": [],
+        "httpAuthSchemes": [
+          {
+            "schemeId": "aws.auth#sigv4",
+            "signer": {}
+          },
+          {
+            "schemeId": "aws.auth#sigv4a",
+            "signer": {}
+          }
+        ],
+        "logger": {},
+        "serviceId": "S3",
+        "signingEscapePath": false,
+        "runtime": "node",
+        "requestHandler": {
+          "socketWarningTimestamp": 0,
+          "metadata": {
+            "handlerProtocol": "http/1.1"
+          },
+          "configProvider": {}
+        },
+        "forcePathStyle": false,
+        "useAccelerateEndpoint": false,
+        "useGlobalEndpoint": false,
+        "disableMultiregionAccessPoints": false,
+        "defaultSigningName": "s3",
+        "requestStreamBufferSize": 0,
+        "tls": true,
+        "isCustomEndpoint": false,
+        "eventStreamMarshaller": {
+          "universalMarshaller": {
+            "eventStreamCodec": {
+              "headerMarshaller": {},
+              "messageBuffer": [],
+              "isEndOfStream": false
+            }
+          }
+        },
+        "systemClockOffset": 0,
+        "followRegionRedirects": false,
+        "s3ExpressIdentityProvider": {
+          "cache": {
+            "lastPurgeTime": 1740948037168,
+            "data": {}
+          }
+        },
+        "bucketEndpoint": false
+      },
+      "middlewareStack": {}
+    },
+    "bucket": "teralynk-storage"
+  },
+  "googleDrive": {
+    "client": {
+      "context": {
+        "_options": {
+          "auth": {
+            "_events": {},
+            "_eventsCount": 0,
+            "credentials": {},
+            "eagerRefreshThresholdMillis": 300000,
+            "forceRefreshOnFailure": false,
+            "universeDomain": "googleapis.com",
+            "projectId": null,
+            "transporter": {
+              "instance": {
+                "agentCache": {},
+                "defaults": {},
+                "interceptors": {
+                  "request": {},
+                  "response": {}
+                }
+              }
+            },
+            "certificateCache": {},
+            "certificateExpiry": null,
+            "certificateCacheFormat": "PEM",
+            "refreshTokenPromises": {},
+            "endpoints": {
+              "tokenInfoUrl": "https://oauth2.googleapis.com/tokeninfo",
+              "oauth2AuthBaseUrl": "https://accounts.google.com/o/oauth2/v2/auth",
+              "oauth2TokenUrl": "https://oauth2.googleapis.com/token",
+              "oauth2RevokeUrl": "https://oauth2.googleapis.com/revoke",
+              "oauth2FederatedSignonPemCertsUrl": "https://www.googleapis.com/oauth2/v1/certs",
+              "oauth2FederatedSignonJwkCertsUrl": "https://www.googleapis.com/oauth2/v3/certs",
+              "oauth2IapPublicKeyUrl": "https://www.gstatic.com/iap/verify/public_key"
+            },
+            "clientAuthentication": "ClientSecretPost",
+            "issuers": [
+              "accounts.google.com",
+              "https://accounts.google.com",
+              "googleapis.com"
+            ]
+          }
+        },
+        "google": {
+          "_discovery": {
+            "transporter": {
+              "instance": {
+                "agentCache": {},
+                "defaults": {},
+                "interceptors": {
+                  "request": {},
+                  "response": {}
+                }
+              }
+            },
+            "options": {
+              "debug": false,
+              "includePrivate": false
+            }
+          },
+          "auth": {
+            "jsonContent": null,
+            "cachedCredential": null,
+            "clientOptions": {},
+            "_cachedProjectId": null,
+            "apiKey": null
+          },
+          "_options": {}
+        }
+      },
+      "about": {
+        "context": {
+          "_options": {
+            "auth": {
+              "_events": {},
+              "_eventsCount": 0,
+              "credentials": {},
+              "eagerRefreshThresholdMillis": 300000,
+              "forceRefreshOnFailure": false,
+              "universeDomain": "googleapis.com",
+              "projectId": null,
+              "transporter": {
+                "instance": {
+                  "agentCache": {},
+                  "defaults": {},
+                  "interceptors": {
+                    "request": {},
+                    "response": {}
+                  }
+                }
+              },
+              "certificateCache": {},
+              "certificateExpiry": null,
+              "certificateCacheFormat": "PEM",
+              "refreshTokenPromises": {},
+              "endpoints": {
+                "tokenInfoUrl": "https://oauth2.googleapis.com/tokeninfo",
+                "oauth2AuthBaseUrl": "https://accounts.google.com/o/oauth2/v2/auth",
+                "oauth2TokenUrl": "https://oauth2.googleapis.com/token",
+                "oauth2RevokeUrl": "https://oauth2.googleapis.com/revoke",
+                "oauth2FederatedSignonPemCertsUrl": "https://www.googleapis.com/oauth2/v1/certs",
+                "oauth2FederatedSignonJwkCertsUrl": "https://www.googleapis.com/oauth2/v3/certs",
+                "oauth2IapPublicKeyUrl": "https://www.gstatic.com/iap/verify/public_key"
+              },
+              "clientAuthentication": "ClientSecretPost",
+              "issuers": [
+                "accounts.google.com",
+                "https://accounts.google.com",
+                "googleapis.com"
+              ]
+            }
+          },
+          "google": {
+            "_discovery": {
+              "transporter": {
+                "instance": {
+                  "agentCache": {},
+                  "defaults": {},
+                  "interceptors": {
+                    "request": {},
+                    "response": {}
+                  }
+                }
+              },
+              "options": {
+                "debug": false,
+                "includePrivate": false
+              }
+            },
+            "auth": {
+              "jsonContent": null,
+              "cachedCredential": null,
+              "clientOptions": {},
+              "_cachedProjectId": null,
+              "apiKey": null
+            },
+            "_options": {}
+          }
+        }
+      },
+      "apps": {
+        "context": {
+          "_options": {
+            "auth": {
+              "_events": {},
+              "_eventsCount": 0,
+              "credentials": {},
+              "eagerRefreshThresholdMillis": 300000,
+              "forceRefreshOnFailure": false,
+              "universeDomain": "googleapis.com",
+              "projectId": null,
+              "transporter": {
+                "instance": {
+                  "agentCache": {},
+                  "defaults": {},
+                  "interceptors": {
+                    "request": {},
+                    "response": {}
+                  }
+                }
+              },
+              "certificateCache": {},
+              "certificateExpiry": null,
+              "certificateCacheFormat": "PEM",
+              "refreshTokenPromises": {},
+              "endpoints": {
+                "tokenInfoUrl": "https://oauth2.googleapis.com/tokeninfo",
+                "oauth2AuthBaseUrl": "https://accounts.google.com/o/oauth2/v2/auth",
+                "oauth2TokenUrl": "https://oauth2.googleapis.com/token",
+                "oauth2RevokeUrl": "https://oauth2.googleapis.com/revoke",
+                "oauth2FederatedSignonPemCertsUrl": "https://www.googleapis.com/oauth2/v1/certs",
+                "oauth2FederatedSignonJwkCertsUrl": "https://www.googleapis.com/oauth2/v3/certs",
+                "oauth2IapPublicKeyUrl": "https://www.gstatic.com/iap/verify/public_key"
+              },
+              "clientAuthentication": "ClientSecretPost",
+              "issuers": [
+                "accounts.google.com",
+                "https://accounts.google.com",
+                "googleapis.com"
+              ]
+            }
+          },
+          "google": {
+            "_discovery": {
+              "transporter": {
+                "instance": {
+                  "agentCache": {},
+                  "defaults": {},
+                  "interceptors": {
+                    "request": {},
+                    "response": {}
+                  }
+                }
+              },
+              "options": {
+                "debug": false,
+                "includePrivate": false
+              }
+            },
+            "auth": {
+              "jsonContent": null,
+              "cachedCredential": null,
+              "clientOptions": {},
+              "_cachedProjectId": null,
+              "apiKey": null
+            },
+            "_options": {}
+          }
+        }
+      },
+      "changes": {
+        "context": {
+          "_options": {
+            "auth": {
+              "_events": {},
+              "_eventsCount": 0,
+              "credentials": {},
+              "eagerRefreshThresholdMillis": 300000,
+              "forceRefreshOnFailure": false,
+              "universeDomain": "googleapis.com",
+              "projectId": null,
+              "transporter": {
+                "instance": {
+                  "agentCache": {},
+                  "defaults": {},
+                  "interceptors": {
+                    "request": {},
+                    "response": {}
+                  }
+                }
+              },
+              "certificateCache": {},
+              "certificateExpiry": null,
+              "certificateCacheFormat": "PEM",
+              "refreshTokenPromises": {},
+              "endpoints": {
+                "tokenInfoUrl": "https://oauth2.googleapis.com/tokeninfo",
+                "oauth2AuthBaseUrl": "https://accounts.google.com/o/oauth2/v2/auth",
+                "oauth2TokenUrl": "https://oauth2.googleapis.com/token",
+                "oauth2RevokeUrl": "https://oauth2.googleapis.com/revoke",
+                "oauth2FederatedSignonPemCertsUrl": "https://www.googleapis.com/oauth2/v1/certs",
+                "oauth2FederatedSignonJwkCertsUrl": "https://www.googleapis.com/oauth2/v3/certs",
+                "oauth2IapPublicKeyUrl": "https://www.gstatic.com/iap/verify/public_key"
+              },
+              "clientAuthentication": "ClientSecretPost",
+              "issuers": [
+                "accounts.google.com",
+                "https://accounts.google.com",
+                "googleapis.com"
+              ]
+            }
+          },
+          "google": {
+            "_discovery": {
+              "transporter": {
+                "instance": {
+                  "agentCache": {},
+                  "defaults": {},
+                  "interceptors": {
+                    "request": {},
+                    "response": {}
+                  }
+                }
+              },
+              "options": {
+                "debug": false,
+                "includePrivate": false
+              }
+            },
+            "auth": {
+              "jsonContent": null,
+              "cachedCredential": null,
+              "clientOptions": {},
+              "_cachedProjectId": null,
+              "apiKey": null
+            },
+            "_options": {}
+          }
+        }
+      },
+      "channels": {
+        "context": {
+          "_options": {
+            "auth": {
+              "_events": {},
+              "_eventsCount": 0,
+              "credentials": {},
+              "eagerRefreshThresholdMillis": 300000,
+              "forceRefreshOnFailure": false,
+              "universeDomain": "googleapis.com",
+              "projectId": null,
+              "transporter": {
+                "instance": {
+                  "agentCache": {},
+                  "defaults": {},
+                  "interceptors": {
+                    "request": {},
+                    "response": {}
+                  }
+                }
+              },
+              "certificateCache": {},
+              "certificateExpiry": null,
+              "certificateCacheFormat": "PEM",
+              "refreshTokenPromises": {},
+              "endpoints": {
+                "tokenInfoUrl": "https://oauth2.googleapis.com/tokeninfo",
+                "oauth2AuthBaseUrl": "https://accounts.google.com/o/oauth2/v2/auth",
+                "oauth2TokenUrl": "https://oauth2.googleapis.com/token",
+                "oauth2RevokeUrl": "https://oauth2.googleapis.com/revoke",
+                "oauth2FederatedSignonPemCertsUrl": "https://www.googleapis.com/oauth2/v1/certs",
+                "oauth2FederatedSignonJwkCertsUrl": "https://www.googleapis.com/oauth2/v3/certs",
+                "oauth2IapPublicKeyUrl": "https://www.gstatic.com/iap/verify/public_key"
+              },
+              "clientAuthentication": "ClientSecretPost",
+              "issuers": [
+                "accounts.google.com",
+                "https://accounts.google.com",
+                "googleapis.com"
+              ]
+            }
+          },
+          "google": {
+            "_discovery": {
+              "transporter": {
+                "instance": {
+                  "agentCache": {},
+                  "defaults": {},
+                  "interceptors": {
+                    "request": {},
+                    "response": {}
+                  }
+                }
+              },
+              "options": {
+                "debug": false,
+                "includePrivate": false
+              }
+            },
+            "auth": {
+              "jsonContent": null,
+              "cachedCredential": null,
+              "clientOptions": {},
+              "_cachedProjectId": null,
+              "apiKey": null
+            },
+            "_options": {}
+          }
+        }
+      },
+      "comments": {
+        "context": {
+          "_options": {
+            "auth": {
+              "_events": {},
+              "_eventsCount": 0,
+              "credentials": {},
+              "eagerRefreshThresholdMillis": 300000,
+              "forceRefreshOnFailure": false,
+              "universeDomain": "googleapis.com",
+              "projectId": null,
+              "transporter": {
+                "instance": {
+                  "agentCache": {},
+                  "defaults": {},
+                  "interceptors": {
+                    "request": {},
+                    "response": {}
+                  }
+                }
+              },
+              "certificateCache": {},
+              "certificateExpiry": null,
+              "certificateCacheFormat": "PEM",
+              "refreshTokenPromises": {},
+              "endpoints": {
+                "tokenInfoUrl": "https://oauth2.googleapis.com/tokeninfo",
+                "oauth2AuthBaseUrl": "https://accounts.google.com/o/oauth2/v2/auth",
+                "oauth2TokenUrl": "https://oauth2.googleapis.com/token",
+                "oauth2RevokeUrl": "https://oauth2.googleapis.com/revoke",
+                "oauth2FederatedSignonPemCertsUrl": "https://www.googleapis.com/oauth2/v1/certs",
+                "oauth2FederatedSignonJwkCertsUrl": "https://www.googleapis.com/oauth2/v3/certs",
+                "oauth2IapPublicKeyUrl": "https://www.gstatic.com/iap/verify/public_key"
+              },
+              "clientAuthentication": "ClientSecretPost",
+              "issuers": [
+                "accounts.google.com",
+                "https://accounts.google.com",
+                "googleapis.com"
+              ]
+            }
+          },
+          "google": {
+            "_discovery": {
+              "transporter": {
+                "instance": {
+                  "agentCache": {},
+                  "defaults": {},
+                  "interceptors": {
+                    "request": {},
+                    "response": {}
+                  }
+                }
+              },
+              "options": {
+                "debug": false,
+                "includePrivate": false
+              }
+            },
+            "auth": {
+              "jsonContent": null,
+              "cachedCredential": null,
+              "clientOptions": {},
+              "_cachedProjectId": null,
+              "apiKey": null
+            },
+            "_options": {}
+          }
+        }
+      },
+      "drives": {
+        "context": {
+          "_options": {
+            "auth": {
+              "_events": {},
+              "_eventsCount": 0,
+              "credentials": {},
+              "eagerRefreshThresholdMillis": 300000,
+              "forceRefreshOnFailure": false,
+              "universeDomain": "googleapis.com",
+              "projectId": null,
+              "transporter": {
+                "instance": {
+                  "agentCache": {},
+                  "defaults": {},
+                  "interceptors": {
+                    "request": {},
+                    "response": {}
+                  }
+                }
+              },
+              "certificateCache": {},
+              "certificateExpiry": null,
+              "certificateCacheFormat": "PEM",
+              "refreshTokenPromises": {},
+              "endpoints": {
+                "tokenInfoUrl": "https://oauth2.googleapis.com/tokeninfo",
+                "oauth2AuthBaseUrl": "https://accounts.google.com/o/oauth2/v2/auth",
+                "oauth2TokenUrl": "https://oauth2.googleapis.com/token",
+                "oauth2RevokeUrl": "https://oauth2.googleapis.com/revoke",
+                "oauth2FederatedSignonPemCertsUrl": "https://www.googleapis.com/oauth2/v1/certs",
+                "oauth2FederatedSignonJwkCertsUrl": "https://www.googleapis.com/oauth2/v3/certs",
+                "oauth2IapPublicKeyUrl": "https://www.gstatic.com/iap/verify/public_key"
+              },
+              "clientAuthentication": "ClientSecretPost",
+              "issuers": [
+                "accounts.google.com",
+                "https://accounts.google.com",
+                "googleapis.com"
+              ]
+            }
+          },
+          "google": {
+            "_discovery": {
+              "transporter": {
+                "instance": {
+                  "agentCache": {},
+                  "defaults": {},
+                  "interceptors": {
+                    "request": {},
+                    "response": {}
+                  }
+                }
+              },
+              "options": {
+                "debug": false,
+                "includePrivate": false
+              }
+            },
+            "auth": {
+              "jsonContent": null,
+              "cachedCredential": null,
+              "clientOptions": {},
+              "_cachedProjectId": null,
+              "apiKey": null
+            },
+            "_options": {}
+          }
+        }
+      },
+      "files": {
+        "context": {
+          "_options": {
+            "auth": {
+              "_events": {},
+              "_eventsCount": 0,
+              "credentials": {},
+              "eagerRefreshThresholdMillis": 300000,
+              "forceRefreshOnFailure": false,
+              "universeDomain": "googleapis.com",
+              "projectId": null,
+              "transporter": {
+                "instance": {
+                  "agentCache": {},
+                  "defaults": {},
+                  "interceptors": {
+                    "request": {},
+                    "response": {}
+                  }
+                }
+              },
+              "certificateCache": {},
+              "certificateExpiry": null,
+              "certificateCacheFormat": "PEM",
+              "refreshTokenPromises": {},
+              "endpoints": {
+                "tokenInfoUrl": "https://oauth2.googleapis.com/tokeninfo",
+                "oauth2AuthBaseUrl": "https://accounts.google.com/o/oauth2/v2/auth",
+                "oauth2TokenUrl": "https://oauth2.googleapis.com/token",
+                "oauth2RevokeUrl": "https://oauth2.googleapis.com/revoke",
+                "oauth2FederatedSignonPemCertsUrl": "https://www.googleapis.com/oauth2/v1/certs",
+                "oauth2FederatedSignonJwkCertsUrl": "https://www.googleapis.com/oauth2/v3/certs",
+                "oauth2IapPublicKeyUrl": "https://www.gstatic.com/iap/verify/public_key"
+              },
+              "clientAuthentication": "ClientSecretPost",
+              "issuers": [
+                "accounts.google.com",
+                "https://accounts.google.com",
+                "googleapis.com"
+              ]
+            }
+          },
+          "google": {
+            "_discovery": {
+              "transporter": {
+                "instance": {
+                  "agentCache": {},
+                  "defaults": {},
+                  "interceptors": {
+                    "request": {},
+                    "response": {}
+                  }
+                }
+              },
+              "options": {
+                "debug": false,
+                "includePrivate": false
+              }
+            },
+            "auth": {
+              "jsonContent": null,
+              "cachedCredential": null,
+              "clientOptions": {},
+              "_cachedProjectId": null,
+              "apiKey": null
+            },
+            "_options": {}
+          }
+        }
+      },
+      "permissions": {
+        "context": {
+          "_options": {
+            "auth": {
+              "_events": {},
+              "_eventsCount": 0,
+              "credentials": {},
+              "eagerRefreshThresholdMillis": 300000,
+              "forceRefreshOnFailure": false,
+              "universeDomain": "googleapis.com",
+              "projectId": null,
+              "transporter": {
+                "instance": {
+                  "agentCache": {},
+                  "defaults": {},
+                  "interceptors": {
+                    "request": {},
+                    "response": {}
+                  }
+                }
+              },
+              "certificateCache": {},
+              "certificateExpiry": null,
+              "certificateCacheFormat": "PEM",
+              "refreshTokenPromises": {},
+              "endpoints": {
+                "tokenInfoUrl": "https://oauth2.googleapis.com/tokeninfo",
+                "oauth2AuthBaseUrl": "https://accounts.google.com/o/oauth2/v2/auth",
+                "oauth2TokenUrl": "https://oauth2.googleapis.com/token",
+                "oauth2RevokeUrl": "https://oauth2.googleapis.com/revoke",
+                "oauth2FederatedSignonPemCertsUrl": "https://www.googleapis.com/oauth2/v1/certs",
+                "oauth2FederatedSignonJwkCertsUrl": "https://www.googleapis.com/oauth2/v3/certs",
+                "oauth2IapPublicKeyUrl": "https://www.gstatic.com/iap/verify/public_key"
+              },
+              "clientAuthentication": "ClientSecretPost",
+              "issuers": [
+                "accounts.google.com",
+                "https://accounts.google.com",
+                "googleapis.com"
+              ]
+            }
+          },
+          "google": {
+            "_discovery": {
+              "transporter": {
+                "instance": {
+                  "agentCache": {},
+                  "defaults": {},
+                  "interceptors": {
+                    "request": {},
+                    "response": {}
+                  }
+                }
+              },
+              "options": {
+                "debug": false,
+                "includePrivate": false
+              }
+            },
+            "auth": {
+              "jsonContent": null,
+              "cachedCredential": null,
+              "clientOptions": {},
+              "_cachedProjectId": null,
+              "apiKey": null
+            },
+            "_options": {}
+          }
+        }
+      },
+      "replies": {
+        "context": {
+          "_options": {
+            "auth": {
+              "_events": {},
+              "_eventsCount": 0,
+              "credentials": {},
+              "eagerRefreshThresholdMillis": 300000,
+              "forceRefreshOnFailure": false,
+              "universeDomain": "googleapis.com",
+              "projectId": null,
+              "transporter": {
+                "instance": {
+                  "agentCache": {},
+                  "defaults": {},
+                  "interceptors": {
+                    "request": {},
+                    "response": {}
+                  }
+                }
+              },
+              "certificateCache": {},
+              "certificateExpiry": null,
+              "certificateCacheFormat": "PEM",
+              "refreshTokenPromises": {},
+              "endpoints": {
+                "tokenInfoUrl": "https://oauth2.googleapis.com/tokeninfo",
+                "oauth2AuthBaseUrl": "https://accounts.google.com/o/oauth2/v2/auth",
+                "oauth2TokenUrl": "https://oauth2.googleapis.com/token",
+                "oauth2RevokeUrl": "https://oauth2.googleapis.com/revoke",
+                "oauth2FederatedSignonPemCertsUrl": "https://www.googleapis.com/oauth2/v1/certs",
+                "oauth2FederatedSignonJwkCertsUrl": "https://www.googleapis.com/oauth2/v3/certs",
+                "oauth2IapPublicKeyUrl": "https://www.gstatic.com/iap/verify/public_key"
+              },
+              "clientAuthentication": "ClientSecretPost",
+              "issuers": [
+                "accounts.google.com",
+                "https://accounts.google.com",
+                "googleapis.com"
+              ]
+            }
+          },
+          "google": {
+            "_discovery": {
+              "transporter": {
+                "instance": {
+                  "agentCache": {},
+                  "defaults": {},
+                  "interceptors": {
+                    "request": {},
+                    "response": {}
+                  }
+                }
+              },
+              "options": {
+                "debug": false,
+                "includePrivate": false
+              }
+            },
+            "auth": {
+              "jsonContent": null,
+              "cachedCredential": null,
+              "clientOptions": {},
+              "_cachedProjectId": null,
+              "apiKey": null
+            },
+            "_options": {}
+          }
+        }
+      },
+      "revisions": {
+        "context": {
+          "_options": {
+            "auth": {
+              "_events": {},
+              "_eventsCount": 0,
+              "credentials": {},
+              "eagerRefreshThresholdMillis": 300000,
+              "forceRefreshOnFailure": false,
+              "universeDomain": "googleapis.com",
+              "projectId": null,
+              "transporter": {
+                "instance": {
+                  "agentCache": {},
+                  "defaults": {},
+                  "interceptors": {
+                    "request": {},
+                    "response": {}
+                  }
+                }
+              },
+              "certificateCache": {},
+              "certificateExpiry": null,
+              "certificateCacheFormat": "PEM",
+              "refreshTokenPromises": {},
+              "endpoints": {
+                "tokenInfoUrl": "https://oauth2.googleapis.com/tokeninfo",
+                "oauth2AuthBaseUrl": "https://accounts.google.com/o/oauth2/v2/auth",
+                "oauth2TokenUrl": "https://oauth2.googleapis.com/token",
+                "oauth2RevokeUrl": "https://oauth2.googleapis.com/revoke",
+                "oauth2FederatedSignonPemCertsUrl": "https://www.googleapis.com/oauth2/v1/certs",
+                "oauth2FederatedSignonJwkCertsUrl": "https://www.googleapis.com/oauth2/v3/certs",
+                "oauth2IapPublicKeyUrl": "https://www.gstatic.com/iap/verify/public_key"
+              },
+              "clientAuthentication": "ClientSecretPost",
+              "issuers": [
+                "accounts.google.com",
+                "https://accounts.google.com",
+                "googleapis.com"
+              ]
+            }
+          },
+          "google": {
+            "_discovery": {
+              "transporter": {
+                "instance": {
+                  "agentCache": {},
+                  "defaults": {},
+                  "interceptors": {
+                    "request": {},
+                    "response": {}
+                  }
+                }
+              },
+              "options": {
+                "debug": false,
+                "includePrivate": false
+              }
+            },
+            "auth": {
+              "jsonContent": null,
+              "cachedCredential": null,
+              "clientOptions": {},
+              "_cachedProjectId": null,
+              "apiKey": null
+            },
+            "_options": {}
+          }
+        }
+      },
+      "teamdrives": {
+        "context": {
+          "_options": {
+            "auth": {
+              "_events": {},
+              "_eventsCount": 0,
+              "credentials": {},
+              "eagerRefreshThresholdMillis": 300000,
+              "forceRefreshOnFailure": false,
+              "universeDomain": "googleapis.com",
+              "projectId": null,
+              "transporter": {
+                "instance": {
+                  "agentCache": {},
+                  "defaults": {},
+                  "interceptors": {
+                    "request": {},
+                    "response": {}
+                  }
+                }
+              },
+              "certificateCache": {},
+              "certificateExpiry": null,
+              "certificateCacheFormat": "PEM",
+              "refreshTokenPromises": {},
+              "endpoints": {
+                "tokenInfoUrl": "https://oauth2.googleapis.com/tokeninfo",
+                "oauth2AuthBaseUrl": "https://accounts.google.com/o/oauth2/v2/auth",
+                "oauth2TokenUrl": "https://oauth2.googleapis.com/token",
+                "oauth2RevokeUrl": "https://oauth2.googleapis.com/revoke",
+                "oauth2FederatedSignonPemCertsUrl": "https://www.googleapis.com/oauth2/v1/certs",
+                "oauth2FederatedSignonJwkCertsUrl": "https://www.googleapis.com/oauth2/v3/certs",
+                "oauth2IapPublicKeyUrl": "https://www.gstatic.com/iap/verify/public_key"
+              },
+              "clientAuthentication": "ClientSecretPost",
+              "issuers": [
+                "accounts.google.com",
+                "https://accounts.google.com",
+                "googleapis.com"
+              ]
+            }
+          },
+          "google": {
+            "_discovery": {
+              "transporter": {
+                "instance": {
+                  "agentCache": {},
+                  "defaults": {},
+                  "interceptors": {
+                    "request": {},
+                    "response": {}
+                  }
+                }
+              },
+              "options": {
+                "debug": false,
+                "includePrivate": false
+              }
+            },
+            "auth": {
+              "jsonContent": null,
+              "cachedCredential": null,
+              "clientOptions": {},
+              "_cachedProjectId": null,
+              "apiKey": null
+            },
+            "_options": {}
+          }
+        }
+      }
+    }
+  },
+  "dropbox": {
+    "client": {
+      "auth": {}
+    }
+  }
+}

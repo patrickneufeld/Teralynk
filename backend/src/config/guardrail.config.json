@@ -1,0 +1,7 @@
+{
+  "killSwitchEnvVar": "AI_KILL_SWITCH",
+  "allowedMarkers": ["@ai_updatable:start", "@ai_updatable:end"],
+  "enforceAuditLogging": true,
+  "enableRollback": true,
+  "sandboxExecution": true
+}

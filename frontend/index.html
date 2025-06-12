@@ -1,0 +1,39 @@
+<!-- ================================================
+ ✅ FILE: /frontend/index.html
+ Hardened, complete, production-ready entry point
+================================================= -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover"
+    />
+    <meta name="description" content="Teralynk: Seamless AI-powered file storage, collaboration, and security." />
+    <title>Teralynk | Unified AI Storage Platform</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <!--
+      All global CSS should be imported in your main.jsx:
+      import "./styles/global/global.css";
+      If you need to directly reference a stylesheet from HTML, update the path to /src/styles/global/global.css
+      But for Vite + React, prefer importing in main.jsx only.
+    -->
+    <!-- Optional: Preconnect for font/CDN optimization -->
+    <!-- <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin /> -->
+    <!-- <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet" /> -->
+    <!-- Theme and color (PWA support, browser color) -->
+    <meta name="theme-color" content="#132d4e" />
+    <!-- Security headers (for reference; real CSP via server/vite config) -->
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self';"> -->
+  </head>
+  <body>
+    <noscript>
+      <strong>
+        Teralynk requires JavaScript to function. Please enable JavaScript in your browser.
+      </strong>
+    </noscript>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

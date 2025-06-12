@@ -1,0 +1,73 @@
+/* ✅ FILE: /frontend/src/styles/components/AIBenchmark.css */
+
+.ai-benchmark-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    background-color: #ffffff;
+  }
+  
+  .title {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #1f2937;
+    margin-bottom: 1.5rem;
+  }
+  
+  .chart-section {
+    margin-top: 2rem;
+  }
+  
+  .model-name {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 0.5rem;
+  }
+  
+  .metric-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .metric-list li {
+    font-size: 0.95rem;
+    color: #374151;
+    padding: 0.25rem 0;
+    border-bottom: 1px dashed #e5e7eb;
+  }
+  
+  .metric-list li:last-child {
+    border-bottom: none;
+  }
+  
+  button,
+  .save-button {
+    display: inline-block;
+    margin: 1.5rem 0;
+    background-color: #2563eb;
+    color: #fff;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.25s ease;
+  }
+  
+  button:hover {
+    background-color: #1d4ed8;
+  }
+  
+  .text-gray-500 {
+    color: #6b7280;
+  }
+  
+  .mt-6 {
+    margin-top: 1.5rem;
+  }
+  

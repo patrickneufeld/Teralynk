@@ -1,0 +1,17 @@
+src/middleware/privacyMiddleware.js
+src/secrets-api.js
+src/utils/externalIntegrations.js
+src/utils/preloadIntegrations.js
+src/ai/aiModelTrainer.js
+src/ai/aiDebugAPI.js
+src/api/aiQueryAPI.js
+src/controllers/collaborationSocketController.js
+src/controllers/contactController.js
+src/controllers/collaborationAnalyticsController.js
+src/controllers/settingsController.js
+src/controllers/collaborationSessionController.js
+src/controllers/collaborationMetricsController.js
+src/controllers/collaborationEventController.js
+src/controllers/collaborationNotificationController.js
+src/routes/collaborationRoutes.js
+src/routes/fileSearchReplaceRoutes.js

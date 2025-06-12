@@ -1,0 +1,28 @@
+/* ✅ File: /frontend/src/styles/components/PerformanceDashboard.css */
+
+.performance-dashboard {
+  padding: 2rem;
+  background-color: #f9fafb;
+  min-height: 100vh;
+  font-family: "Inter", sans-serif;
+}
+
+.performance-dashboard h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #111827;
+  text-align: center;
+}
+
+.chart-container {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.3s ease-in-out;
+}
+
+.chart-container:hover {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}

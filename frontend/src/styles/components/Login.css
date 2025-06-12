@@ -1,0 +1,196 @@
+/* ================================================
+   ✅ FILE: /frontend/src/styles/components/Login.css
+   Login Styles v2.4.1 — Fully Centered, Accessible, Modern
+   ================================================ */
+
+/* Full-page centering */
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  padding: 1.5rem;
+  background: linear-gradient(to right, #f9fafb, #edf2f7);
+  box-sizing: border-box;
+}
+
+/* Login Card */
+.login-card {
+  background-color: #ffffff;
+  padding: 2.5rem;
+  max-width: 460px;
+  width: 100%;
+  border-radius: 1.5rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.login-card h1 {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-weight: 700;
+  color: #1a202c;
+}
+
+/* Form */
+form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  margin-top: 1.25rem;
+  margin-bottom: 0.35rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #2d3748;
+}
+
+input[type="email"],
+input[type="password"] {
+  padding: 0.75rem;
+  font-size: 0.95rem;
+  border: 1px solid #cbd5e0;
+  border-radius: 0.5rem;
+  background-color: #f7fafc;
+  color: #2d3748;
+  transition: border 0.2s ease;
+}
+
+input.error {
+  border-color: #e53e3e;
+}
+
+.error-message {
+  color: #e53e3e;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+/* Error Banner */
+.error-banner {
+  background-color: #fed7d7;
+  color: #c53030;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+/* Button */
+.btn-login {
+  background-color: #2b6cb0;
+  color: white;
+  border: none;
+  padding: 0.85rem;
+  font-size: 1rem;
+  border-radius: 0.5rem;
+  margin-top: 2rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-login:hover {
+  background-color: #2c5282;
+}
+
+/* Options Row */
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+}
+
+.form-options label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* reCAPTCHA */
+.recaptcha-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+/* Password Strength */
+.password-strength-meter {
+  font-size: 0.85rem;
+  color: #4a5568;
+  margin-top: 0.4rem;
+}
+
+/* Social login */
+.social-login {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.social-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.btn-social {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: 1px solid #cbd5e0;
+  background-color: #f7fafc;
+  color: #1a202c;
+  transition: background-color 0.2s ease;
+}
+
+.btn-social.google {
+  background-color: #ffffff;
+  color: #1a202c;
+}
+
+.btn-social.facebook {
+  background-color: #1877f2;
+  color: #ffffff;
+  border: none;
+}
+
+.btn-social:hover {
+  opacity: 0.9;
+}
+
+/* Sign-up link */
+.signup-link {
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 0.9rem;
+}
+
+.signup-link a {
+  color: #2b6cb0;
+  text-decoration: underline;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 480px) {
+  .login-card {
+    padding: 2rem 1.25rem;
+  }
+
+  .social-buttons {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}

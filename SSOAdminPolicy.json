@@ -1,0 +1,19 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Action": [
+          "sso:CreatePermissionSet",
+          "sso:ListInstances",
+          "sso:DescribeInstance",
+          "sso:ListPermissionSets",
+          "sso:CreateAccountAssignment",
+          "sso:DeleteAccountAssignment",
+          "sso:AssignPermissions"
+        ],
+        "Resource": "*"
+      }
+    ]
+  }
+  

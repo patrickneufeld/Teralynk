@@ -1,0 +1,113 @@
+/* ================================================ */
+/* ✅ FILE: /frontend/src/styles/components/About.css */
+/* Modern About Page Styling for Teralynk           */
+/* ================================================ */
+
+.about-container {
+  padding: 0;
+  margin: 0;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: #ffffff;
+  color: #1f1f1f;
+}
+
+/* -------------------
+   Hero Section
+------------------- */
+.about-hero {
+  text-align: center;
+  padding: 4rem 2rem 2rem;
+  background: linear-gradient(135deg, #ffffff, #e9f5ff);
+  border-bottom: 1px solid #d0d0d0;
+}
+
+.about-hero .section-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #002244;
+  margin-bottom: 1rem;
+}
+
+.about-hero .lead {
+  font-size: 1.2rem;
+  max-width: 700px;
+  margin: 0 auto;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* -------------------
+   Section Base Styles
+------------------- */
+.about-section {
+  padding: 3rem 2rem;
+  max-width: 960px;
+  margin: 0 auto;
+  border-bottom: 1px solid #eee;
+}
+
+.about-section h2 {
+  font-size: 1.75rem;
+  margin-bottom: 1rem;
+  color: #003366;
+}
+
+.about-section p {
+  font-size: 1rem;
+  color: #2c2c2c;
+  margin-bottom: 1rem;
+  line-height: 1.7;
+}
+
+.about-section ul {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 1rem;
+}
+
+.about-section ul li {
+  padding: 0.5rem 0;
+  font-size: 1rem;
+  color: #3a3a3a;
+  position: relative;
+  padding-left: 1.25rem;
+}
+
+.about-section ul li::before {
+  content: '✔';
+  position: absolute;
+  left: 0;
+  color: #007bff;
+}
+
+/* -------------------
+   Features Specific
+------------------- */
+.features-highlight ul li strong {
+  color: #0056b3;
+}
+
+/* -------------------
+   Why Section
+------------------- */
+.why-teralynk {
+  background-color: #f8f9fa;
+  border-radius: 0;
+  margin-bottom: 0;
+}
+
+/* -------------------
+   Footer
+------------------- */
+.about-footer {
+  background-color: #002244;
+  text-align: center;
+  padding: 2rem;
+  font-size: 0.95rem;
+  color: #e1e1e1;
+  border-top: 1px solid #1a1a1a;
+}
+
+.about-footer p {
+  margin: 0;
+}

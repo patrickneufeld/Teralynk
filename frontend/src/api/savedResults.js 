@@ -1,0 +1,21 @@
+// File Path: frontend/src/api/savedResults.js
+
+import apiClient from './apiClient';
+
+// Get saved results
+export const getSavedResults = async () => {
+    const response = await apiClient.get('/saved-results');
+    return response.data;
+};
+
+// Save a result
+export const saveResult = async (resultData) => {
+    const response = await apiClient.post('/saved-results', resultData);
+    return response.data;
+};
+
+// Delete a saved result
+export const deleteSavedResult = async (resultId) => {
+    const response = await apiClient.delete(`/saved-results/${resultId}`);
+    return response.data;
+};

@@ -1,0 +1,90 @@
+/* File Path: frontend/src/styles/Profile.css */
+
+.profile-container {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+}
+
+.profile-header {
+    font-size: 2rem;
+    color: #333;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.profile-details {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.profile-details p {
+    font-size: 1rem;
+    color: #555;
+    margin: 5px 0;
+}
+
+.profile-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.edit-button, .manage-account-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.edit-button:hover, .manage-account-button:hover {
+    background-color: #0056b3;
+}
+
+.profile-activity {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.profile-activity h3 {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.profile-activity ul {
+    list-style: none;
+    padding: 0;
+}
+
+.profile-activity li {
+    font-size: 1rem;
+    color: #555;
+    margin: 5px 0;
+}
+
+.no-activity-message {
+    font-size: 1rem;
+    color: #888;
+    text-align: center;
+}
+
+.loading-message {
+    font-size: 1.2rem;
+    color: #007bff;
+    text-align: center;
+    margin-top: 20px;
+}

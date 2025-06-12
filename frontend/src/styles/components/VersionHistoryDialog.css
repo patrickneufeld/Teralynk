@@ -1,0 +1,46 @@
+/* ✅ FILE: /frontend/src/styles/components/VersionHistoryDialog.css */
+
+.version-history-dialog {
+    padding: 20px;
+  }
+  
+  .version-list {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-top: 15px;
+  }
+  
+  .version-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    transition: background 0.3s ease;
+  }
+  
+  .version-item:hover {
+    background-color: #f9f9f9;
+  }
+  
+  .version-info {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .version-info span {
+    font-size: 14px;
+    color: #555;
+  }
+  
+  .version-actions {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .version-actions button {
+    font-size: 12px;
+  }
+  

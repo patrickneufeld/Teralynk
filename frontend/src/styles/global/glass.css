@@ -1,0 +1,70 @@
+/* ✅ Universal Glassmorphism Utilities */
+
+.glass {
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  }
+  
+  .dark .glass {
+    background: rgba(20, 20, 20, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: #eee;
+  }
+  
+  /* Variants */
+  .glass-sm {
+    backdrop-filter: blur(10px);
+    border-radius: 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+  
+  .dark .glass-sm {
+    background: rgba(30, 30, 30, 0.15);
+  }
+  
+  /* Gradient glass (optional) */
+  .glass-gradient {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.15) 0%,
+      rgba(255, 255, 255, 0.05) 100%
+    );
+    backdrop-filter: blur(20px);
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+  
+  .dark .glass-gradient {
+    background: linear-gradient(
+      135deg,
+      rgba(30, 30, 30, 0.25) 0%,
+      rgba(10, 10, 10, 0.1) 100%
+    );
+  }
+  
+  /* Text and spacing helpers */
+  .glass-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: inherit;
+    margin-bottom: 1rem;
+  }
+  
+  .glass-section {
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+  
+  .glass-border-light {
+    border: 1px solid rgba(0, 0, 0, 0.05);
+  }
+  
+  .dark .glass-border-light {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  

@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .button {
+    @apply px-4 py-2 rounded font-medium focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+  
+  .button-primary {
+    @apply bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500;
+  }
+  
+  .button-secondary {
+    @apply bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-500;
+  }
+  
+  .button-outline {
+    @apply border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:ring-blue-500;
+  }
+  
+  .button-danger {
+    @apply bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+  }
+  
+  .button-small {
+    @apply text-sm px-3 py-1;
+  }
+  
+  .button-medium {
+    @apply text-base px-4 py-2;
+  }
+  
+  .button-large {
+    @apply text-lg px-6 py-3;
+  }
+  
+  .button-disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+  
+  .input {
+    @apply block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500;
+  }
+  
+  .input-disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+  
+  .textarea {
+    @apply block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500;
+  }
+  
+  .textarea-disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+  
+  .card {
+    @apply bg-white rounded-lg shadow overflow-hidden;
+  }
+  
+  .card-content {
+    @apply p-4;
+  }
+  
+  .alert {
+    @apply p-4 rounded-md;
+  }
+  
+  .alert-info {
+    @apply bg-blue-50 text-blue-700;
+  }
+  
+  .alert-success {
+    @apply bg-green-50 text-green-700;
+  }
+  
+  .alert-warning {
+    @apply bg-yellow-50 text-yellow-700;
+  }
+  
+  .alert-error {
+    @apply bg-red-50 text-red-700;
+  }
+  
+  .loader {
+    @apply inline-flex items-center justify-center text-blue-600;
+  }
+  
+  .loader-small {
+    @apply w-4 h-4;
+  }
+  
+  .loader-medium {
+    @apply w-6 h-6;
+  }
+  
+  .loader-large {
+    @apply w-8 h-8;
+  }
+}

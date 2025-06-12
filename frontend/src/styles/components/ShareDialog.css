@@ -1,0 +1,101 @@
+/* ✅ FILE: /frontend/src/styles/components/ShareDialog.css */
+
+.share-dialog-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+  }
+  
+  .share-dialog {
+    background: #fff;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 90%;
+    padding: 2rem;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+  }
+  
+  .share-title {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+  }
+  
+  .share-section {
+    margin-bottom: 1.5rem;
+  }
+  
+  .share-link-box {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .readonly-link {
+    flex: 1;
+    padding: 0.5rem;
+    font-family: monospace;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #f9f9f9;
+  }
+  
+  .copy-button {
+    padding: 0.5rem 1rem;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  
+  .collab-form {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+  
+  .collab-form input {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+  
+  .collab-list {
+    margin-top: 0.5rem;
+    list-style: none;
+    padding: 0;
+  }
+  
+  .collab-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.25rem 0;
+  }
+  
+  .collab-list button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: red;
+  }
+  
+  .share-actions {
+    text-align: right;
+  }
+  
+  .cancel-button {
+    background: #ccc;
+    border: none;
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+  }
+  

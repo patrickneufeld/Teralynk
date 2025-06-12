@@ -1,0 +1,259 @@
+/* ✅ FILE: /frontend/src/styles/global/index.css */
+
+/* ✅ Reset & Core */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(180deg, #f8f9fa, #e9ecef);
+  color: #212529;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ✅ Tailwind compatibility (if using Tailwind modules) */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ✅ Toasts */
+.logout-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #212529;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 9999;
+  animation: fadeOut 1.5s ease-out forwards;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+@keyframes fadeOut {
+  0% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  90% { opacity: 1; }
+  100% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+}
+
+/* ✅ Utility Containers */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.flex {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+.center-text {
+  text-align: center;
+}
+
+/* ✅ Cards */
+.card {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* ✅ Button Styles */
+button {
+  padding: 14px 28px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+button:hover {
+  transform: translateY(-2px);
+  filter: brightness(0.95);
+}
+
+button.primary {
+  background: linear-gradient(90deg, #007bff, #0056b3);
+  color: #ffffff;
+}
+
+button.secondary {
+  background: linear-gradient(90deg, #6c757d, #495057);
+  color: #ffffff;
+}
+
+button.success {
+  background: linear-gradient(90deg, #28a745, #218838);
+  color: #ffffff;
+}
+
+button.warning {
+  background: linear-gradient(90deg, #ffc107, #e0a800);
+  color: #000000;
+}
+
+button.danger {
+  background: linear-gradient(90deg, #dc3545, #bd2130);
+  color: #ffffff;
+}
+
+button:disabled {
+  background-color: #e9ecef;
+  color: #6c757d;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ✅ Link Styles */
+a {
+  color: #007bff;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+/* ✅ Input Styles */
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 14px;
+  margin: 12px 0;
+  border: 2px solid #ced4da;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+}
+
+/* ✅ Feedback Messages */
+.error {
+  color: #dc3545;
+  font-size: 0.95rem;
+  margin-top: 10px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.success {
+  color: #28a745;
+  font-size: 0.95rem;
+  margin-top: 10px;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* ✅ Navigation Bar */
+.navbar {
+  background: linear-gradient(90deg, #007bff, #0056b3);
+  color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 30px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.navbar ul {
+  display: flex;
+  gap: 1.5rem;
+  list-style: none;
+}
+
+.navbar a {
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.navbar a:hover {
+  color: #d4e2ff;
+}
+
+/* ✅ Footer */
+footer {
+  background: linear-gradient(90deg, #007bff, #0056b3);
+  color: #ffffff;
+  text-align: center;
+  padding: 20px 0;
+  font-size: 0.9rem;
+  box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ✅ Responsive Breakpoints */
+@media (max-width: 992px) {
+  .container {
+    padding: 1.5rem;
+  }
+
+  .navbar ul {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .navbar ul {
+    padding-top: 10px;
+  }
+
+  .container {
+    padding: 1rem;
+  }
+}

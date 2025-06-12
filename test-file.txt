@@ -1,0 +1,3 @@
+This is a test file for S3 upload functionality.
+Created by Amazon Q for testing purposes.
+If this file uploads successfully, the S3 integration is working correctly.

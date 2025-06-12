@@ -1,0 +1,68 @@
+/* Light Mode Variables */
+:root {
+    --primary-bg: #f9f9f9;
+    --primary-text: #333;
+    --secondary-bg: #eaeaea;
+    --secondary-text: #555;
+    --hover-bg: #ddd;
+    --hover-text: #111;
+    --font-size: 16px;
+    --spacing: 10px;
+    --border-radius: 4px;
+}
+
+/* Dark Mode Variables */
+body.dark-mode {
+    --primary-bg: #1e1e1e;
+    --primary-text: #fff;
+    --secondary-bg: #2a2a2a;
+    --secondary-text: #ccc;
+    --hover-bg: #444;
+    --hover-text: #fff;
+}
+
+/* FilesPage Container */
+.FilesPage-container {
+    background-color: var(--primary-bg);
+    color: var(--primary-text);
+    padding: var(--spacing);
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Title */
+.FilesPage-title {
+    font-size: 1.5rem;
+    margin-bottom: var(--spacing);
+}
+
+/* Content Section */
+.FilesPage-content {
+    background-color: var(--secondary-bg);
+    color: var(--secondary-text);
+    padding: calc(var(--spacing) * 1.5);
+    border-radius: var(--border-radius);
+}
+
+/* Button */
+.FilesPage-button {
+    background-color: var(--primary-text);
+    color: var(--primary-bg);
+    border: none;
+    padding: 10px 20px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.FilesPage-button:hover {
+    background-color: var(--hover-bg);
+    color: var(--hover-text);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .FilesPage-container {
+        padding: calc(var(--spacing) * 0.8);
+    }
+}

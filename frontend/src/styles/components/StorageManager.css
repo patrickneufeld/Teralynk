@@ -1,0 +1,215 @@
+/* ✅ /frontend/src/styles/components/StorageManager.css */
+
+.storage-manager-container {
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 30px;
+  background-color: #fdfdfd;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.title {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 30px;
+}
+
+.new-platform-section,
+.platforms-section,
+.export-import-section,
+.auto-save-section {
+  margin-bottom: 30px;
+}
+
+.new-platform-section h2,
+.platforms-section h3 {
+  font-size: 20px;
+  font-weight: 500;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.field-row,
+.credential-field {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
+  align-items: flex-start;
+}
+
+.field-row input,
+.credential-field input,
+.field-row select,
+.credential-field select {
+  padding: 10px 14px;
+  font-size: 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  flex: 1 1 180px;
+  min-width: 160px;
+  transition: border-color 0.3s ease;
+}
+
+.field-row input:focus,
+.credential-field input:focus,
+.field-row select:focus,
+.credential-field select:focus {
+  border-color: #2563eb;
+  outline: none;
+}
+
+.field-row label,
+.credential-field label {
+  font-size: 14px;
+  margin-right: 8px;
+  color: #444;
+}
+
+.field-preview-list {
+  list-style-type: none;
+  padding-left: 0;
+  margin-top: 10px;
+}
+
+.field-preview-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  font-size: 14px;
+}
+
+.field-preview-list button {
+  font-size: 12px;
+  padding: 4px 8px;
+}
+
+.save-platform-btn,
+.save-credentials-btn {
+  background-color: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 10px 16px;
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.save-platform-btn:hover,
+.save-credentials-btn:hover {
+  background-color: #1d4ed8;
+  transform: scale(1.05);
+}
+
+.save-platform-btn:disabled,
+.save-credentials-btn:disabled {
+  background-color: #d1d5db;
+  cursor: not-allowed;
+}
+
+.platform-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 20px;
+  margin-bottom: 20px;
+  background-color: #fff;
+}
+
+.alert {
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.alert.success {
+  background-color: #d1fae5;
+  color: #065f46;
+  border: 1px solid #10b981;
+}
+
+.alert.error {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #ef4444;
+}
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 200px;
+  background-color: #374151;
+  color: #fff;
+  text-align: center;
+  padding: 8px 10px;
+  border-radius: 6px;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Loading spinner */
+.loading-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #2563eb;
+}
+
+.loading-message span {
+  margin-left: 10px;
+  border: 2px solid transparent;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Mobile Responsiveness */
+@media screen and (max-width: 768px) {
+  .storage-manager-container {
+    padding: 15px;
+    margin: 20px;
+  }
+
+  .field-row,
+  .credential-field {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .field-row input,
+  .credential-field input,
+  .field-row select,
+  .credential-field select {
+    width: 100%;
+  }
+}
